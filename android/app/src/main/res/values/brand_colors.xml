@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Фон сплеша и окна до первого кадра. Тот же цвет, что AppBrand.background
+         в lib/ui/core/theme/app_brand.dart (ресурс другой платформы, общего
+         источника нет — при правке менять оба). Отдельный файл: colors.xml
+         перезаписывает flutter_launcher_icons. -->
+    <color name="brand_background">#0C0F22</color>
+</resources>
