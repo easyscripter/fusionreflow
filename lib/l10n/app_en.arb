@@ -18,5 +18,12 @@
   },
   "@spikeHyphenTitle": {
     "description": "Title of the debug-only hyphenation spike screen."
-  }
+  },
+  "navLibrary": "Library",
+  "navBookmarks": "Bookmarks",
+  "navSettings": "Settings",
+  "sectionComingSoon": "Coming soon",
+  "startupErrorTitle": "Couldn't start the app",
+  "startupErrorMessage": "Please try again. Your books are safe.",
+  "startupRetry": "Try again"
 }

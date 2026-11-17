@@ -52,6 +52,13 @@ void main() {
     expect(api.hyphenated, ['слово']);
   });
 
+  test('init is idempotent', () async {
+    const service = RustCoreService();
+
+    await service.init();
+    await service.init();
+  });
+
   test('bookMeta delegates to bridge', () async {
     const service = RustCoreService();
     final bytes = Uint8List.fromList([1, 2]);

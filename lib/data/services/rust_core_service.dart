@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:fusionreflow/src/rust/api/book.dart' as rust_book;
 import 'package:fusionreflow/src/rust/api/text.dart' as rust_text;
+import 'package:fusionreflow/src/rust/frb_generated.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'rust_core_service.g.dart';
@@ -13,6 +14,13 @@ part 'rust_core_service.g.dart';
 class RustCoreService {
   /// Creates the service.
   const new();
+
+  /// Loads the native library; safe to call again (retry after a failed
+  /// start, tests that already initialised the bridge).
+  Future<void> init() async {
+    if (RustLib.instance.initialized) return;
+    await RustLib.init();
+  }
 
   /// Inserts soft hyphens (U+00AD) at allowed break points of ru/en words.
   String hyphenate(String text) => rust_text.hyphenate(text: text);

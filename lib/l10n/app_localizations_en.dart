@@ -25,4 +25,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get spikeOpenButton => 'Hyphenation spike (debug)';
+
+  @override
+  String get navLibrary => 'Library';
+
+  @override
+  String get navBookmarks => 'Bookmarks';
+
+  @override
+  String get navSettings => 'Settings';
+
+  @override
+  String get sectionComingSoon => 'Coming soon';
+
+  @override
+  String get startupErrorTitle => 'Couldn\'t start the app';
+
+  @override
+  String get startupErrorMessage => 'Please try again. Your books are safe.';
+
+  @override
+  String get startupRetry => 'Try again';
 }
