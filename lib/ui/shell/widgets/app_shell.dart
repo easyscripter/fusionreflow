@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fusionreflow/l10n/app_localizations.dart';
 import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
+import 'package:fusionreflow/ui/core/theme/app_icons.dart';
+import 'package:fusionreflow/ui/core/widgets/app_icon.dart';
 import 'package:fusionreflow/ui/shell/widgets/app_logo.dart';
 import 'package:fusionreflow/ui/shell/widgets/rail_settings_button.dart';
 import 'package:fusionreflow/utils/window_size_class.dart';
@@ -56,11 +58,11 @@ class AppShell extends StatelessWidget {
                     trailingAtBottom: true,
                     destinations: [
                       NavigationRailDestination(
-                        icon: const Icon(Icons.menu_book_outlined),
+                        icon: const AppIcon(AppIcons.menuBook),
                         label: Text(l10n.navLibrary),
                       ),
                       NavigationRailDestination(
-                        icon: const Icon(Icons.bookmark_border),
+                        icon: const AppIcon(AppIcons.bookmark),
                         label: Text(l10n.navBookmarks),
                       ),
                     ],
@@ -77,15 +79,15 @@ class AppShell extends StatelessWidget {
                 onDestinationSelected: _select,
                 destinations: [
                   NavigationDestination(
-                    icon: const Icon(Icons.menu_book_outlined),
+                    icon: const AppIcon(AppIcons.menuBook),
                     label: l10n.navLibrary,
                   ),
                   NavigationDestination(
-                    icon: const Icon(Icons.bookmark_border),
+                    icon: const AppIcon(AppIcons.bookmark),
                     label: l10n.navBookmarks,
                   ),
                   NavigationDestination(
-                    icon: const Icon(Icons.tune),
+                    icon: const AppIcon(AppIcons.tune),
                     label: l10n.navSettings,
                   ),
                 ],

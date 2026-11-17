@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fusionreflow/l10n/app_localizations.dart';
 import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
+import 'package:fusionreflow/ui/core/theme/app_icons.dart';
+import 'package:fusionreflow/ui/core/widgets/app_icon.dart';
 
 /// Пункт «Настройки» внизу боковой рейки; выглядит как пункты рейки.
 class RailSettingsButton extends StatelessWidget {
@@ -55,7 +57,13 @@ class RailSettingsButton extends StatelessWidget {
                         : null,
                     borderRadius: BorderRadius.circular(_indicator.height / 2),
                   ),
-                  child: Icon(Icons.tune, size: AppSizes.icon, color: color),
+                  child: Center(
+                    child: AppIcon(
+                      AppIcons.tune,
+                      size: AppSizes.icon,
+                      color: color,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.s4),
                 Text(

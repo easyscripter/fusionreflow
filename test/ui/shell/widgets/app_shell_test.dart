@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusionreflow/ui/shell/widgets/app_logo.dart';
 import 'package:fusionreflow/ui/shell/widgets/rail_settings_button.dart';
@@ -43,6 +44,30 @@ void main() {
     }
     expect(find.byType(NavigationRail), findsNothing);
     expect(find.byKey(const Key('library_screen')), findsOneWidget);
+  });
+
+  testWidgets('bar uses the design icons', (tester) async {
+    await pumpApp(tester);
+
+    expect(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.byType(SvgPicture),
+      ),
+      findsNWidgets(3),
+    );
+  });
+
+  testWidgets('rail uses the design icons', (tester) async {
+    await pumpApp(tester, size: _tablet);
+
+    expect(
+      find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.byType(SvgPicture),
+      ),
+      findsNWidgets(3),
+    );
   });
 
   testWidgets('small phone shows navigation bar', (tester) async {
