@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#0C0F22</color>
-    <!-- Фон сплеша и окна до первого кадра. Тот же цвет, что AppBrand.background
-         в lib/ui/core/theme/app_brand.dart (ресурс другой платформы, общего
-         источника нет — при правке менять оба). -->
-    <color name="brand_background">#0C0F22</color>
 </resources>
