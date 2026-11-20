@@ -77,7 +77,7 @@ pub fn pack_with(files: &[(&str, &[u8])], method: CompressionMethod) -> Vec<u8> 
     z.finish().expect("finish").into_inner()
 }
 
-const CONTAINER: &str = r#"<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>"#;
+pub const CONTAINER: &str = r#"<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>"#;
 
 /// Wraps a body fragment into a chapter document.
 pub fn xhtml(body: &str) -> String {

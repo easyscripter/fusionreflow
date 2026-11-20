@@ -10,7 +10,7 @@ serde = { version = "1.0.229", features = ["derive"] }
 serde_bytes = "0.11.19"
 thiserror = "2.0.21"
 hyphenation = { version = "0.8.4", default-features = false }
-zip = { version = "9.8.1", default-features = false, features = ["deflate"] }
+zip = { version = "9.8.1", default-features = false, features = ["deflate-flate2-zlib-rs"] }
 quick-xml = "0.42.0"
 sha2 = "0.11.1"
 
@@ -18,4 +18,4 @@ sha2 = "0.11.1"
 workspace = true
 
 [dev-dependencies]
-zip = { version = "9.8.1", default-features = false, features = ["deflate"] }
+zip = { version = "9.8.1", default-features = false, features = ["deflate-flate2-zlib-rs"] }

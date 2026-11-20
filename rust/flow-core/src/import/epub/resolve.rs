@@ -1,9 +1,10 @@
 //! Second pass: turns drafts into model blocks. Links become block indices,
 //! note references pair with footnotes, the contents list is mapped, and
 //! text gets soft hyphens.
+use super::draft::{DBlock, DInline, LinkKind, Top};
 use super::path::Target;
 use super::toc::Draft;
-use super::xhtml::{DBlock, DInline, LinkKind, Top};
+use super::xml::collapse;
 use crate::model::{Block, BlockNode, Inline, LinkTarget, TocEntry};
 use crate::text::Hyphenator;
 use std::collections::{HashMap, HashSet};
@@ -30,17 +31,18 @@ fn collect_footnotes(b: &DBlock, out: &mut HashSet<String>) {
     }
 }
 
-fn plain_text(v: &[DInline]) -> String {
+fn raw_text(v: &[DInline]) -> String {
     v.iter()
         .map(|i| match i {
             DInline::Text { text, .. } => text.clone(),
-            DInline::Link { inlines, .. } => plain_text(inlines),
+            DInline::Link { inlines, .. } => raw_text(inlines),
             DInline::Image(_) => String::new(),
         })
-        .collect::<String>()
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ")
+        .collect()
+}
+
+fn plain_text(v: &[DInline]) -> String {
+    collapse(&raw_text(v))
 }
 
 impl Ctx<'_> {

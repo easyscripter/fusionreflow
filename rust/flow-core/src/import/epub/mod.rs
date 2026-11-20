@@ -5,6 +5,7 @@
 //! (progress + cancel between chapters), then resolve links, contents and
 //! hyphenation in a second pass.
 mod archive;
+mod draft;
 mod entities;
 mod package;
 mod path;
@@ -129,7 +130,7 @@ impl Loader<'_, '_> {
     }
 }
 
-impl xhtml::Images for Loader<'_, '_> {
+impl draft::Images for Loader<'_, '_> {
     fn load(&mut self, chapter: &str, src: &str) -> Option<ResourceId> {
         let target = path::resolve(chapter, src)?;
         let name = self.archive.canonical(&target.path)?.to_owned();
@@ -235,6 +236,20 @@ impl Converter for EpubConverter {
         progress: &mut dyn FnMut(Progress),
         cancel: &CancelToken,
     ) -> Result<Book, ImportError> {
+        self.convert_with(src, kind, progress, cancel, Limits::DEFAULT)
+    }
+}
+
+impl EpubConverter {
+    /// [`Converter::convert`] with explicit size limits (small ones in tests).
+    fn convert_with(
+        &self,
+        src: &mut dyn ReadSeek,
+        kind: SourceKind,
+        progress: &mut dyn FnMut(Progress),
+        cancel: &CancelToken,
+        limits: Limits,
+    ) -> Result<Book, ImportError> {
         if kind != SourceKind::Epub {
             return Err(ImportError::Unsupported(kind));
         }
@@ -242,7 +257,7 @@ impl Converter for EpubConverter {
             return Err(ImportError::Cancelled);
         }
         let source_hash = hash_source(src)?;
-        let mut archive = Archive::open(src, Limits::DEFAULT).map_err(archive_error)?;
+        let mut archive = Archive::open(src, limits).map_err(archive_error)?;
         let (pkg, _) = read_package(&mut archive)?;
         let spine = spine_paths(&pkg);
         reject_drm(&mut archive, &spine)?;
@@ -250,14 +265,15 @@ impl Converter for EpubConverter {
             return Err(corrupted("epub: no readable chapters"));
         }
 
-        let media = pkg
-            .manifest
-            .values()
-            .filter_map(|i| {
-                let name = archive.canonical(i.path.as_deref()?)?.to_owned();
-                Some((name, i.media_type.clone()))
-            })
-            .collect();
+        // In manifest order, the first entry for a file wins (never hash order).
+        let mut media: HashMap<String, String> = HashMap::new();
+        for item in pkg.order.iter().filter_map(|id| pkg.manifest.get(id)) {
+            if let Some(name) = item.path.as_deref().and_then(|p| archive.canonical(p)) {
+                media
+                    .entry(name.to_owned())
+                    .or_insert_with(|| item.media_type.clone());
+            }
+        }
         let mut loader = Loader {
             archive: &mut archive,
             media,
@@ -273,7 +289,7 @@ impl Converter for EpubConverter {
             .and_then(|name| loader.load_entry(&name));
 
         let total = u32::try_from(spine.len()).unwrap_or(u32::MAX);
-        let mut chapters: Vec<(String, Vec<xhtml::Top>)> = Vec::new();
+        let mut chapters: Vec<(String, Vec<draft::Top>)> = Vec::new();
         for (i, item) in spine.iter().enumerate() {
             if cancel.is_cancelled() {
                 return Err(ImportError::Cancelled);
@@ -331,5 +347,84 @@ impl Converter for EpubConverter {
             blocks: resolved.blocks,
             resources,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::{Cursor, Write};
+    use zip::write::SimpleFileOptions;
+
+    const CONTAINER: &str =
+        r#"<container><rootfiles><rootfile full-path="o.opf"/></rootfiles></container>"#;
+    const OPF: &str = r#"<package><manifest><item id="c" href="c.xhtml" media-type="application/xhtml+xml"/></manifest><spine><itemref idref="c"/></spine></package>"#;
+    const CHAPTER: &str = r#"<html><body><p>t</p><p><img src="p.png"/></p></body></html>"#;
+
+    fn zip_of(files: &[(&str, &[u8])]) -> Vec<u8> {
+        let mut z = zip::ZipWriter::new(Cursor::new(Vec::new()));
+        for (n, d) in files {
+            z.start_file(*n, SimpleFileOptions::default())
+                .expect("start");
+            z.write_all(d).expect("write");
+        }
+        z.finish().expect("finish").into_inner()
+    }
+
+    fn book_files(image: &[u8]) -> Vec<(&str, &[u8])> {
+        vec![
+            ("META-INF/container.xml", CONTAINER.as_bytes()),
+            ("o.opf", OPF.as_bytes()),
+            ("c.xhtml", CHAPTER.as_bytes()),
+            ("p.png", image),
+        ]
+    }
+
+    fn run(bytes: Vec<u8>, limits: Limits) -> Result<Book, ImportError> {
+        EpubConverter.convert_with(
+            &mut Cursor::new(bytes),
+            SourceKind::Epub,
+            &mut |_| {},
+            &CancelToken::new(),
+            limits,
+        )
+    }
+
+    #[test]
+    fn too_many_entries_is_reported() {
+        let limits = Limits {
+            entries: 3,
+            ..Limits::DEFAULT
+        };
+        let r = run(zip_of(&book_files(b"png")), limits);
+        assert_eq!(r.err(), Some(corrupted("epub: too many entries")));
+    }
+
+    #[test]
+    fn total_limit_stops_an_image_flood() {
+        let image = vec![7u8; 1000];
+        let text: u64 = [CONTAINER.len(), OPF.len(), CHAPTER.len()]
+            .iter()
+            .map(|n| *n as u64)
+            .sum();
+        let limits = Limits {
+            total: text + 10,
+            ..Limits::DEFAULT
+        };
+        let r = run(zip_of(&book_files(&image)), limits);
+        assert_eq!(r.err(), Some(corrupted("epub: too large")));
+        // the same book fits when the budget is generous
+        assert!(run(zip_of(&book_files(&image)), Limits::DEFAULT).is_ok());
+    }
+
+    #[test]
+    fn oversized_image_is_dropped_not_fatal() {
+        let image = vec![7u8; 1000];
+        let limits = Limits {
+            entry: 500,
+            ..Limits::DEFAULT
+        };
+        let b = run(zip_of(&book_files(&image)), limits).expect("book");
+        assert!(b.resources.is_empty());
     }
 }

@@ -175,4 +175,32 @@ mod tests {
             Err(ArchiveError::NotZip(_))
         ));
     }
+
+    #[test]
+    fn lying_header_cannot_smuggle_more_than_the_limit() {
+        let mut bytes = zip_of(&[("a", &[b'x'; 5000])]).into_inner();
+        // Central directory entry: signature 0x02014b50, uncompressed size at +24.
+        let pos = bytes
+            .windows(4)
+            .position(|w| w == [0x50, 0x4b, 0x01, 0x02])
+            .expect("central header");
+        bytes[pos + 24..pos + 28].copy_from_slice(&1u32.to_le_bytes());
+        let mut src = Cursor::new(bytes);
+        let mut a = Archive::open(
+            &mut src,
+            Limits {
+                entries: 10,
+                entry: 100,
+                total: 1000,
+            },
+        )
+        .expect("open");
+        match a.read("a") {
+            Ok(data) => assert!(data.len() <= 100, "read {} bytes", data.len()),
+            Err(e) => assert!(matches!(
+                e,
+                ArchiveError::EntryTooLarge | ArchiveError::Damaged(_)
+            )),
+        }
+    }
 }

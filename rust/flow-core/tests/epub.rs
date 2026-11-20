@@ -775,3 +775,88 @@ fn utf16_chapter_decoded() {
     .expect("convert");
     assert_eq!(paras(&b), ["привет"]);
 }
+
+// ---- review round 1 -------------------------------------------------------
+
+fn roundtrips(b: &Book) {
+    assert_eq!(&decode(&encode(b).expect("encode")).expect("decode"), b);
+}
+
+#[test]
+fn deep_blockquotes_roundtrip_through_codec() {
+    let body = format!(
+        "{}<p>deep</p>{}",
+        "<blockquote>".repeat(100),
+        "</blockquote>".repeat(100)
+    );
+    let b = one(&body);
+    assert!(format!("{:?}", b.blocks).contains("deep"));
+    roundtrips(&b);
+}
+
+#[test]
+fn deep_footnotes_roundtrip_through_codec() {
+    let open: String = (0..100)
+        .map(|i| format!(r#"<aside epub:type="footnote" id="n{i}">"#))
+        .collect();
+    let b = one(&format!("{open}<p>deep</p>{}", "</aside>".repeat(100)));
+    assert!(format!("{:?}", b.blocks).contains("deep"));
+    roundtrips(&b);
+}
+
+#[test]
+fn linked_image_alone_is_figure() {
+    let bytes = epub_with(
+        "de",
+        &[r#"<p><a href="https://example.org"><img src="pic.png"/></a></p>"#],
+        &[("OEBPS/pic.png", PIXEL_PNG)],
+    );
+    let b = convert(bytes).expect("convert");
+    assert!(
+        matches!(b.blocks[0].block, Block::Figure { .. }),
+        "{:?}",
+        b.blocks
+    );
+}
+
+#[test]
+fn link_over_blocks_is_dropped_text_kept() {
+    let b = one(r#"<a href="https://example.org"><p>one</p><p>two</p></a>"#);
+    assert_eq!(paras(&b), ["one", "two"]);
+    assert!(!format!("{:?}", b.blocks).contains("Link"));
+}
+
+#[test]
+fn text_after_nested_list_becomes_paragraph() {
+    let b = one("<ul><li>a<ul><li>b</li></ul>c</li><li>d</li></ul>");
+    let got: Vec<_> = b
+        .blocks
+        .iter()
+        .map(|n| match &n.block {
+            Block::ListItem { depth, inlines, .. } => format!("item{depth}:{}", plain(inlines)),
+            Block::Paragraph { inlines } => format!("p:{}", plain(inlines)),
+            _ => "?".into(),
+        })
+        .collect();
+    assert_eq!(got, ["item0:a", "item1:b", "p:c", "item0:d"]);
+}
+
+#[test]
+fn manifest_media_type_of_shared_file_is_deterministic() {
+    let opf = br#"<package><metadata/><manifest>
+<item id="c0" href="c0.xhtml" media-type="application/xhtml+xml"/>
+<item id="a" href="pic.png" media-type="image/png"/>
+<item id="b" href="pic.png" media-type="text/plain"/>
+</manifest><spine><itemref idref="c0"/></spine></package>"#;
+    let chapter = xhtml(r#"<p>t</p><p><img src="pic.png"/></p>"#);
+    for _ in 0..30 {
+        let bytes = pack_files(&[
+            ("META-INF/container.xml", common::epub::CONTAINER.as_bytes()),
+            ("OEBPS/content.opf", opf),
+            ("OEBPS/c0.xhtml", chapter.as_bytes()),
+            ("OEBPS/pic.png", PIXEL_PNG),
+        ]);
+        let b = convert(bytes).expect("convert");
+        assert_eq!(b.resources.len(), 1);
+    }
+}
