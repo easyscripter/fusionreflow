@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="id">
+<metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf"><dc:title>Cover</dc:title><dc:creator opf:role="aut">Author</dc:creator><dc:creator opf:role="trl">Translator</dc:creator><dc:language>de</dc:language><meta name="cover" content="cov"/></metadata>
+<manifest><item id="c1" href="ch1.xhtml" media-type="application/xhtml+xml"/><item id="cov" href="cover.jpg" media-type="image/jpeg"/></manifest>
+<spine><itemref idref="c1"/></spine>
+</package>

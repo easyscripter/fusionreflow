@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+<metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Edge</dc:title><dc:language>de</dc:language></metadata>
+<manifest><item id="a" href="my%20chapter.xhtml" media-type="application/xhtml+xml"/><item id="b" href="sub/../Sub/two.xhtml" media-type="application/xhtml+xml"/><item id="c" href="missing.xhtml" media-type="application/xhtml+xml"/><item id="d" href="broken.xhtml" media-type="application/xhtml+xml"/><item id="e" href="last.xhtml" media-type="application/xhtml+xml"/></manifest>
+<spine><itemref idref="a"/><itemref idref="b"/><itemref idref="c"/><itemref idref="d"/><itemref idref="e"/></spine>
+</package>

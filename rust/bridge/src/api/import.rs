@@ -10,7 +10,7 @@ use std::panic::AssertUnwindSafe;
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::sync::{LazyLock, Mutex};
 
-use flow_core::import::{CancelToken, Converter, ReadSeek, StubConverter};
+use flow_core::import::{CancelToken, Converter, EpubConverter, ReadSeek, StubConverter};
 pub use flow_core::import::{ImportError, Progress, SourceKind, Stage};
 use flutter_rust_bridge::frb;
 
@@ -59,10 +59,14 @@ static NEXT_JOB: AtomicI64 = AtomicI64::new(1);
 static JOBS: LazyLock<Mutex<HashMap<i64, CancelToken>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
 
-/// Chooses the converter for a source kind. The `pdf` feature will wire in
-/// `flow_pdf::PdfConverter` (plan 3); for now it is always the stub.
-pub(crate) fn converter_for(_kind: SourceKind) -> Box<dyn Converter> {
-    Box::new(StubConverter)
+/// Chooses the converter for a source kind. EPUB is imported by
+/// [`EpubConverter`]; FB2 will join in task 4.2 and the `pdf` feature will wire
+/// in `flow_pdf::PdfConverter` (plan 3). Everything else is the stub for now.
+pub(crate) fn converter_for(kind: SourceKind) -> Box<dyn Converter> {
+    match kind {
+        SourceKind::Epub => Box::new(EpubConverter),
+        _ => Box::new(StubConverter),
+    }
 }
 
 #[cfg(unix)]
@@ -319,6 +323,19 @@ mod tests {
             result,
             Err(ImportError::Unsupported(SourceKind::Pdf))
         ));
+    }
+
+    #[test]
+    fn epub_kind_uses_epub_converter() {
+        let token = CancelToken::new();
+        let mut src = std::io::Cursor::new(b"not an epub".to_vec());
+        let result = converter_for(SourceKind::Epub).convert(
+            &mut src,
+            SourceKind::Epub,
+            &mut |_| {},
+            &token,
+        );
+        assert!(matches!(result, Err(ImportError::Corrupted(m)) if m.starts_with("epub:")));
     }
 
     #[cfg(not(unix))]
