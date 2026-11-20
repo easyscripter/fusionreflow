@@ -25,5 +25,112 @@
   "sectionComingSoon": "Coming soon",
   "startupErrorTitle": "Couldn't start the app",
   "startupErrorMessage": "Please try again. Your books are safe.",
-  "startupRetry": "Try again"
+  "startupRetry": "Try again",
+  "libraryBookCount": "{count, plural, one{{count} book} other{{count} books}}",
+  "@libraryBookCount": {
+    "description": "Book counter in the library header.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "librarySortRecent": "Recent",
+  "librarySortTitle": "Title",
+  "librarySortAuthor": "Author",
+  "libraryContinueReading": "Continue reading",
+  "libraryRead": "Read",
+  "libraryStatusNew": "New",
+  "libraryStatusFinished": "Finished",
+  "libraryPercent": "{percent}%",
+  "@libraryPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryUntitled": "Untitled",
+  "@libraryUntitled": {
+    "description": "Shown instead of an empty book title."
+  },
+  "bookFormatPdf": "PDF",
+  "bookFormatEpub": "EPUB",
+  "bookFormatFb2": "FB2",
+  "bookFormatFb2Zip": "FB2.ZIP",
+  "libraryEmptyTitle": "No books yet",
+  "libraryEmptyMessage": "Add an EPUB or FB2 file. Books are read on your device and never sent anywhere.",
+  "libraryEmptyHint": "Tap “Add” in the bottom right",
+  "libraryEmptyFormats": "EPUB · FB2 · FB2.ZIP",
+  "libraryAdd": "Add",
+  "libraryAddSemantics": "Add a book",
+  "libraryLoadError": "Couldn’t load the library",
+  "libraryRetry": "Retry",
+  "libraryDebugMenu": "Debug",
+  "importBusy": "Wait until the book is added",
+  "importProgress": "Converting · {done} of {total}",
+  "@importProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "importCancel": "Cancel",
+  "importPdfLaterTitle": "PDF will be available later",
+  "importPdfLaterMessage": "PDF to book conversion is coming in a future update. EPUB and FB2 already open and read.",
+  "importPdfLaterFile": "PDF · {size} · not added to the library",
+  "@importPdfLaterFile": {
+    "description": "Skipped PDF: size and a note that it was not added.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "importPdfLaterFileNoSize": "PDF · not added to the library",
+  "importPickEpubOrFb2": "Choose EPUB or FB2",
+  "importGotIt": "Got it",
+  "importUnsupportedTitle": "This format is not supported",
+  "importUnsupportedMessage": "The app reads EPUB, FB2 and FB2.ZIP. PDF is coming later; DOCX and MOBI can be converted to EPUB.",
+  "importUnreadableTitle": "Couldn’t open the file",
+  "importUnreadableMessage": "The file is damaged or not fully downloaded. Download it again and add it once more.",
+  "importPickOther": "Choose another file",
+  "importNoAccessTitle": "No access to the file",
+  "importNoAccessMessage": "The file was moved or deleted. Choose it again.",
+  "importPickFile": "Choose file",
+  "importCancelledTitle": "Adding cancelled",
+  "importCancelledMessage": "The book was not saved. You can add it again.",
+  "importRetry": "Retry",
+  "importClose": "Close",
+  "fileSizeMb": "{size} MB",
+  "@fileSizeMb": {
+    "description": "File size in mebibytes, one decimal digit.",
+    "placeholders": {
+      "size": {
+        "type": "double",
+        "format": "decimalPatternDigits",
+        "optionalParameters": {
+          "decimalDigits": 1
+        }
+      }
+    }
+  },
+  "readerPlaceholderTitle": "The reader is coming later",
+  "readerPlaceholderPosition": "Opens at {percent}%",
+  "@readerPlaceholderPosition": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "readerBookNotFound": "Book not found",
+  "importSheetTitle": "Add a book",
+  "importSheetFormats": "EPUB, FB2, FB2.ZIP",
+  "importSheetNote": "The book is stored in the app; the original file isn't needed after adding.",
+  "importPickFailed": "Couldn’t open the file picker"
 }

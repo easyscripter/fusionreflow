@@ -16,6 +16,8 @@ void main() {
   testWidgets('hyphen spike screenshots', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: FusionReflowApp()));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('library_debug_menu')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('open_hyphen_spike')));
     await tester.pumpAndSettle();
     await binding.convertFlutterSurfaceToImage();

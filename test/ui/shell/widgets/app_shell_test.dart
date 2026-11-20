@@ -6,10 +6,10 @@ import 'package:fusionreflow/ui/shell/widgets/app_logo.dart';
 import 'package:fusionreflow/ui/shell/widgets/rail_settings_button.dart';
 import 'package:fusionreflow/ui/spikes/widgets/hyphen_spike_screen.dart';
 
+import '../../../helpers/open_hyphen_spike.dart';
 import '../../../helpers/pump_app.dart';
 
 const _tablet = Size(820, 1180);
-const _spikeButton = Key('open_hyphen_spike');
 
 /// Records `SystemNavigator.pop` calls; returns the counter.
 List<String> _trackSystemPop(WidgetTester tester) {
@@ -155,8 +155,7 @@ void main() {
 
   testWidgets('branches keep their state', (tester) async {
     await pumpApp(tester);
-    await tester.tap(find.byKey(_spikeButton));
-    await tester.pumpAndSettle();
+    await openHyphenSpike(tester);
     expect(find.byType(HyphenSpikeScreen), findsOneWidget);
 
     await tester.tap(_inBar('Закладки'));
@@ -169,8 +168,7 @@ void main() {
 
   testWidgets('tapping active item returns to section root', (tester) async {
     await pumpApp(tester);
-    await tester.tap(find.byKey(_spikeButton));
-    await tester.pumpAndSettle();
+    await openHyphenSpike(tester);
 
     await tester.tap(_inBar('Библиотека'));
     await tester.pumpAndSettle();
@@ -219,8 +217,7 @@ void main() {
   testWidgets('back inside a section pops its stack', (tester) async {
     final systemCalls = _trackSystemPop(tester);
     await pumpApp(tester);
-    await tester.tap(find.byKey(_spikeButton));
-    await tester.pumpAndSettle();
+    await openHyphenSpike(tester);
 
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();

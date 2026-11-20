@@ -7,7 +7,23 @@ abstract final class AppIcons {
   static const menuBook = 'assets/icons/menu_book.svg';
   static const bookmark = 'assets/icons/bookmark.svg';
   static const tune = 'assets/icons/tune.svg';
+  static const sort = 'assets/icons/sort.svg';
+  static const chevronDown = 'assets/icons/chevron_down.svg';
+  static const chevronRight = 'assets/icons/chevron_right.svg';
+  static const description = 'assets/icons/description.svg';
+
+  /// Иллюстрация пустой библиотеки (viewBox 128×112, не квадратная).
+  static const libraryEmpty = 'assets/icons/library_empty.svg';
 
   /// Все иконки (для проверки, что файлы лежат в сборке).
-  static const List<String> all = [menuBook, bookmark, tune];
+  static const List<String> all = [
+    menuBook,
+    bookmark,
+    tune,
+    sort,
+    chevronDown,
+    chevronRight,
+    description,
+    libraryEmpty,
+  ];
 }

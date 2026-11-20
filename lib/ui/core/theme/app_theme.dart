@@ -75,7 +75,8 @@ abstract final class AppTheme {
         side: BorderSide.none,
         backgroundColor: s.surfaceContainerHighest,
         selectedColor: s.primaryContainer,
-        labelStyle: text.labelMedium,
+        // У текстовой темы цвета нет, без него подпись чипа бледная.
+        labelStyle: text.labelMedium?.copyWith(color: s.onSurface),
         secondaryLabelStyle: text.labelMedium?.copyWith(color: s.primary),
         // Видимая высота = строка подписи + 2 × вертикальный отступ.
         padding: const EdgeInsets.symmetric(

@@ -2,8 +2,12 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fusionreflow/data/services/bridge_import_event.dart';
 import 'package:fusionreflow/data/services/rust_core_service.dart';
+import 'package:fusionreflow/domain/models/book_format.dart';
+import 'package:fusionreflow/domain/models/import_update.dart';
 import 'package:fusionreflow/src/rust/api/book.dart';
+import 'package:fusionreflow/src/rust/api/import.dart';
 import 'package:fusionreflow/src/rust/frb_generated.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -18,6 +22,23 @@ const _meta = BookMeta(
 class _FakeRustLibApi implements RustLibApi {
   final List<String> hyphenated = [];
   final List<List<int>> metaCalls = [];
+  final List<(int, SourceKind)> importCalls = [];
+  final List<int> cancelCalls = [];
+  List<ImportEvent> importEvents = const [];
+
+  @override
+  Stream<ImportEvent> crateApiImportImportBook({
+    required int fd,
+    required SourceKind kind,
+  }) {
+    importCalls.add((fd, kind));
+    return Stream.fromIterable(importEvents);
+  }
+
+  @override
+  Future<void> crateApiImportCancelImport({required int jobId}) async {
+    cancelCalls.add(jobId);
+  }
 
   @override
   Future<BookMeta> crateApiBookBookMeta({required List<int> bytes}) async {
@@ -117,6 +138,62 @@ void main() {
 
     expect(await service.bookMeta(bytes), _meta);
     expect(api.metaCalls, [bytes]);
+  });
+
+  test('importBook maps format to source kind', () async {
+    final service = RustCoreService();
+    for (final (format, kind) in [
+      (BookFormat.pdf, SourceKind.pdf),
+      (BookFormat.epub, SourceKind.epub),
+      (BookFormat.fb2, SourceKind.fb2),
+      (BookFormat.fb2Zip, SourceKind.fb2Zip),
+    ]) {
+      await service.importBook(5, format).toList();
+      expect(api.importCalls.last, (5, kind));
+    }
+  });
+
+  test('bridge events map to service events', () async {
+    final bytes = Uint8List.fromList([1]);
+    api.importEvents = [
+      const ImportEvent.started(7),
+      const ImportEvent.progress(
+        Progress(stage: Stage.pages, done: 1, total: 3),
+      ),
+      ImportEvent.done(bytes),
+    ];
+    final events = await RustCoreService()
+        .importBook(5, BookFormat.epub)
+        .toList();
+    expect(events[0], isA<BridgeImportStarted>());
+    expect((events[0] as BridgeImportStarted).jobId, 7);
+    final progress = events[1] as BridgeImportProgress;
+    expect((progress.done, progress.total), (1, 3));
+    expect((events[2] as BridgeImportDone).bytes, bytes);
+  });
+
+  test('bridge errors map to failures', () async {
+    final cases = <ImportError, ImportFailure>{
+      const ImportError.unsupported(SourceKind.pdf): ImportFailure.pdfNotYet,
+      const ImportError.unsupported(SourceKind.epub):
+          ImportFailure.unsupportedFormat,
+      const ImportError.corrupted('x'): ImportFailure.unreadable,
+      const ImportError.noTextLayer(): ImportFailure.unreadable,
+      const ImportError.outOfMemory(): ImportFailure.unreadable,
+      const ImportError.cancelled(): ImportFailure.cancelled,
+    };
+    for (final MapEntry(key: error, value: failure) in cases.entries) {
+      api.importEvents = [ImportEvent.failed(error)];
+      final events = await RustCoreService()
+          .importBook(1, BookFormat.pdf)
+          .toList();
+      expect((events.single as BridgeImportFailed).failure, failure);
+    }
+  });
+
+  test('cancelImport delegates to bridge', () async {
+    await RustCoreService().cancelImport(9);
+    expect(api.cancelCalls, [9]);
   });
 
   test('rustCoreServiceProvider provides a RustCoreService', () {

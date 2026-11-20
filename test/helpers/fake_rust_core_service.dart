@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:fusionreflow/data/services/bridge_import_event.dart';
 import 'package:fusionreflow/data/services/rust_core_service.dart';
+import 'package:fusionreflow/domain/models/book_format.dart';
 import 'package:fusionreflow/src/rust/api/book.dart';
 
 /// Bytes that [FakeRustCoreService.bookMeta] rejects like a corrupt book.
@@ -49,4 +52,29 @@ class FakeRustCoreService implements RustCoreService {
       converterVersion: 'test',
     );
   }
+
+  /// Events [importBook] emits; a test feeds and closes it.
+  StreamController<BridgeImportEvent> importEvents =
+      StreamController<BridgeImportEvent>();
+
+  /// `(fd, format)` of every [importBook] call.
+  final List<(int, BookFormat)> importCalls = [];
+
+  /// Job ids passed to [cancelImport].
+  final List<int> cancelled = [];
+
+  /// Thrown by [importBook] when set.
+  Object? importError;
+
+  @override
+  Stream<BridgeImportEvent> importBook(int fd, BookFormat format) {
+    importCalls.add((fd, format));
+    final error = importError;
+    // ignore: only_throw_errors (tests throw Errors and Exceptions alike)
+    if (error != null) throw error;
+    return importEvents.stream;
+  }
+
+  @override
+  Future<void> cancelImport(int jobId) async => cancelled.add(jobId);
 }

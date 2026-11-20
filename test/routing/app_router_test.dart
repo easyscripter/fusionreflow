@@ -32,4 +32,12 @@ void main() {
     expect(_path(tester), AppRoutes.library);
     expect(find.byKey(const Key('library_screen')), findsOneWidget);
   });
+
+  testWidgets('reader route is outside the shell', (tester) async {
+    await pumpApp(tester, location: AppRoutes.readerOf('x'));
+
+    expect(find.byKey(const Key('reader_placeholder')), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byType(NavigationRail), findsNothing);
+  });
 }

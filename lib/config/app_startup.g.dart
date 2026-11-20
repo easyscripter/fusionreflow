@@ -26,7 +26,7 @@ final class AppStartupProvider
     : super(
         from: null,
         argument: null,
-        retry: _noRetry,
+        retry: noRetry,
         name: r'appStartupProvider',
         isAutoDispose: false,
         dependencies: null,
@@ -47,4 +47,4 @@ final class AppStartupProvider
   }
 }
 
-String _$appStartupHash() => r'7ebd46decb74a4ce101f9fcd583209de288159ee';
+String _$appStartupHash() => r'bbb99ddd660c45712cb8247817c11ef92631e265';
