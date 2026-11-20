@@ -38,6 +38,10 @@ Third-party components:
   - ru: (C) 1999-2003 Alexander I. Lebedev; LaTeX Project Public License 1.2 or
     later. The licensing of the Russian hyphenation patterns in this GPL-3.0
     project is under review (see `docs/spikes/stage0-report.md`, R10).
+- **zip**, **quick-xml**, **sha2** (EPUB import in `flow-core`) and their
+  pure-Rust dependencies (`flate2`, `zlib-rs` (Zlib), `crc32fast`, `typed-path`,
+  `zeroize`, `constant_time_eq` and others): MIT, Apache-2.0, Zlib or
+  similarly permissive.
 - **cargokit** (`rust_builder/`): MIT / Apache-2.0.
 - **flutter_rust_bridge**: MIT / Apache-2.0.
 
