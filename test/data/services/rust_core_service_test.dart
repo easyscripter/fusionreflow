@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -46,14 +47,72 @@ void main() {
   tearDown(RustLib.dispose);
 
   test('RustCoreService.hyphenate calls the bridge with the text', () {
-    const service = RustCoreService();
+    final service = RustCoreService();
 
     expect(service.hyphenate('слово'), 'bridge:слово');
     expect(api.hyphenated, ['слово']);
   });
 
+  test('init is idempotent', () async {
+    final service = RustCoreService();
+
+    await service.init();
+    await service.init();
+  });
+
+  group('init without a loaded bridge', () {
+    setUp(RustLib.dispose);
+
+    test('parallel calls load the bridge once', () async {
+      final loads = <Completer<void>>[];
+      final service = RustCoreService(
+        load: () {
+          loads.add(Completer<void>());
+          return loads.last.future;
+        },
+      );
+
+      final first = service.init();
+      final second = service.init();
+      expect(loads, hasLength(1));
+      loads.single.complete();
+      await Future.wait([first, second]);
+    });
+
+    test('a failed load can be retried', () async {
+      var calls = 0;
+      final service = RustCoreService(
+        load: () async {
+          if (++calls == 1) throw Exception('boom');
+        },
+      );
+
+      await expectLater(service.init(), throwsException);
+      await service.init();
+
+      expect(calls, 2);
+    });
+
+    test('retry while the first load hangs joins it', () async {
+      final hang = Completer<void>();
+      var calls = 0;
+      final service = RustCoreService(
+        load: () {
+          calls++;
+          return hang.future;
+        },
+      );
+
+      unawaited(service.init());
+      unawaited(service.init());
+
+      expect(calls, 1);
+      hang.complete();
+    });
+  });
+
   test('bookMeta delegates to bridge', () async {
-    const service = RustCoreService();
+    final service = RustCoreService();
     final bytes = Uint8List.fromList([1, 2]);
 
     expect(await service.bookMeta(bytes), _meta);

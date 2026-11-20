@@ -25,4 +25,25 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get spikeOpenButton => 'Проверка переноса (debug)';
+
+  @override
+  String get navLibrary => 'Библиотека';
+
+  @override
+  String get navBookmarks => 'Закладки';
+
+  @override
+  String get navSettings => 'Настройки';
+
+  @override
+  String get sectionComingSoon => 'Раздел появится позже';
+
+  @override
+  String get startupErrorTitle => 'Не удалось запустить приложение';
+
+  @override
+  String get startupErrorMessage => 'Попробуйте ещё раз. Ваши книги на месте.';
+
+  @override
+  String get startupRetry => 'Повторить';
 }

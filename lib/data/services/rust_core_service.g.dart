@@ -53,4 +53,4 @@ final class RustCoreServiceProvider
   }
 }
 
-String _$rustCoreServiceHash() => r'a61fc2ab9ad895147fd027d1fbbc8d285bbc616b';
+String _$rustCoreServiceHash() => r'8567443fe7fc1249476010891162f7bc4a285dae';

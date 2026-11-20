@@ -4,5 +4,12 @@
   "spikeHyphenTitle": "Проверка мягкого переноса",
   "spikeWidthLabel": "Ширина: {width} px",
   "spikeJustify": "Выравнивание по ширине",
-  "spikeOpenButton": "Проверка переноса (debug)"
+  "spikeOpenButton": "Проверка переноса (debug)",
+  "navLibrary": "Библиотека",
+  "navBookmarks": "Закладки",
+  "navSettings": "Настройки",
+  "sectionComingSoon": "Раздел появится позже",
+  "startupErrorTitle": "Не удалось запустить приложение",
+  "startupErrorMessage": "Попробуйте ещё раз. Ваши книги на месте.",
+  "startupRetry": "Повторить"
 }

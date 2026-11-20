@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:fusionreflow/src/rust/api/book.dart' as rust_book;
 import 'package:fusionreflow/src/rust/api/text.dart' as rust_text;
+import 'package:fusionreflow/src/rust/frb_generated.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'rust_core_service.g.dart';
@@ -11,8 +12,23 @@ part 'rust_core_service.g.dart';
 /// The only place in the app that talks to the generated bridge code
 /// (`lib/src/rust/**`); repositories depend on this service instead.
 class RustCoreService {
-  /// Creates the service.
-  const new();
+  /// Creates the service; `_load` loads the native library (injectable for
+  /// tests).
+  new({this._load = RustLib.init});
+
+  final Future<void> Function() _load;
+  Future<void>? _loading;
+
+  /// Loads the native library; safe to call again (retry after a failed or
+  /// timed-out start, tests that already initialised the bridge). Concurrent
+  /// calls share one load, so the bridge is never initialised twice.
+  Future<void> init() {
+    if (RustLib.instance.initialized) return Future.value();
+    return _loading ??= _load().catchError((Object error, StackTrace stack) {
+      _loading = null; // let the next call retry
+      Error.throwWithStackTrace(error, stack);
+    });
+  }
 
   /// Inserts soft hyphens (U+00AD) at allowed break points of ru/en words.
   String hyphenate(String text) => rust_text.hyphenate(text: text);
@@ -27,4 +43,4 @@ class RustCoreService {
 
 /// Provides the [RustCoreService].
 @Riverpod(keepAlive: true)
-RustCoreService rustCoreService(Ref ref) => const RustCoreService();
+RustCoreService rustCoreService(Ref ref) => RustCoreService();

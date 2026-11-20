@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Значок сплеша Android 12+: система обрезает его кругом в 2/3 размера,
+     поэтому знак уменьшен теми же полями, что в иконке лаунчера
+     (adaptive_icon_foreground_inset в flutter_launcher_icons.yaml). -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_launcher_foreground"
+    android:inset="26%" />
