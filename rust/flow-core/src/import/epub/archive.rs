@@ -195,12 +195,9 @@ mod tests {
             },
         )
         .expect("open");
-        match a.read("a") {
-            Ok(data) => assert!(data.len() <= 100, "read {} bytes", data.len()),
-            Err(e) => assert!(matches!(
-                e,
-                ArchiveError::EntryTooLarge | ArchiveError::Damaged(_)
-            )),
-        }
+        // The outcome is deterministic: the `zip` crate itself stops at the declared
+        // size and reports `Damaged`. So this pins the `zip` guard; our own `take`
+        // is covered by the `entry`/`total` limit tests above.
+        assert!(matches!(a.read("a"), Err(ArchiveError::Damaged(_))));
     }
 }

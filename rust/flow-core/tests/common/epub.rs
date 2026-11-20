@@ -1,6 +1,7 @@
 //! Builds EPUB archives for tests: from fixture folders or from in-memory files.
+use flow_core::codec::{decode, encode};
 use flow_core::import::{CancelToken, Converter, EpubConverter, ImportError, Progress, SourceKind};
-use flow_core::model::Book;
+use flow_core::model::{Block, Book, Inline};
 use std::io::{Cursor, Write};
 use std::path::{Path, PathBuf};
 use zip::write::SimpleFileOptions;
@@ -136,4 +137,77 @@ pub fn convert_events(
     on: &mut dyn FnMut(Progress),
 ) -> Result<Book, ImportError> {
     EpubConverter.convert(&mut Cursor::new(bytes), SourceKind::Epub, on, cancel)
+}
+
+pub fn plain(inl: &[Inline]) -> String {
+    inl.iter()
+        .map(|i| match i {
+            Inline::Text { text, .. } => text.replace('\u{ad}', ""),
+            Inline::Link { inlines, .. } => plain(inlines),
+            Inline::NoteRef { label, .. } => format!("[{label}]"),
+            Inline::Image { .. } => "<img>".into(),
+        })
+        .collect()
+}
+
+pub fn text_of(b: &Block) -> String {
+    match b {
+        Block::Heading { inlines, .. }
+        | Block::Paragraph { inlines }
+        | Block::ListItem { inlines, .. } => plain(inlines),
+        _ => String::new(),
+    }
+}
+
+pub fn paras(b: &Book) -> Vec<String> {
+    b.blocks
+        .iter()
+        .filter(|n| matches!(n.block, Block::Paragraph { .. }))
+        .map(|n| text_of(&n.block))
+        .collect()
+}
+
+pub fn find(b: &Book, f: impl Fn(&Block) -> bool) -> (usize, &Block) {
+    b.blocks
+        .iter()
+        .enumerate()
+        .find(|(_, n)| f(&n.block))
+        .map(|(i, n)| (i, &n.block))
+        .expect("block not found")
+}
+
+pub fn para_with<'a>(b: &'a Book, needle: &str) -> (usize, &'a [Inline]) {
+    let (i, bl) = find(b, |bl| {
+        matches!(bl, Block::Paragraph { .. }) && text_of(bl).contains(needle)
+    });
+    match bl {
+        Block::Paragraph { inlines } => (i, inlines),
+        _ => unreachable!(),
+    }
+}
+
+pub fn one(body: &str) -> Book {
+    convert(epub_with("de", &[body], &[])).expect("convert")
+}
+
+pub fn corrupted(r: Result<Book, ImportError>, text: &str) {
+    match r {
+        Err(ImportError::Corrupted(m)) => assert!(m.starts_with(text), "got: {m}"),
+        other => panic!("expected Corrupted({text}), got {other:?}"),
+    }
+}
+
+pub fn content() -> Book {
+    convert(pack("epub3-content")).expect("convert")
+}
+
+pub fn norm(s: &str) -> String {
+    s.replace('\u{ad}', "")
+}
+
+// ---- general -------------------------------------------------------------
+
+/// Asserts that a book survives the CBOR codec unchanged.
+pub fn roundtrips(b: &Book) {
+    assert_eq!(&decode(&encode(b).expect("encode")).expect("decode"), b);
 }
