@@ -19,11 +19,16 @@ abstract interface class BookRepository {
   /// Live books, newest first (by `addedAt`).
   Stream<List<BookEntry>> watchAll();
 
-  /// Stores a CBOR-encoded book. The same book (by source hash) is returned,
-  /// not duplicated; a previously deleted one comes back with the same id.
+  /// Live book [id]; emits null when it is missing or deleted.
+  Stream<BookEntry?> watch(String id);
+
+  /// Stores a CBOR-encoded book. [sourceSize] is the source file size, if
+  /// known. The same live book (by source hash) is returned unchanged; a
+  /// deleted one is revived with the same id and fresh metadata (title,
+  /// description, sourceSize …) and progress.
   ///
   /// Throws [BookFormatException] if [bytes] are not a readable book.
-  Future<BookEntry> add(Uint8List bytes, BookFormat format);
+  Future<BookEntry> add(Uint8List bytes, BookFormat format, {int? sourceSize});
 
   /// CBOR bytes of book [id]; throws [BookNotFoundException] if it is not live.
   Future<Uint8List> load(String id);
@@ -95,7 +100,19 @@ class LocalBookRepository implements BookRepository {
   }
 
   @override
-  Future<BookEntry> add(Uint8List bytes, BookFormat format) async {
+  Stream<BookEntry?> watch(String id) async* {
+    await _ready();
+    yield* (_live()..where((b) => b.id.equals(id))).watchSingleOrNull().map(
+      (row) => row == null ? null : _entry(row),
+    );
+  }
+
+  @override
+  Future<BookEntry> add(
+    Uint8List bytes,
+    BookFormat format, {
+    int? sourceSize,
+  }) async {
     await _ready();
     // shortcut: any bridge error counts as bad bytes (a Rust panic too);
     // narrow to FormatError if the bridge starts failing for other reasons.
@@ -109,11 +126,15 @@ class LocalBookRepository implements BookRepository {
 
     final now = _clock();
     final id = existing?.id ?? _uuid.v4();
+    // A negative size is a broken answer of the file provider.
+    final size = sourceSize != null && sourceSize >= 0 ? sourceSize : null;
     final values = BooksCompanion(
       id: Value(id),
       title: Value(meta.title),
       authors: Value(meta.authors),
       language: Value(meta.language),
+      description: Value(meta.description),
+      sourceSize: Value(size),
       format: Value(format),
       sourceHash: Value(meta.sourceHash),
       converterVersion: Value(meta.converterVersion),
@@ -151,6 +172,8 @@ class LocalBookRepository implements BookRepository {
       title: meta.title,
       authors: meta.authors,
       language: meta.language,
+      description: meta.description,
+      sourceSize: size,
       format: format,
       sourceHash: meta.sourceHash,
       converterVersion: meta.converterVersion,
@@ -222,6 +245,8 @@ class LocalBookRepository implements BookRepository {
     title: row.title,
     authors: row.authors,
     language: row.language,
+    description: row.description,
+    sourceSize: row.sourceSize,
     format: row.format,
     sourceHash: row.sourceHash,
     converterVersion: row.converterVersion,

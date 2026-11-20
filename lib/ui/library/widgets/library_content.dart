@@ -4,6 +4,7 @@ import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
 import 'package:fusionreflow/ui/import/view_models/import_state.dart';
 import 'package:fusionreflow/ui/library/view_models/library_state.dart';
 import 'package:fusionreflow/ui/library/view_models/library_view_model.dart';
+import 'package:fusionreflow/ui/library/widgets/book_actions_flow.dart';
 import 'package:fusionreflow/ui/library/widgets/book_grid.dart';
 import 'package:fusionreflow/ui/library/widgets/continue_reading_card.dart';
 import 'package:fusionreflow/ui/library/widgets/library_sort_bar.dart';
@@ -24,7 +25,12 @@ class LibraryContent extends ConsumerWidget {
         if (hero != null)
           SliverPadding(
             padding: side.copyWith(top: AppSpacing.s16),
-            sliver: SliverToBoxAdapter(child: ContinueReadingCard(book: hero)),
+            sliver: SliverToBoxAdapter(
+              child: ContinueReadingCard(
+                book: hero,
+                onLongPress: () => showBookActions(context, ref, hero),
+              ),
+            ),
           ),
         SliverPadding(
           padding: side.copyWith(top: AppSpacing.s16),
@@ -38,7 +44,11 @@ class LibraryContent extends ConsumerWidget {
             ),
           ),
         ),
-        BookGrid(books: state.books, importing: importing),
+        BookGrid(
+          books: state.books,
+          importing: importing,
+          onBookLongPress: (book) => showBookActions(context, ref, book),
+        ),
       ],
     );
   }

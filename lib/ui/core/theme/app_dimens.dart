@@ -33,4 +33,7 @@ abstract final class AppSizes {
   static const double dragHandleHeight = 4;
   static const double dividerThickness = 1;
   static const double chipLabelHeight = 16;
+
+  /// Ширина колонки карточки книги на планшете.
+  static const double detailsMaxWidth = 600;
 }

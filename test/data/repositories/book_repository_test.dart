@@ -69,11 +69,12 @@ void main() {
   late BookFileService files;
   late DateTime now;
   late LocalBookRepository repo;
+  late FakeRustCoreService rust;
 
   LocalBookRepository makeRepo(AppDatabase database) => LocalBookRepository(
     database: database,
     files: files,
-    rust: FakeRustCoreService(),
+    rust: rust,
     clock: () => now,
   );
 
@@ -82,6 +83,7 @@ void main() {
     files = BookFileService(() async => dir);
     now = DateTime(2026, 11, 12, 10);
     failing = _FailingInsert();
+    rust = FakeRustCoreService();
     db = AppDatabase(NativeDatabase.memory().interceptWith(failing));
     repo = makeRepo(db);
   });
@@ -112,6 +114,74 @@ void main() {
     );
     expect(await repo.load(entry.id), [1]);
     expect(await files.ids(), [entry.id]);
+  });
+
+  test('add stores description and size', () async {
+    rust.descriptions[1] = 'D';
+
+    final entry = await repo.add(_b(1), BookFormat.epub, sourceSize: 42);
+
+    expect(entry.description, 'D');
+    expect(entry.sourceSize, 42);
+    final stored = await repo.watch(entry.id).first;
+    expect(stored?.description, 'D');
+    expect(stored?.sourceSize, 42);
+  });
+
+  test('add without size stores null', () async {
+    final entry = await repo.add(_b(1), BookFormat.epub);
+
+    expect(entry.sourceSize, isNull);
+    expect(entry.description, isNull);
+  });
+
+  test('negative size stores null', () async {
+    final entry = await repo.add(_b(1), BookFormat.epub, sourceSize: -1);
+
+    expect(entry.sourceSize, isNull);
+    expect((await repo.watch(entry.id).first)?.sourceSize, isNull);
+  });
+
+  test('revived book gets fresh metadata', () async {
+    rust.descriptions[1] = 'A';
+    final first = await repo.add(_b(1), BookFormat.epub, sourceSize: 1);
+    await repo.delete(first.id);
+    rust.descriptions[1] = 'B';
+
+    final second = await repo.add(_b(1), BookFormat.epub, sourceSize: 2);
+
+    expect(second.id, first.id);
+    expect(second.description, 'B');
+    expect(second.sourceSize, 2);
+    final stored = await repo.watch(first.id).first;
+    expect(stored?.description, 'B');
+    expect(stored?.sourceSize, 2);
+  });
+
+  test('live duplicate is returned unchanged', () async {
+    rust.descriptions[1] = 'A';
+    await repo.add(_b(1), BookFormat.epub, sourceSize: 1);
+    rust.descriptions[1] = 'B';
+
+    final second = await repo.add(_b(1), BookFormat.epub, sourceSize: 2);
+
+    expect(second.description, 'A');
+    expect(second.sourceSize, 1);
+  });
+
+  test('watch emits book then null after delete', () async {
+    final entry = await repo.add(_b(1), BookFormat.epub);
+
+    final emitted = <BookEntry?>[];
+    final sub = repo.watch(entry.id).listen(emitted.add);
+    await pumpEventQueue();
+    await repo.delete(entry.id);
+    await pumpEventQueue();
+    await sub.cancel();
+
+    expect(emitted.first?.id, entry.id);
+    expect(emitted.last, isNull);
+    expect(await repo.watch('unknown').first, isNull);
   });
 
   test('add same hash returns existing', () async {

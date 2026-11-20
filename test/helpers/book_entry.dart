@@ -13,6 +13,9 @@ BookEntry bookEntry({
   ReadingPosition position = ReadingPosition.start,
   double progress = 0,
   DateTime? lastReadAt,
+  String? language,
+  String? description,
+  int? sourceSize,
 }) => BookEntry(
   id: id,
   title: title,
@@ -24,4 +27,7 @@ BookEntry bookEntry({
   position: position,
   progress: progress,
   lastReadAt: lastReadAt,
+  language: language,
+  description: description,
+  sourceSize: sourceSize,
 );

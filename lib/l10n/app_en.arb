@@ -132,5 +132,127 @@
   "importSheetTitle": "Add a book",
   "importSheetFormats": "EPUB, FB2, FB2.ZIP",
   "importSheetNote": "The book is stored in the app; the original file isn't needed after adding.",
-  "importPickFailed": "Couldn’t open the file picker"
+  "importPickFailed": "Couldn’t open the file picker",
+  "bookActionsTitle": "Book actions",
+  "@bookActionsTitle": {
+    "description": "Semantics label of the book actions dialog."
+  },
+  "bookActionDetails": "Book info",
+  "@bookActionDetails": {
+    "description": "Book actions and details screen text."
+  },
+  "bookActionDelete": "Delete book",
+  "@bookActionDelete": {
+    "description": "Book actions and details screen text."
+  },
+  "bookActionClose": "Close",
+  "@bookActionClose": {
+    "description": "Book actions and details screen text."
+  },
+  "bookDeleteTitle": "Delete the book?",
+  "@bookDeleteTitle": {
+    "description": "Book actions and details screen text."
+  },
+  "bookDeleteMessage": "“{title}” will be removed from the library along with reading progress. The original file on your phone stays unchanged.",
+  "@bookDeleteMessage": {
+    "description": "Delete confirmation text.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "bookDeleteCancel": "Cancel",
+  "@bookDeleteCancel": {
+    "description": "Book actions and details screen text."
+  },
+  "bookDeleteConfirm": "Delete",
+  "@bookDeleteConfirm": {
+    "description": "Book actions and details screen text."
+  },
+  "bookDeleted": "Book deleted",
+  "@bookDeleted": {
+    "description": "Book actions and details screen text."
+  },
+  "bookDeleteFailed": "Couldn’t delete the book",
+  "@bookDeleteFailed": {
+    "description": "Book actions and details screen text."
+  },
+  "bookBack": "Back",
+  "@bookBack": {
+    "description": "Semantics label of the back button on the book card."
+  },
+  "bookNoAuthor": "Author unknown",
+  "@bookNoAuthor": {
+    "description": "Book actions and details screen text."
+  },
+  "bookNotStarted": "Not started",
+  "@bookNotStarted": {
+    "description": "Book actions and details screen text."
+  },
+  "bookReadPercent": "{percent}% read",
+  "@bookReadPercent": {
+    "description": "Reading progress label on the book card.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "bookFinished": "Finished",
+  "@bookFinished": {
+    "description": "Book actions and details screen text."
+  },
+  "bookStartReading": "Start reading",
+  "@bookStartReading": {
+    "description": "Book actions and details screen text."
+  },
+  "bookContinueReading": "Continue reading",
+  "@bookContinueReading": {
+    "description": "Book actions and details screen text."
+  },
+  "bookAbout": "About this book",
+  "@bookAbout": {
+    "description": "Book actions and details screen text."
+  },
+  "bookReadMore": "Read more",
+  "@bookReadMore": {
+    "description": "Book actions and details screen text."
+  },
+  "bookNoDescription": "The file has no description.",
+  "@bookNoDescription": {
+    "description": "Book actions and details screen text."
+  },
+  "bookDescriptionNote": "Taken from the file’s metadata and shown as is.",
+  "@bookDescriptionNote": {
+    "description": "Book actions and details screen text."
+  },
+  "bookDescriptionClose": "Close",
+  "@bookDescriptionClose": {
+    "description": "Book actions and details screen text."
+  },
+  "bookDetailsTitle": "Details",
+  "@bookDetailsTitle": {
+    "description": "Book actions and details screen text."
+  },
+  "bookDetailFormat": "Format",
+  "@bookDetailFormat": {
+    "description": "Book actions and details screen text."
+  },
+  "bookDetailSize": "File size",
+  "@bookDetailSize": {
+    "description": "Book actions and details screen text."
+  },
+  "bookDetailLanguage": "Language",
+  "@bookDetailLanguage": {
+    "description": "Book actions and details screen text."
+  },
+  "bookDetailAdded": "Added",
+  "@bookDetailAdded": {
+    "description": "Book actions and details screen text."
+  },
+  "bookLanguageUnknown": "Unknown",
+  "@bookLanguageUnknown": {
+    "description": "Book actions and details screen text."
+  }
 }

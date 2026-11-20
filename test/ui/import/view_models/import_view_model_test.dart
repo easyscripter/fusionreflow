@@ -54,6 +54,19 @@ void main() {
     await pumpEventQueue();
   }
 
+  test('passes source size to add', () async {
+    imports.picked = const ImportSource(
+      uri: 'content://a',
+      name: 'a.epub',
+      format: BookFormat.epub,
+      sizeBytes: 1234,
+    );
+    await start();
+    await send(ImportUpdate.converted(_bytes));
+
+    expect(books.added.single.$3, 1234);
+  });
+
   test('pick cancelled stays idle', () async {
     imports.picked = null;
     await vm().pickAndImport();

@@ -42,6 +42,8 @@ Third-party components:
   pure-Rust dependencies (`flate2`, `zlib-rs` (Zlib), `crc32fast`, `typed-path`,
   `zeroize`, `constant_time_eq` and others): MIT, Apache-2.0, Zlib or
   similarly permissive.
+- **flutter_localized_locales** (language names in the book card): MIT; its
+  data is CLDR via umpirsky/locale-list, MIT.
 - **cargokit** (`rust_builder/`): MIT / Apache-2.0.
 - **flutter_rust_bridge**: MIT / Apache-2.0.
 

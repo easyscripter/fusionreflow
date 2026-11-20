@@ -36,7 +36,7 @@ final class LibraryViewModelProvider
   LibraryViewModel create() => LibraryViewModel();
 }
 
-String _$libraryViewModelHash() => r'cb0b5950feb573530c5a929415e31fdeec6f0999';
+String _$libraryViewModelHash() => r'42d2f9ff07b00b52b59d426c5a32ac28df176317';
 
 /// Книги библиотеки в выбранном порядке и книга для «Продолжить чтение».
 

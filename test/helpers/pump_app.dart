@@ -56,5 +56,10 @@ Future<void> pumpApp(
       child: const FusionReflowApp(),
     ),
   );
+  // The language names (CLDR) load from an asset: real I/O, which the fake
+  // clock of a widget test does not wait for.
+  await tester.runAsync(() => Future<void>.delayed(_assetLoad));
   await tester.pumpAndSettle();
 }
+
+const Duration _assetLoad = Duration(milliseconds: 100);

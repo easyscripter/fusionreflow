@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fusionreflow/domain/models/import_update.dart';
 import 'package:fusionreflow/l10n/app_localizations.dart';
+import 'package:fusionreflow/ui/core/file_size_label.dart';
 import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
 import 'package:fusionreflow/ui/import/view_models/import_state.dart';
 import 'package:fusionreflow/ui/import/view_models/import_view_model.dart';
@@ -15,7 +16,6 @@ class ImportMessageDialog extends ConsumerWidget {
   final ImportFailedState state;
 
   static const double _dialogWidth = 420;
-  static const double _bytesInMb = 1048576;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -85,7 +85,7 @@ class ImportMessageDialog extends ConsumerWidget {
     final pdfNote = state.failure == ImportFailure.pdfNotYet
         ? (size == null
               ? l10n.importPdfLaterFileNoSize
-              : l10n.importPdfLaterFile(l10n.fileSizeMb(size / _bytesInMb)))
+              : l10n.importPdfLaterFile(fileSizeLabel(l10n, size)))
         : null;
 
     final content = SafeArea(

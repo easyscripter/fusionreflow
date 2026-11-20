@@ -10,9 +10,17 @@ import 'package:fusionreflow/ui/library/widgets/book_card.dart';
 /// Ленивая сетка книг (sliver); при импорте первой идёт карточка конвертации.
 class BookGrid extends StatelessWidget {
   /// Creates the grid.
-  const new({required this.books, this.importing, super.key});
+  const new({
+    required this.books,
+    this.importing,
+    this.onBookLongPress,
+    super.key,
+  });
 
   final List<BookEntry> books;
+
+  /// Долгое нажатие на книгу; на карточке импорта ничего не делает.
+  final void Function(BookEntry book)? onBookLongPress;
   final ImportRunning? importing;
 
   /// Ширина колонки не меньше этого значения, dp.
@@ -50,7 +58,13 @@ class BookGrid extends StatelessWidget {
               if (running != null && i == 0) {
                 return ImportingBookCard(state: running);
               }
-              return BookCard(book: books[i - extra]);
+              final book = books[i - extra];
+              return BookCard(
+                book: book,
+                onLongPress: onBookLongPress == null
+                    ? null
+                    : () => onBookLongPress!(book),
+              );
             },
           ),
         );

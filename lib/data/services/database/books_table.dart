@@ -16,7 +16,7 @@ class StringListConverter extends TypeConverter<List<String>, String> {
   String toSql(List<String> value) => jsonEncode(value);
 }
 
-/// Library catalog (schema v1). Rows are soft-deleted via `deletedAt`.
+/// Library catalog (schema v2). Rows are soft-deleted via `deletedAt`.
 @DataClassName('BookRow')
 class Books extends Table {
   /// UUID v4.
@@ -57,6 +57,13 @@ class Books extends Table {
 
   /// Read share, `0.0..1.0`.
   RealColumn get progress => real().withDefault(const Constant(0))();
+
+  /// Plain-text annotation from the book; null — none or added before v2.
+  TextColumn get description => text().nullable()();
+
+  /// Size of the source file in bytes as reported by the file picker; null —
+  /// unknown.
+  IntColumn get sourceSize => integer().nullable()();
 
   /// Soft deletion time.
   DateTimeColumn get deletedAt => dateTime().nullable()();

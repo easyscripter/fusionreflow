@@ -11,6 +11,10 @@ abstract final class AppIcons {
   static const chevronDown = 'assets/icons/chevron_down.svg';
   static const chevronRight = 'assets/icons/chevron_right.svg';
   static const description = 'assets/icons/description.svg';
+  static const info = 'assets/icons/info.svg';
+  static const delete = 'assets/icons/delete.svg';
+  static const chevronLeft = 'assets/icons/chevron_left.svg';
+  static const close = 'assets/icons/close.svg';
 
   /// Иллюстрация пустой библиотеки (viewBox 128×112, не квадратная).
   static const libraryEmpty = 'assets/icons/library_empty.svg';
@@ -24,6 +28,10 @@ abstract final class AppIcons {
     chevronDown,
     chevronRight,
     description,
+    info,
+    delete,
+    chevronLeft,
+    close,
     libraryEmpty,
   ];
 }
