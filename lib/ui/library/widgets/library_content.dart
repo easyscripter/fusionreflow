@@ -32,7 +32,9 @@ class LibraryContent extends ConsumerWidget {
             child: LibrarySortBar(
               sort: state.sort,
               totalCount: state.totalCount,
-              onChanged: ref.read(libraryViewModelProvider.notifier).setSort,
+              // Нотификатор берём в момент тапа, а не при сборке виджета.
+              onChanged: (sort) =>
+                  ref.read(libraryViewModelProvider.notifier).setSort(sort),
             ),
           ),
         ),
