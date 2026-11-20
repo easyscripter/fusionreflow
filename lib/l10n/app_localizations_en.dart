@@ -230,7 +230,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importSheetNote =>
-      'Files stay where they are; the app remembers links to them. You can keep copies in settings.';
+      'The book is stored in the app; the original file isn\'t needed after adding.';
 
   @override
   String get importPickFailed => 'Couldn’t open the file picker';

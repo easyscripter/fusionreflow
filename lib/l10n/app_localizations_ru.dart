@@ -232,7 +232,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get importSheetNote =>
-      'Файлы остаются на месте, приложение запоминает ссылки на них. Сохранять копии можно в настройках.';
+      'Книга сохраняется в приложении, исходный файл после добавления не нужен.';
 
   @override
   String get importPickFailed => 'Не удалось открыть выбор файла';

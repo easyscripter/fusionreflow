@@ -473,7 +473,7 @@ abstract class AppLocalizations {
   /// No description provided for @importSheetNote.
   ///
   /// In en, this message translates to:
-  /// **'Files stay where they are; the app remembers links to them. You can keep copies in settings.'**
+  /// **'The book is stored in the app; the original file isn\'t needed after adding.'**
   String get importSheetNote;
 
   /// No description provided for @importPickFailed.

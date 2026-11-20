@@ -77,8 +77,8 @@ void main() {
     await tester.pumpAndSettle();
 
     final note = find.text(
-      'Файлы остаются на месте, приложение запоминает ссылки на них. '
-      'Сохранять копии можно в настройках.',
+      'Книга сохраняется в приложении, '
+      'исходный файл после добавления не нужен.',
     );
     expect(note, findsOneWidget);
     expect(tester.widget<Text>(note).style?.fontSize, 12.5);

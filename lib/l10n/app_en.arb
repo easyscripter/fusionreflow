@@ -131,6 +131,6 @@
   "readerBookNotFound": "Book not found",
   "importSheetTitle": "Add a book",
   "importSheetFormats": "EPUB, FB2, FB2.ZIP",
-  "importSheetNote": "Files stay where they are; the app remembers links to them. You can keep copies in settings.",
+  "importSheetNote": "The book is stored in the app; the original file isn't needed after adding.",
   "importPickFailed": "Couldn’t open the file picker"
 }
