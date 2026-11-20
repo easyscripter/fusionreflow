@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fusionreflow/config/app_constants.dart';
 import 'package:fusionreflow/config/app_startup.dart';
 import 'package:fusionreflow/data/services/rust_core_service.dart';
 import 'package:fusionreflow/l10n/app_localizations.dart';
