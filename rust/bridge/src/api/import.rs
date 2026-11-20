@@ -244,6 +244,7 @@ mod tests {
                     authors: vec![],
                     language: None,
                     cover: None,
+                    description: None,
                 },
                 toc: vec![],
                 blocks: vec![],

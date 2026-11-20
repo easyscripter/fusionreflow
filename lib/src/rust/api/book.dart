@@ -19,6 +19,9 @@ class BookMeta {
   final String title;
   final List<String> authors;
   final String? language;
+
+  /// Plain-text annotation, paragraphs separated by "\n\n".
+  final String? description;
   final String sourceHash;
   final String converterVersion;
 
@@ -26,6 +29,7 @@ class BookMeta {
     required this.title,
     required this.authors,
     this.language,
+    this.description,
     required this.sourceHash,
     required this.converterVersion,
   });
@@ -35,6 +39,7 @@ class BookMeta {
       title.hashCode ^
       authors.hashCode ^
       language.hashCode ^
+      description.hashCode ^
       sourceHash.hashCode ^
       converterVersion.hashCode;
 
@@ -46,6 +51,7 @@ class BookMeta {
           title == other.title &&
           authors == other.authors &&
           language == other.language &&
+          description == other.description &&
           sourceHash == other.sourceHash &&
           converterVersion == other.converterVersion;
 }

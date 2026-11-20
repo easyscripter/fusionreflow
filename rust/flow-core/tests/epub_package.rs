@@ -239,3 +239,40 @@ fn manifest_media_type_of_shared_file_is_deterministic() {
         assert_eq!(b.resources[0].mime, "image/png");
     }
 }
+
+/// A one-chapter EPUB whose OPF metadata block contains `meta` after the title.
+fn epub_with_meta(meta: &str) -> Vec<u8> {
+    let opf = format!(
+        r#"<?xml version="1.0"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>T</dc:title>{meta}</metadata><manifest><item id="c0" href="c0.xhtml" media-type="application/xhtml+xml"/></manifest><spine><itemref idref="c0"/></spine></package>"#
+    );
+    let chapter = xhtml("<p>x</p>");
+    pack_files(&[
+        ("META-INF/container.xml", CONTAINER.as_bytes()),
+        ("OEBPS/content.opf", opf.as_bytes()),
+        ("OEBPS/c0.xhtml", chapter.as_bytes()),
+    ])
+}
+
+#[test]
+fn reads_description() {
+    let b = convert(epub_with_meta(
+        "<dc:description>&lt;p&gt;X&lt;/p&gt;</dc:description>",
+    ))
+    .expect("convert");
+    assert_eq!(b.meta.description.as_deref(), Some("X"));
+}
+
+#[test]
+fn first_description_wins() {
+    let b = convert(epub_with_meta(
+        "<dc:description>one</dc:description><dc:description>two</dc:description>",
+    ))
+    .expect("convert");
+    assert_eq!(b.meta.description.as_deref(), Some("one"));
+}
+
+#[test]
+fn no_description_is_none() {
+    let b = convert(epub_with_meta("")).expect("convert");
+    assert_eq!(b.meta.description, None);
+}

@@ -36,6 +36,7 @@ fn book_meta_on_50mb_book() {
             authors: vec![],
             language: None,
             cover: None,
+            description: None,
         },
         toc: vec![],
         blocks,

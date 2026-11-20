@@ -5,6 +5,7 @@
 //! (progress + cancel between chapters), then resolve links, contents and
 //! hyphenation in a second pass.
 mod archive;
+mod description;
 mod draft;
 mod entities;
 mod package;
@@ -342,6 +343,7 @@ impl EpubConverter {
                 authors: pkg.authors,
                 language,
                 cover,
+                description: pkg.description,
             },
             toc: resolved.toc,
             blocks: resolved.blocks,

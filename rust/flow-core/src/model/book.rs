@@ -34,6 +34,9 @@ pub struct Meta {
     pub language: Option<String>,
     /// Cover image, if any.
     pub cover: Option<ResourceId>,
+    /// Plain-text annotation from the source metadata; paragraphs separated by "\n\n".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
 }
 
 /// One entry of the table of contents.
