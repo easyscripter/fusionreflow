@@ -475,6 +475,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Files stay where they are; the app remembers links to them. You can keep copies in settings.'**
   String get importSheetNote;
+
+  /// No description provided for @importPickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t open the file picker'**
+  String get importPickFailed;
 }
 
 class _AppLocalizationsDelegate

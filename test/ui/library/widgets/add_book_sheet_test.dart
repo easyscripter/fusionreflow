@@ -42,7 +42,10 @@ void main() {
 
     await tester.tap(find.byKey(const Key('add_book')));
     await tester.pumpAndSettle();
-    await tester.tapAt(const Offset(195, 60));
+    // A tap on the scrim, just inside its top-left corner.
+    await tester.tapAt(
+      tester.getTopLeft(find.byType(ModalBarrier).last) + const Offset(10, 10),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(AddBookSheet), findsNothing);
@@ -56,7 +59,10 @@ void main() {
     await tester.tap(find.byKey(const Key('add_book')));
     await tester.pumpAndSettle();
 
-    expect(tester.getRect(find.byType(AddBookSheet)).bottom, 844);
+    expect(
+      tester.getRect(find.byType(AddBookSheet)).bottom,
+      tester.getSize(find.byType(MaterialApp)).height,
+    );
     // The tap lands on the scrim, not on the bar: no navigation happens.
     await tester.tap(find.text('Закладки'), warnIfMissed: false);
     await tester.pumpAndSettle();
@@ -76,5 +82,38 @@ void main() {
     );
     expect(note, findsOneWidget);
     expect(tester.widget<Text>(note).style?.fontSize, 12.5);
+  });
+
+  testWidgets('sheet works at 200% font and has semantics roles', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final h = await pumpLibrary(tester, picked: null);
+
+    await tester.tap(find.byKey(const Key('add_book')));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(
+      tester.getSemantics(find.text('Добавить книгу').last),
+      matchesSemantics(label: 'Добавить книгу', isHeader: true),
+    );
+    expect(
+      tester.getSemantics(find.byKey(const Key('pick_file'))),
+      matchesSemantics(
+        hasTapAction: true,
+        isButton: true,
+        isFocusable: true,
+        hasFocusAction: true,
+        label: 'Выбрать файл\nEPUB, FB2, FB2.ZIP',
+      ),
+    );
+    await tester.ensureVisible(find.byKey(const Key('pick_file')));
+    await tester.tap(find.byKey(const Key('pick_file')));
+    await tester.pumpAndSettle();
+    expect(h.imports.pickCalls, 1);
+    semantics.dispose();
   });
 }

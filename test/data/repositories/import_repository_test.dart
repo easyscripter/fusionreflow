@@ -53,6 +53,14 @@ void main() {
     );
   });
 
+  test('picker busy means no file, other picker errors propagate', () async {
+    picker.pickError = PlatformException(code: 'busy');
+    expect(await repo.pick(), isNull);
+
+    picker.pickError = PlatformException(code: 'pick_failed');
+    await expectLater(repo.pick(), throwsA(isA<PlatformException>()));
+  });
+
   test('unknown format fails without bridge', () async {
     final updates = await repo
         .convert(const ImportSource(uri: 'u', name: 'a.docx'))

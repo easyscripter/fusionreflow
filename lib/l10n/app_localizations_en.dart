@@ -231,4 +231,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get importSheetNote =>
       'Files stay where they are; the app remembers links to them. You can keep copies in settings.';
+
+  @override
+  String get importPickFailed => 'Couldn’t open the file picker';
 }

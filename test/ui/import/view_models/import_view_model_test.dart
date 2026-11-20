@@ -218,9 +218,12 @@ void main() {
     expect((state() as ImportFailedState).failure, ImportFailure.unreadable);
   });
 
-  test('pick error returns to idle and allows another try', () async {
-    imports.pickError = PlatformException(code: 'busy');
+  test('pick error is reported, then another try works', () async {
+    imports.pickError = PlatformException(code: 'pick_failed');
     await vm().pickAndImport();
+    expect(state(), const ImportState.pickFailed());
+
+    vm().dismiss();
     expect(state(), const ImportState.idle());
 
     imports.pickError = null;

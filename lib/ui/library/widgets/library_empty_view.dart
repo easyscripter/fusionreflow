@@ -12,6 +12,14 @@ class LibraryEmptyView extends StatelessWidget {
   static const double _artHeight = 120;
   static const double _gap = 12;
   static const double _textMaxWidth = 290;
+  static const double _sideInset = 36;
+  static const double _bottomInset = 72;
+  static const double _extraTop = 8;
+  static const double _titleSize = 21;
+  static const FontWeight _titleWeight = FontWeight(650);
+  static const double _titleSpacing = -0.21;
+  static const double _hintSize = 13;
+  static const double _formatsSize = 12.5;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +29,12 @@ class LibraryEmptyView extends StatelessWidget {
     final body = theme.textTheme.bodyLarge?.copyWith(color: muted);
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(36, 0, 36, 72),
+        padding: const EdgeInsets.fromLTRB(
+          _sideInset,
+          0,
+          _sideInset,
+          _bottomInset,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -34,14 +47,14 @@ class LibraryEmptyView extends StatelessWidget {
                 colorFilter: ColorFilter.mode(muted, BlendMode.srcIn),
               ),
             ),
-            const SizedBox(height: _gap + 8),
+            const SizedBox(height: _gap + _extraTop),
             Text(
               l10n.libraryEmptyTitle,
               textAlign: TextAlign.center,
               style: theme.textTheme.titleLarge?.copyWith(
-                fontSize: 21,
-                fontWeight: const FontWeight(650),
-                letterSpacing: -0.21,
+                fontSize: _titleSize,
+                fontWeight: _titleWeight,
+                letterSpacing: _titleSpacing,
               ),
             ),
             const SizedBox(height: _gap),
@@ -53,17 +66,17 @@ class LibraryEmptyView extends StatelessWidget {
                 style: body,
               ),
             ),
-            const SizedBox(height: _gap + 8),
+            const SizedBox(height: _gap + _extraTop),
             Text(
               l10n.libraryEmptyHint,
               textAlign: TextAlign.center,
-              style: body?.copyWith(fontSize: 13),
+              style: body?.copyWith(fontSize: _hintSize),
             ),
             const SizedBox(height: _gap),
             Text(
               l10n.libraryEmptyFormats,
               textAlign: TextAlign.center,
-              style: body?.copyWith(fontSize: 12.5),
+              style: body?.copyWith(fontSize: _formatsSize),
             ),
           ],
         ),

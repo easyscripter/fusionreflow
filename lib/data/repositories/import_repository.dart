@@ -12,7 +12,8 @@ part 'import_repository.g.dart';
 
 /// Выбор файла и конвертация его в книгу.
 abstract interface class ImportRepository {
-  /// Системный выбор файла; null — выбор закрыт без файла.
+  /// Системный выбор файла; null — выбор закрыт без файла (или уже открыт).
+  /// Другие сбои канала выбора пробрасываются.
   Future<ImportSource?> pick();
 
   /// Конвертирует [source]: ноль или больше progress, затем ровно одно
@@ -41,7 +42,14 @@ class BridgeImportRepository implements ImportRepository {
 
   @override
   Future<ImportSource?> pick() async {
-    final file = await _picker.pick();
+    final ({String uri, String name, int? size})? file;
+    try {
+      file = await _picker.pick();
+    } on PlatformException catch (e) {
+      // Выбор уже открыт (двойной тап): это не сбой, ничего не показываем.
+      if (e.code == 'busy') return null;
+      rethrow;
+    }
     if (file == null) return null;
     return ImportSource(
       uri: file.uri,

@@ -1,6 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusionreflow/domain/models/book_format.dart';
 import 'package:fusionreflow/domain/models/import_update.dart';
@@ -169,6 +168,37 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Недавние'), findsOneWidget);
+  });
+
+  testWidgets('sort chip is a button for accessibility', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await pumpLibrary(tester, books: [bookEntry()]);
+
+    expect(
+      tester.getSemantics(find.byKey(const Key('sort_menu'))),
+      matchesSemantics(
+        label: 'Недавние',
+        isButton: true,
+        isFocusable: true,
+        hasTapAction: true,
+        hasFocusAction: true,
+      ),
+    );
+    semantics.dispose();
+  });
+
+  testWidgets('a failing picker shows a snackbar', (tester) async {
+    final h = await pumpLibrary(tester);
+    h.imports.pickError = PlatformException(code: 'pick_failed');
+
+    await tester.tap(find.byKey(const Key('add_book')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('pick_file')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('Не удалось открыть выбор файла'), findsOneWidget);
+    expect(h.imports.pickCalls, 1);
   });
 
   testWidgets('tablet shows sort chips and four columns', (tester) async {

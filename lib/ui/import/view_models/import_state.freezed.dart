@@ -56,13 +56,14 @@ extension ImportStatePatterns on ImportState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ImportIdle value)?  idle,TResult Function( ImportRunning value)?  running,TResult Function( ImportFailedState value)?  failed,TResult Function( ImportAdded value)?  added,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ImportIdle value)?  idle,TResult Function( ImportRunning value)?  running,TResult Function( ImportFailedState value)?  failed,TResult Function( ImportPickFailed value)?  pickFailed,TResult Function( ImportAdded value)?  added,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case ImportIdle() when idle != null:
 return idle(_that);case ImportRunning() when running != null:
 return running(_that);case ImportFailedState() when failed != null:
-return failed(_that);case ImportAdded() when added != null:
+return failed(_that);case ImportPickFailed() when pickFailed != null:
+return pickFailed(_that);case ImportAdded() when added != null:
 return added(_that);case _:
   return orElse();
 
@@ -81,13 +82,14 @@ return added(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ImportIdle value)  idle,required TResult Function( ImportRunning value)  running,required TResult Function( ImportFailedState value)  failed,required TResult Function( ImportAdded value)  added,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ImportIdle value)  idle,required TResult Function( ImportRunning value)  running,required TResult Function( ImportFailedState value)  failed,required TResult Function( ImportPickFailed value)  pickFailed,required TResult Function( ImportAdded value)  added,}){
 final _that = this;
 switch (_that) {
 case ImportIdle():
 return idle(_that);case ImportRunning():
 return running(_that);case ImportFailedState():
-return failed(_that);case ImportAdded():
+return failed(_that);case ImportPickFailed():
+return pickFailed(_that);case ImportAdded():
 return added(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -102,13 +104,14 @@ return added(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ImportIdle value)?  idle,TResult? Function( ImportRunning value)?  running,TResult? Function( ImportFailedState value)?  failed,TResult? Function( ImportAdded value)?  added,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ImportIdle value)?  idle,TResult? Function( ImportRunning value)?  running,TResult? Function( ImportFailedState value)?  failed,TResult? Function( ImportPickFailed value)?  pickFailed,TResult? Function( ImportAdded value)?  added,}){
 final _that = this;
 switch (_that) {
 case ImportIdle() when idle != null:
 return idle(_that);case ImportRunning() when running != null:
 return running(_that);case ImportFailedState() when failed != null:
-return failed(_that);case ImportAdded() when added != null:
+return failed(_that);case ImportPickFailed() when pickFailed != null:
+return pickFailed(_that);case ImportAdded() when added != null:
 return added(_that);case _:
   return null;
 
@@ -126,12 +129,13 @@ return added(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  idle,TResult Function( ImportSource source,  int? done,  int? total)?  running,TResult Function( ImportSource source,  ImportFailure failure)?  failed,TResult Function( String bookId)?  added,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  idle,TResult Function( ImportSource source,  int? done,  int? total)?  running,TResult Function( ImportSource source,  ImportFailure failure)?  failed,TResult Function()?  pickFailed,TResult Function( String bookId)?  added,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case ImportIdle() when idle != null:
 return idle();case ImportRunning() when running != null:
 return running(_that.source,_that.done,_that.total);case ImportFailedState() when failed != null:
-return failed(_that.source,_that.failure);case ImportAdded() when added != null:
+return failed(_that.source,_that.failure);case ImportPickFailed() when pickFailed != null:
+return pickFailed();case ImportAdded() when added != null:
 return added(_that.bookId);case _:
   return orElse();
 
@@ -150,12 +154,13 @@ return added(_that.bookId);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  idle,required TResult Function( ImportSource source,  int? done,  int? total)  running,required TResult Function( ImportSource source,  ImportFailure failure)  failed,required TResult Function( String bookId)  added,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  idle,required TResult Function( ImportSource source,  int? done,  int? total)  running,required TResult Function( ImportSource source,  ImportFailure failure)  failed,required TResult Function()  pickFailed,required TResult Function( String bookId)  added,}) {final _that = this;
 switch (_that) {
 case ImportIdle():
 return idle();case ImportRunning():
 return running(_that.source,_that.done,_that.total);case ImportFailedState():
-return failed(_that.source,_that.failure);case ImportAdded():
+return failed(_that.source,_that.failure);case ImportPickFailed():
+return pickFailed();case ImportAdded():
 return added(_that.bookId);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -170,12 +175,13 @@ return added(_that.bookId);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  idle,TResult? Function( ImportSource source,  int? done,  int? total)?  running,TResult? Function( ImportSource source,  ImportFailure failure)?  failed,TResult? Function( String bookId)?  added,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  idle,TResult? Function( ImportSource source,  int? done,  int? total)?  running,TResult? Function( ImportSource source,  ImportFailure failure)?  failed,TResult? Function()?  pickFailed,TResult? Function( String bookId)?  added,}) {final _that = this;
 switch (_that) {
 case ImportIdle() when idle != null:
 return idle();case ImportRunning() when running != null:
 return running(_that.source,_that.done,_that.total);case ImportFailedState() when failed != null:
-return failed(_that.source,_that.failure);case ImportAdded() when added != null:
+return failed(_that.source,_that.failure);case ImportPickFailed() when pickFailed != null:
+return pickFailed();case ImportAdded() when added != null:
 return added(_that.bookId);case _:
   return null;
 
@@ -375,6 +381,38 @@ $ImportSourceCopyWith<$Res> get source {
   });
 }
 }
+
+/// @nodoc
+
+
+class ImportPickFailed implements ImportState {
+  const ImportPickFailed();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is ImportPickFailed);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+    return 'ImportState.pickFailed()';
+}
+
+
+}
+
+
+
 
 /// @nodoc
 

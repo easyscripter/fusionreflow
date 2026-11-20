@@ -27,9 +27,8 @@ class ImportViewModel extends _$ImportViewModel {
     try {
       source = await ref.read(importRepositoryProvider).pick();
     } on Object {
-      // Сбой канала выбора (в том числе «busy»): остаёмся в idle без карточки,
-      // потому что файла ещё нет.
-      source = null;
+      // Файла ещё нет, карточки результата не будет: сообщаем SnackBar-ом.
+      state = const ImportState.pickFailed();
     } finally {
       _picking = false;
     }
@@ -49,9 +48,11 @@ class ImportViewModel extends _$ImportViewModel {
     if (current is ImportFailedState) await _run(current.source);
   }
 
-  /// `failed` → `idle`.
+  /// `failed` и `pickFailed` → `idle`.
   void dismiss() {
-    if (state is ImportFailedState) state = const ImportState.idle();
+    if (state is ImportFailedState || state is ImportPickFailed) {
+      state = const ImportState.idle();
+    }
   }
 
   /// `added` → `idle`.

@@ -20,6 +20,10 @@ sealed class ImportState with _$ImportState {
     required ImportFailure failure,
   }) = ImportFailedState;
 
+  /// Системный выбор файла не открылся (кроме «уже открыт»); View показывает
+  /// SnackBar и зовёт `dismiss`.
+  const factory ImportState.pickFailed() = ImportPickFailed;
+
   /// View открывает книгу и зовёт `acknowledge`.
   const factory ImportState.added({required String bookId}) = ImportAdded;
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fusionreflow/l10n/app_localizations.dart';
 import 'package:fusionreflow/routing/app_routes.dart';
 import 'package:fusionreflow/ui/import/view_models/import_state.dart';
 import 'package:fusionreflow/ui/import/view_models/import_view_model.dart';
@@ -31,6 +32,15 @@ class LibraryScreen extends ConsumerWidget {
             context: context,
             builder: (_) => ImportMessageDialog(state: failed),
           ).then((_) => vm.dismiss()).ignore();
+        case ImportPickFailed():
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(AppLocalizations.of(context).importPickFailed),
+              ),
+            );
+          vm.dismiss();
         case ImportIdle() || ImportRunning():
       }
     });
