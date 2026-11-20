@@ -22,76 +22,95 @@ class AddBookSheet extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Ручку рисует тема листа (bottomSheetTheme.showDragHandle).
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.s20)
-                .copyWith(top: AppSpacing.s16, bottom: AppSpacing.s8),
-            child: Text(
-              l10n.importSheetTitle,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontSize: 18,
-                fontWeight: const FontWeight(650),
-              ),
-            ),
-          ),
-          InkWell(
-            key: const Key('pick_file'),
-            onTap: () {
-              Navigator.of(context).pop();
-              unawaited(
-                ref.read(importViewModelProvider.notifier).pickAndImport(),
-              );
-            },
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: _rowHeight),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s20),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: _iconBox,
-                      child: AppIcon(
-                        AppIcons.description,
-                        size: 22,
-                        color: scheme.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.importPickFile,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            l10n.importSheetFormats,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    AppIcon(
-                      AppIcons.chevronRight,
-                      size: 20,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ],
+      // Прокрутка: при крупном шрифте лист не вмещается в 9/16 экрана.
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Ручку рисует тема листа (bottomSheetTheme.showDragHandle).
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.s20)
+                  .copyWith(top: AppSpacing.s16, bottom: AppSpacing.s8),
+              child: Text(
+                l10n.importSheetTitle,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 18,
+                  fontWeight: const FontWeight(650),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.s16),
-        ],
+            InkWell(
+              key: const Key('pick_file'),
+              onTap: () {
+                Navigator.of(context).pop();
+                unawaited(
+                  ref.read(importViewModelProvider.notifier).pickAndImport(),
+                );
+              },
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: _rowHeight),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.s20,
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: _iconBox,
+                        child: AppIcon(
+                          AppIcons.description,
+                          size: 22,
+                          color: scheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.importPickFile,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              l10n.importSheetFormats,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      AppIcon(
+                        AppIcons.chevronRight,
+                        size: 20,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.s20,
+                10,
+                AppSpacing.s20,
+                AppSpacing.s16,
+              ),
+              child: Text(
+                l10n.importSheetNote,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontSize: 12.5,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

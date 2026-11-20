@@ -25,6 +25,9 @@ class AddBookButton extends ConsumerWidget {
         }
         showModalBottomSheet<void>(
           context: context,
+          // Поверх оболочки: лист и затемнение закрывают и нижнюю панель.
+          useRootNavigator: true,
+          barrierColor: Colors.black.withValues(alpha: 0.52),
           builder: (_) => const AddBookSheet(),
         ).ignore();
       },

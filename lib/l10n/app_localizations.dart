@@ -469,6 +469,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'EPUB, FB2, FB2.ZIP'**
   String get importSheetFormats;
+
+  /// No description provided for @importSheetNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Files stay where they are; the app remembers links to them. You can keep copies in settings.'**
+  String get importSheetNote;
 }
 
 class _AppLocalizationsDelegate

@@ -227,4 +227,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importSheetFormats => 'EPUB, FB2, FB2.ZIP';
+
+  @override
+  String get importSheetNote =>
+      'Files stay where they are; the app remembers links to them. You can keep copies in settings.';
 }

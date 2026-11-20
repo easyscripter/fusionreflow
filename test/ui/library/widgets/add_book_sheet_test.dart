@@ -48,4 +48,33 @@ void main() {
     expect(find.byType(AddBookSheet), findsNothing);
     expect(h.imports.pickCalls, 0);
   });
+
+  testWidgets('sheet covers the navigation bar and blocks it', (tester) async {
+    await pumpLibrary(tester);
+    expect(find.byType(NavigationBar), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('add_book')));
+    await tester.pumpAndSettle();
+
+    expect(tester.getRect(find.byType(AddBookSheet)).bottom, 844);
+    // The tap lands on the scrim, not on the bar: no navigation happens.
+    await tester.tap(find.text('Закладки'), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('bookmarks_screen')), findsNothing);
+    expect(find.byKey(const Key('library_screen')), findsOneWidget);
+  });
+
+  testWidgets('sheet shows the footnote', (tester) async {
+    await pumpLibrary(tester);
+
+    await tester.tap(find.byKey(const Key('add_book')));
+    await tester.pumpAndSettle();
+
+    final note = find.text(
+      'Файлы остаются на месте, приложение запоминает ссылки на них. '
+      'Сохранять копии можно в настройках.',
+    );
+    expect(note, findsOneWidget);
+    expect(tester.widget<Text>(note).style?.fontSize, 12.5);
+  });
 }
