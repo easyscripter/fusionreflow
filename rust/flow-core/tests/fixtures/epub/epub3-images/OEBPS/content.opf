@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+<metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Images</dc:title><dc:language>de</dc:language></metadata>
+<manifest><item id="c1" href="ch1.xhtml" media-type="application/xhtml+xml"/><item id="cov" href="cover.png" media-type="image/png" properties="cover-image"/><item id="pic" href="pic.png" media-type="image/png"/><item id="txt" href="fake.png" media-type="text/plain"/></manifest>
+<spine><itemref idref="c1"/></spine>
+</package>
