@@ -280,4 +280,25 @@ void main() {
 
     expect(find.byType(HyphenSpikeScreen), findsOneWidget);
   });
+
+  testWidgets('book card is read once and progress has a label', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await pumpLibrary(
+      tester,
+      books: [
+        bookEntry(id: 'hero', progress: 0.1, lastReadAt: _t(9)),
+        bookEntry(id: 'b', title: 'Дюна'),
+      ],
+    );
+
+    final label = tester.getSemantics(find.byType(BookCard)).label;
+    expect('Дюна'.allMatches(label), hasLength(1));
+    final bar = tester.widget<LinearProgressIndicator>(
+      find.byType(LinearProgressIndicator),
+    );
+    expect(bar.semanticsLabel, '10%');
+    semantics.dispose();
+  });
 }

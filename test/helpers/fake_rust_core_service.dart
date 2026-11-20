@@ -63,9 +63,15 @@ class FakeRustCoreService implements RustCoreService {
   /// Job ids passed to [cancelImport].
   final List<int> cancelled = [];
 
+  /// Thrown by [importBook] when set.
+  Object? importError;
+
   @override
   Stream<BridgeImportEvent> importBook(int fd, BookFormat format) {
     importCalls.add((fd, format));
+    final error = importError;
+    // ignore: only_throw_errors (tests throw Errors and Exceptions alike)
+    if (error != null) throw error;
     return importEvents.stream;
   }
 

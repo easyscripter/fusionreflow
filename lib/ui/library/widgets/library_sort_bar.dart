@@ -32,13 +32,6 @@ class LibrarySortBar extends StatelessWidget {
         windowSizeClassOf(MediaQuery.sizeOf(context).width) ==
         WindowSizeClass.compact;
     final theme = Theme.of(context);
-    // В теме у подписи чипа нет цвета — задаём явно.
-    TextStyle? chipLabel({bool selected = false}) =>
-        theme.textTheme.labelMedium?.copyWith(
-          color: selected
-              ? theme.colorScheme.primary
-              : theme.colorScheme.onSurface,
-        );
     return Row(
       children: [
         Expanded(
@@ -56,7 +49,7 @@ class LibrarySortBar extends StatelessWidget {
                     ],
                     builder: (context, controller, _) => ActionChip(
                       key: const Key('sort_menu'),
-                      label: Text(_label(l10n, sort), style: chipLabel()),
+                      label: Text(_label(l10n, sort)),
                       avatar: const Icon(Icons.sort, size: AppSizes.icon),
                       onPressed: () => controller.isOpen
                           ? controller.close()
@@ -70,10 +63,7 @@ class LibrarySortBar extends StatelessWidget {
                     for (final value in LibrarySort.values)
                       ChoiceChip(
                         key: Key('sort_${value.name}'),
-                        label: Text(
-                          _label(l10n, value),
-                          style: chipLabel(selected: value == sort),
-                        ),
+                        label: Text(_label(l10n, value)),
                         selected: value == sort,
                         onSelected: (_) => onChanged(value),
                       ),

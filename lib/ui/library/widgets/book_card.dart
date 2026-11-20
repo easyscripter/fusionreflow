@@ -28,10 +28,13 @@ class BookCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          BookCover(
-            title: title,
-            author: author,
-            color: AppCoverPalette.forBook(book.sourceHash),
+          // Название и автор читаются из подписей ниже, а не дважды.
+          ExcludeSemantics(
+            child: BookCover(
+              title: title,
+              author: author,
+              color: AppCoverPalette.forBook(book.sourceHash),
+            ),
           ),
           const SizedBox(height: AppSpacing.s8),
           Text(

@@ -34,6 +34,9 @@ class ImportingBookCard extends ConsumerWidget {
             child: Center(
               child: CircularProgressIndicator(
                 value: known ? (done / total).clamp(0, 1) : null,
+                semanticsLabel: known
+                    ? l10n.importProgress(done, total)
+                    : bookTitleOfFileName(state.source.name),
                 color: Colors.white,
               ),
             ),
@@ -42,7 +45,7 @@ class ImportingBookCard extends ConsumerWidget {
         const SizedBox(height: AppSpacing.s8),
         Text(
           bookTitleOfFileName(state.source.name),
-          maxLines: 2,
+          maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: text.titleSmall,
         ),

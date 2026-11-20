@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusionreflow/data/repositories/book_exceptions.dart';
@@ -203,5 +203,42 @@ void main() {
     await start();
     vm().acknowledge();
     expect(state(), isA<ImportRunning>());
+  });
+
+  test('convert throwing an unexpected error ends in unreadable', () async {
+    imports.convertError = StateError('bridge is not initialised');
+    await vm().pickAndImport();
+    expect((state() as ImportFailedState).failure, ImportFailure.unreadable);
+  });
+
+  test('stream error from the repository ends in unreadable', () async {
+    await start();
+    imports.current.addError(StateError('boom'));
+    await pumpEventQueue();
+    expect((state() as ImportFailedState).failure, ImportFailure.unreadable);
+  });
+
+  test('pick error returns to idle and allows another try', () async {
+    imports.pickError = PlatformException(code: 'busy');
+    await vm().pickAndImport();
+    expect(state(), const ImportState.idle());
+
+    imports.pickError = null;
+    await start();
+    expect(state(), isA<ImportRunning>());
+  });
+
+  test('second pick while the picker is open is ignored', () async {
+    final gate = Completer<ImportSource?>();
+    imports.pickGate = gate;
+    final first = vm().pickAndImport();
+    await pumpEventQueue();
+    await vm().pickAndImport();
+    expect(imports.pickCalls, 1);
+
+    gate.complete(null);
+    await first;
+    await vm().pickAndImport();
+    expect(imports.pickCalls, 2);
   });
 }

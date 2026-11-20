@@ -45,10 +45,12 @@ class ContinueReadingCard extends StatelessWidget {
             children: [
               SizedBox(
                 width: _coverWidth,
-                child: BookCover(
-                  title: title,
-                  author: author,
-                  color: AppCoverPalette.forBook(book.sourceHash),
+                child: ExcludeSemantics(
+                  child: BookCover(
+                    title: title,
+                    author: author,
+                    color: AppCoverPalette.forBook(book.sourceHash),
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.s16),
@@ -80,6 +82,7 @@ class ContinueReadingCard extends StatelessWidget {
                     LinearProgressIndicator(
                       value: book.progress.clamp(0, 1),
                       minHeight: AppSizes.trackHeight,
+                      semanticsLabel: percent,
                     ),
                   ],
                 ),

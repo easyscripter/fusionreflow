@@ -24,15 +24,29 @@ class FakeImportRepository implements ImportRepository {
   /// Updates of the latest [convert]; the test adds events and closes it.
   late StreamController<ImportUpdate> current;
 
+  /// Thrown by [pick] when set.
+  Object? pickError;
+
+  /// When set, [pick] waits for it (the system picker is open).
+  Completer<ImportSource?>? pickGate;
+
+  /// Thrown by [convert] when set.
+  Object? convertError;
+
   @override
-  Future<ImportSource?> pick() async {
+  Future<ImportSource?> pick() {
     pickCalls++;
-    return picked;
+    final error = pickError;
+    if (error != null) return Future.error(error);
+    return pickGate?.future ?? Future.value(picked);
   }
 
   @override
   Stream<ImportUpdate> convert(ImportSource source) {
     converted.add(source);
+    final error = convertError;
+    // ignore: only_throw_errors (tests throw Errors and Exceptions alike)
+    if (error != null) throw error;
     current = StreamController<ImportUpdate>();
     return current.stream;
   }

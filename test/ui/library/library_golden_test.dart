@@ -64,32 +64,46 @@ Future<void> _expect(WidgetTester tester, String name) => expectLater(
   matchesGoldenFile('goldens/$name.png'),
 );
 
+/// Golden-тест с настоящими тенями: с отключёнными flutter_test рисует их
+/// жёсткой чёрной обводкой (так выглядела кнопка «Добавить»). Значение
+/// возвращается до конца теста, иначе binding падает.
+void _golden(String name, Future<void> Function(WidgetTester tester) body) {
+  testWidgets(name, tags: 'golden', (tester) async {
+    debugDisableShadows = false;
+    try {
+      await body(tester);
+    } finally {
+      debugDisableShadows = true;
+    }
+  });
+}
+
 void main() {
   setUpAll(loadGoldenFonts);
 
-  testWidgets('library_phone_light', tags: 'golden', (tester) async {
+  _golden('library_phone_light', (tester) async {
     await pumpLibrary(tester, books: _books);
     await _expect(tester, 'library_phone_light');
   });
 
-  testWidgets('library_phone_dark', tags: 'golden', (tester) async {
+  _golden('library_phone_dark', (tester) async {
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
     addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
     await pumpLibrary(tester, books: _books);
     await _expect(tester, 'library_phone_dark');
   });
 
-  testWidgets('library_empty_phone_light', tags: 'golden', (tester) async {
+  _golden('library_empty_phone_light', (tester) async {
     await pumpLibrary(tester);
     await _expect(tester, 'library_empty_phone_light');
   });
 
-  testWidgets('library_tablet_light', tags: 'golden', (tester) async {
+  _golden('library_tablet_light', (tester) async {
     await pumpLibrary(tester, books: _books, size: const Size(820, 1180));
     await _expect(tester, 'library_tablet_light');
   });
 
-  testWidgets('library_importing_phone_light', tags: 'golden', (tester) async {
+  _golden('library_importing_phone_light', (tester) async {
     final h = await pumpLibrary(
       tester,
       books: _books,
@@ -105,7 +119,7 @@ void main() {
     await _expect(tester, 'library_importing_phone_light');
   });
 
-  testWidgets('import_pdf_later_phone_light', tags: 'golden', (tester) async {
+  _golden('import_pdf_later_phone_light', (tester) async {
     final h = await pumpLibrary(
       tester,
       picked: const ImportSource(

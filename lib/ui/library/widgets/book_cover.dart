@@ -44,17 +44,19 @@ class BookCover extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: text.labelSmall?.copyWith(color: Colors.white70),
                       ),
-                    const Spacer(),
-                    // Flexible: на маленькой обложке название сжимается, а не
-                    // вылезает за край.
-                    Flexible(
-                      child: Text(
-                        title,
-                        maxLines: 4,
-                        overflow: TextOverflow.ellipsis,
-                        style: text.titleSmall?.copyWith(
-                          color: Colors.white,
-                          fontFamily: AppFonts.book,
+                    // Expanded + Align: название прижато к низу, а на маленькой
+                    // обложке сжимается, а не вылезает за край.
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Text(
+                          title,
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                          style: text.titleSmall?.copyWith(
+                            color: Colors.white,
+                            fontFamily: AppFonts.book,
+                          ),
                         ),
                       ),
                     ),

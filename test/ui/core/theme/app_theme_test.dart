@@ -179,4 +179,10 @@ void main() {
     );
     expect(tester.getSize(find.byType(FilledButton)).height, 48);
   });
+
+  test('chip label has an explicit color', () {
+    for (final (t, s) in themes.values) {
+      expect(t.chipTheme.labelStyle?.color, s.onSurface);
+    }
+  });
 }

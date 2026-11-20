@@ -139,4 +139,30 @@ void main() {
     await repo.cancel();
     expect(rustFake.cancelled, isEmpty);
   });
+
+  test('unexpected openFd error is unreadable', () async {
+    picker.openFdError = StateError('no engine');
+    final updates = await repo.convert(_epub).toList();
+    expect(updates, [const ImportUpdate.failed(ImportFailure.unreadable)]);
+    expect(rustFake.importCalls, isEmpty);
+  });
+
+  test('unexpected stream error is unreadable', () async {
+    final updates = await run((c) => c.addError(StateError('boom')));
+    expect(updates.last, const ImportUpdate.failed(ImportFailure.unreadable));
+  });
+
+  test('importBook throwing before the stream is unreadable', () async {
+    rustFake.importError = StateError('bridge is not initialised');
+    final updates = await repo.convert(_epub).toList();
+    expect(updates, [const ImportUpdate.failed(ImportFailure.unreadable)]);
+    // The next import works: the repository is not stuck in "running".
+    rustFake
+      ..importError = null
+      ..importEvents = StreamController<BridgeImportEvent>();
+    final next = await run(
+      (c) => c.add(const BridgeImportFailed(ImportFailure.cancelled)),
+    );
+    expect(next, [const ImportUpdate.failed(ImportFailure.cancelled)]);
+  });
 }

@@ -21,7 +21,7 @@ final class LibraryViewModelProvider
     : super(
         from: null,
         argument: null,
-        retry: _noRetry,
+        retry: noRetry,
         name: r'libraryViewModelProvider',
         isAutoDispose: true,
         dependencies: null,
@@ -36,7 +36,7 @@ final class LibraryViewModelProvider
   LibraryViewModel create() => LibraryViewModel();
 }
 
-String _$libraryViewModelHash() => r'd801dd39f061082daab2dc9d4f1a7dfcf03fd59c';
+String _$libraryViewModelHash() => r'cb0b5950feb573530c5a929415e31fdeec6f0999';
 
 /// Книги библиотеки в выбранном порядке и книга для «Продолжить чтение».
 

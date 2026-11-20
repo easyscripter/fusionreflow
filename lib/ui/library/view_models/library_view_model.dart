@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fusionreflow/config/no_retry.dart';
 import 'package:fusionreflow/data/repositories/book_repository.dart';
 import 'package:fusionreflow/domain/models/book_entry.dart';
 import 'package:fusionreflow/domain/models/library_sort.dart';
@@ -9,11 +10,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'library_view_model.g.dart';
 
-/// Без автоповтора: ошибка показывается сразу, «Повторить» — `invalidate`.
-Duration? _noRetry(int retryCount, Object error) => null;
-
 /// Книги библиотеки в выбранном порядке и книга для «Продолжить чтение».
-@Riverpod(retry: _noRetry)
+@Riverpod(retry: noRetry)
 class LibraryViewModel extends _$LibraryViewModel {
   LibrarySort _sort = LibrarySort.recent;
   List<BookEntry> _books = const [];

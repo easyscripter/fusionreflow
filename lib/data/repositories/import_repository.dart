@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart' show PlatformException;
-import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 import 'package:fusionreflow/data/services/bridge_import_event.dart';
 import 'package:fusionreflow/data/services/document_picker_service.dart';
 import 'package:fusionreflow/data/services/rust_core_service.dart';
@@ -69,6 +68,10 @@ class BridgeImportRepository implements ImportRepository {
       _running = false;
       yield const ImportUpdate.failed(ImportFailure.noAccess);
       return;
+    } on Object {
+      _running = false;
+      yield const ImportUpdate.failed(ImportFailure.unreadable);
+      return;
     }
     try {
       // Мост принимает fd сразу: между openFd и importBook нет кода, который
@@ -90,7 +93,7 @@ class BridgeImportRepository implements ImportRepository {
       }
       // Поток закрылся без финального события — не оставляем `running`.
       yield const ImportUpdate.failed(ImportFailure.unreadable);
-    } on FrbException {
+    } on Object {
       yield const ImportUpdate.failed(ImportFailure.unreadable);
     } finally {
       _running = false;

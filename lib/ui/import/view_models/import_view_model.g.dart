@@ -44,7 +44,7 @@ final class ImportViewModelProvider
   }
 }
 
-String _$importViewModelHash() => r'f97ad0d124c29fe2f8b579a721b3b1ee2be5cce4';
+String _$importViewModelHash() => r'07e1f85dc9d7f9f218e16e3b819a147b006e7580';
 
 /// Импорт одной книги; не прерывается при смене вкладки (keepAlive).
 

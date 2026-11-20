@@ -13,6 +13,7 @@ part 'import_view_model.g.dart';
 @Riverpod(keepAlive: true)
 class ImportViewModel extends _$ImportViewModel {
   bool _cancelRequested = false;
+  bool _picking = false;
 
   @override
   ImportState build() => const ImportState.idle();
@@ -20,8 +21,18 @@ class ImportViewModel extends _$ImportViewModel {
   /// Выбор файла → конвертация → добавление в библиотеку. В `running` ничего
   /// не делает: одновременно идёт один импорт.
   Future<void> pickAndImport() async {
-    if (state is ImportRunning) return;
-    final source = await ref.read(importRepositoryProvider).pick();
+    if (state is ImportRunning || _picking) return;
+    _picking = true;
+    ImportSource? source;
+    try {
+      source = await ref.read(importRepositoryProvider).pick();
+    } on Object {
+      // Сбой канала выбора (в том числе «busy»): остаёмся в idle без карточки,
+      // потому что файла ещё нет.
+      source = null;
+    } finally {
+      _picking = false;
+    }
     if (source != null) await _run(source);
   }
 
@@ -51,6 +62,19 @@ class ImportViewModel extends _$ImportViewModel {
   Future<void> _run(ImportSource source) async {
     _cancelRequested = false;
     state = ImportState.running(source: source);
+    try {
+      await _consume(source);
+    } on Object {
+      // Любой сбой репозитория: не зависаем в `running` (keepAlive).
+      state = _failed(source, ImportFailure.unreadable);
+    }
+    // Поток закрылся без финального события — не зависаем в `running`.
+    if (state is ImportRunning) {
+      state = _failed(source, ImportFailure.unreadable);
+    }
+  }
+
+  Future<void> _consume(ImportSource source) async {
     await for (final update
         in ref.read(importRepositoryProvider).convert(source)) {
       switch (update) {
@@ -70,10 +94,6 @@ class ImportViewModel extends _$ImportViewModel {
         case ImportFailed(:final failure):
           state = _failed(source, failure);
       }
-    }
-    // Поток закрылся без финального события — не зависаем в `running`.
-    if (state is ImportRunning) {
-      state = _failed(source, ImportFailure.unreadable);
     }
   }
 

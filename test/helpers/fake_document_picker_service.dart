@@ -9,7 +9,7 @@ class FakeDocumentPickerService extends DocumentPickerService {
   ({String uri, String name, int? size})? picked;
 
   /// Thrown by [openFd] when set.
-  Exception? openFdError;
+  Object? openFdError;
 
   /// URIs passed to [openFd].
   final List<String> opened = [];
@@ -21,6 +21,7 @@ class FakeDocumentPickerService extends DocumentPickerService {
   Future<int> openFd(String uri) async {
     opened.add(uri);
     final error = openFdError;
+    // ignore: only_throw_errors (tests throw Errors and Exceptions alike)
     if (error != null) throw error;
     return 42;
   }

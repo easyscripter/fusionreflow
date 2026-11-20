@@ -40,7 +40,13 @@ class MainActivity : FlutterActivity() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             .addCategory(Intent.CATEGORY_OPENABLE)
             .setType("*/*")
-        startActivityForResult(intent, REQUEST_PICK)
+        try {
+            startActivityForResult(intent, REQUEST_PICK)
+        } catch (e: Exception) {
+            // Нет приложения для выбора файла: иначе все следующие pick отвечали бы busy.
+            pendingPick = null
+            result.error("pick_failed", e.message, null)
+        }
     }
 
     @Deprecated("Deprecated in Java")
