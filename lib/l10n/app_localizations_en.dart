@@ -46,4 +46,179 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get startupRetry => 'Try again';
+
+  @override
+  String libraryBookCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count books',
+      one: '$count book',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get librarySortRecent => 'Recent';
+
+  @override
+  String get librarySortTitle => 'Title';
+
+  @override
+  String get librarySortAuthor => 'Author';
+
+  @override
+  String get libraryContinueReading => 'Continue reading';
+
+  @override
+  String get libraryRead => 'Read';
+
+  @override
+  String get libraryStatusNew => 'New';
+
+  @override
+  String get libraryStatusFinished => 'Finished';
+
+  @override
+  String libraryPercent(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get libraryUntitled => 'Untitled';
+
+  @override
+  String get bookFormatPdf => 'PDF';
+
+  @override
+  String get bookFormatEpub => 'EPUB';
+
+  @override
+  String get bookFormatFb2 => 'FB2';
+
+  @override
+  String get bookFormatFb2Zip => 'FB2.ZIP';
+
+  @override
+  String get libraryEmptyTitle => 'No books yet';
+
+  @override
+  String get libraryEmptyMessage =>
+      'Add an EPUB or FB2 file. Books are read on your device and never sent anywhere.';
+
+  @override
+  String get libraryEmptyHint => 'Tap “Add” in the bottom right';
+
+  @override
+  String get libraryEmptyFormats => 'EPUB · FB2 · FB2.ZIP';
+
+  @override
+  String get libraryAdd => 'Add';
+
+  @override
+  String get libraryAddSemantics => 'Add a book';
+
+  @override
+  String get libraryLoadError => 'Couldn’t load the library';
+
+  @override
+  String get libraryRetry => 'Retry';
+
+  @override
+  String get libraryDebugMenu => 'Debug';
+
+  @override
+  String get importBusy => 'Wait until the book is added';
+
+  @override
+  String importProgress(int done, int total) {
+    return 'Converting · $done of $total';
+  }
+
+  @override
+  String get importCancel => 'Cancel';
+
+  @override
+  String get importPdfLaterTitle => 'PDF will be available later';
+
+  @override
+  String get importPdfLaterMessage =>
+      'PDF to book conversion is coming in a future update. EPUB and FB2 already open and read.';
+
+  @override
+  String importPdfLaterFile(String size) {
+    return 'PDF · $size · not added to the library';
+  }
+
+  @override
+  String get importPdfLaterFileNoSize => 'PDF · not added to the library';
+
+  @override
+  String get importPickEpubOrFb2 => 'Choose EPUB or FB2';
+
+  @override
+  String get importGotIt => 'Got it';
+
+  @override
+  String get importUnsupportedTitle => 'This format is not supported';
+
+  @override
+  String get importUnsupportedMessage =>
+      'The app reads EPUB, FB2 and FB2.ZIP. PDF is coming later; DOCX and MOBI can be converted to EPUB.';
+
+  @override
+  String get importUnreadableTitle => 'Couldn’t open the file';
+
+  @override
+  String get importUnreadableMessage =>
+      'The file is damaged or not fully downloaded. Download it again and add it once more.';
+
+  @override
+  String get importPickOther => 'Choose another file';
+
+  @override
+  String get importNoAccessTitle => 'No access to the file';
+
+  @override
+  String get importNoAccessMessage =>
+      'The file was moved or deleted. Choose it again.';
+
+  @override
+  String get importPickFile => 'Choose file';
+
+  @override
+  String get importCancelledTitle => 'Adding cancelled';
+
+  @override
+  String get importCancelledMessage =>
+      'The book was not saved. You can add it again.';
+
+  @override
+  String get importRetry => 'Retry';
+
+  @override
+  String get importClose => 'Close';
+
+  @override
+  String fileSizeMb(double size) {
+    final intl.NumberFormat sizeNumberFormat =
+        intl.NumberFormat.decimalPatternDigits(
+          locale: localeName,
+          decimalDigits: 1,
+        );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '$sizeString MB';
+  }
+
+  @override
+  String get readerPlaceholderTitle => 'The reader is coming later';
+
+  @override
+  String readerPlaceholderPosition(int percent) {
+    return 'Opens at $percent%';
+  }
+
+  @override
+  String get readerBookNotFound => 'Book not found';
 }

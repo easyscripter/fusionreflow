@@ -169,6 +169,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try again'**
   String get startupRetry;
+
+  /// Book counter in the library header.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} book} other{{count} books}}'**
+  String libraryBookCount(int count);
+
+  /// No description provided for @librarySortRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get librarySortRecent;
+
+  /// No description provided for @librarySortTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get librarySortTitle;
+
+  /// No description provided for @librarySortAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get librarySortAuthor;
+
+  /// No description provided for @libraryContinueReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue reading'**
+  String get libraryContinueReading;
+
+  /// No description provided for @libraryRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get libraryRead;
+
+  /// No description provided for @libraryStatusNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get libraryStatusNew;
+
+  /// No description provided for @libraryStatusFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get libraryStatusFinished;
+
+  /// No description provided for @libraryPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String libraryPercent(int percent);
+
+  /// Shown instead of an empty book title.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled'**
+  String get libraryUntitled;
+
+  /// No description provided for @bookFormatPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF'**
+  String get bookFormatPdf;
+
+  /// No description provided for @bookFormatEpub.
+  ///
+  /// In en, this message translates to:
+  /// **'EPUB'**
+  String get bookFormatEpub;
+
+  /// No description provided for @bookFormatFb2.
+  ///
+  /// In en, this message translates to:
+  /// **'FB2'**
+  String get bookFormatFb2;
+
+  /// No description provided for @bookFormatFb2Zip.
+  ///
+  /// In en, this message translates to:
+  /// **'FB2.ZIP'**
+  String get bookFormatFb2Zip;
+
+  /// No description provided for @libraryEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No books yet'**
+  String get libraryEmptyTitle;
+
+  /// No description provided for @libraryEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an EPUB or FB2 file. Books are read on your device and never sent anywhere.'**
+  String get libraryEmptyMessage;
+
+  /// No description provided for @libraryEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap “Add” in the bottom right'**
+  String get libraryEmptyHint;
+
+  /// No description provided for @libraryEmptyFormats.
+  ///
+  /// In en, this message translates to:
+  /// **'EPUB · FB2 · FB2.ZIP'**
+  String get libraryEmptyFormats;
+
+  /// No description provided for @libraryAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get libraryAdd;
+
+  /// No description provided for @libraryAddSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a book'**
+  String get libraryAddSemantics;
+
+  /// No description provided for @libraryLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load the library'**
+  String get libraryLoadError;
+
+  /// No description provided for @libraryRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get libraryRetry;
+
+  /// No description provided for @libraryDebugMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Debug'**
+  String get libraryDebugMenu;
+
+  /// No description provided for @importBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait until the book is added'**
+  String get importBusy;
+
+  /// No description provided for @importProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Converting · {done} of {total}'**
+  String importProgress(int done, int total);
+
+  /// No description provided for @importCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get importCancel;
+
+  /// No description provided for @importPdfLaterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF will be available later'**
+  String get importPdfLaterTitle;
+
+  /// No description provided for @importPdfLaterMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF to book conversion is coming in a future update. EPUB and FB2 already open and read.'**
+  String get importPdfLaterMessage;
+
+  /// Skipped PDF: size and a note that it was not added.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF · {size} · not added to the library'**
+  String importPdfLaterFile(String size);
+
+  /// No description provided for @importPdfLaterFileNoSize.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF · not added to the library'**
+  String get importPdfLaterFileNoSize;
+
+  /// No description provided for @importPickEpubOrFb2.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose EPUB or FB2'**
+  String get importPickEpubOrFb2;
+
+  /// No description provided for @importGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get importGotIt;
+
+  /// No description provided for @importUnsupportedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This format is not supported'**
+  String get importUnsupportedTitle;
+
+  /// No description provided for @importUnsupportedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The app reads EPUB, FB2 and FB2.ZIP. PDF is coming later; DOCX and MOBI can be converted to EPUB.'**
+  String get importUnsupportedMessage;
+
+  /// No description provided for @importUnreadableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t open the file'**
+  String get importUnreadableTitle;
+
+  /// No description provided for @importUnreadableMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The file is damaged or not fully downloaded. Download it again and add it once more.'**
+  String get importUnreadableMessage;
+
+  /// No description provided for @importPickOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another file'**
+  String get importPickOther;
+
+  /// No description provided for @importNoAccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No access to the file'**
+  String get importNoAccessTitle;
+
+  /// No description provided for @importNoAccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The file was moved or deleted. Choose it again.'**
+  String get importNoAccessMessage;
+
+  /// No description provided for @importPickFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose file'**
+  String get importPickFile;
+
+  /// No description provided for @importCancelledTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding cancelled'**
+  String get importCancelledTitle;
+
+  /// No description provided for @importCancelledMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The book was not saved. You can add it again.'**
+  String get importCancelledMessage;
+
+  /// No description provided for @importRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get importRetry;
+
+  /// No description provided for @importClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get importClose;
+
+  /// File size in mebibytes, one decimal digit.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} MB'**
+  String fileSizeMb(double size);
+
+  /// No description provided for @readerPlaceholderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The reader is coming later'**
+  String get readerPlaceholderTitle;
+
+  /// No description provided for @readerPlaceholderPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens at {percent}%'**
+  String readerPlaceholderPosition(int percent);
+
+  /// No description provided for @readerBookNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Book not found'**
+  String get readerBookNotFound;
 }
 
 class _AppLocalizationsDelegate
