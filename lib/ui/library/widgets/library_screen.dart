@@ -5,7 +5,7 @@ import 'package:fusionreflow/routing/app_routes.dart';
 import 'package:fusionreflow/ui/core/widgets/section_placeholder.dart';
 import 'package:go_router/go_router.dart';
 
-/// Заглушка раздела «Library» (содержимое — в следующих задачах).
+/// Заглушка раздела «Библиотека» (содержимое — в следующих задачах).
 class LibraryScreen extends StatelessWidget {
   /// Creates the screen.
   const new({super.key});

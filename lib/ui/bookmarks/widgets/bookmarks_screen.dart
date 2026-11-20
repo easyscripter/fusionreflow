@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fusionreflow/l10n/app_localizations.dart';
 import 'package:fusionreflow/ui/core/widgets/section_placeholder.dart';
 
-/// Заглушка раздела «Bookmarks» (содержимое — в следующих задачах).
+/// Заглушка раздела «Закладки» (содержимое — в следующих задачах).
 class BookmarksScreen extends StatelessWidget {
   /// Creates the screen.
   const new({super.key});

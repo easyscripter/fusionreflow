@@ -45,6 +45,29 @@ void main() {
     expect(frames, 1);
   });
 
+  testWidgets('default releases the deferred first frame exactly once', (
+    tester,
+  ) async {
+    final binding = tester.binding
+      ..resetFirstFrameSent()
+      ..deferFirstFrame();
+    addTearDown(binding.resetFirstFrameSent);
+    expect(binding.sendFramesToEngine, isFalse);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appStartupProvider.overrideWith((ref) async {})],
+        child: const MaterialApp(home: StartupGate(child: Text('child'))),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(binding.sendFramesToEngine, isTrue);
+    await tester.pump(const Duration(seconds: 1));
+    expect(binding.sendFramesToEngine, isTrue);
+  });
+
   testWidgets('loading does not allow first frame', (tester) async {
     var frames = 0;
     final never = Completer<void>();

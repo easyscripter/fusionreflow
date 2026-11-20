@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fusionreflow/l10n/app_localizations.dart';
 import 'package:fusionreflow/ui/core/widgets/section_placeholder.dart';
 
-/// Заглушка раздела «Settings» (содержимое — в следующих задачах).
+/// Заглушка раздела «Настройки» (содержимое — в следующих задачах).
 class SettingsScreen extends StatelessWidget {
   /// Creates the screen.
   const new({super.key});

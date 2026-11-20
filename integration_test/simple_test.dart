@@ -12,6 +12,8 @@ void main() {
   testWidgets('Rust bridge is callable and app starts', (tester) async {
     expect(greet(name: 'Tom'), 'Hello, Tom!');
     await tester.pumpWidget(const ProviderScope(child: FusionReflowApp()));
+    // Первый кадр ждёт StartupGate: мост и база открываются асинхронно.
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('library_screen')), findsOneWidget);
   });
 }
