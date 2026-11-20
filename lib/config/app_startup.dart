@@ -1,15 +1,9 @@
+import 'package:fusionreflow/config/app_constants.dart';
 import 'package:fusionreflow/data/repositories/book_repository.dart';
 import 'package:fusionreflow/data/services/rust_core_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_startup.g.dart';
-
-/// Сколько секунд ждать инициализации, прежде чем показать ошибку вместо
-/// вечного сплеша.
-const int startupTimeoutSeconds = 20;
-
-/// [startupTimeoutSeconds] как [Duration].
-const Duration startupTimeout = Duration(seconds: startupTimeoutSeconds);
 
 /// Ошибку запуска не повторяем сами (Riverpod по умолчанию повторяет): её
 /// сразу видит человек и решает кнопкой «Повторить».
