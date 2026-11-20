@@ -135,4 +135,20 @@ void main() {
     await tester.pumpAndSettle();
     await _expect(tester, 'import_pdf_later_phone_light');
   });
+
+  _golden('add_book_sheet_phone_dark', (tester) async {
+    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+    await pumpLibrary(tester, books: _books);
+    await tester.tap(find.byKey(const Key('add_book')));
+    await tester.pumpAndSettle();
+    await _expect(tester, 'add_book_sheet_phone_dark');
+  });
+
+  _golden('library_empty_phone_dark', (tester) async {
+    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+    await pumpLibrary(tester);
+    await _expect(tester, 'library_empty_phone_dark');
+  });
 }

@@ -457,6 +457,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Book not found'**
   String get readerBookNotFound;
+
+  /// No description provided for @importSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a book'**
+  String get importSheetTitle;
+
+  /// No description provided for @importSheetFormats.
+  ///
+  /// In en, this message translates to:
+  /// **'EPUB, FB2, FB2.ZIP'**
+  String get importSheetFormats;
 }
 
 class _AppLocalizationsDelegate

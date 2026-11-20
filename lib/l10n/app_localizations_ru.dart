@@ -223,4 +223,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get readerBookNotFound => 'Книга не найдена';
+
+  @override
+  String get importSheetTitle => 'Добавить книгу';
+
+  @override
+  String get importSheetFormats => 'EPUB, FB2, FB2.ZIP';
 }

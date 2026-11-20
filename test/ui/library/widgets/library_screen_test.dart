@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusionreflow/domain/models/book_format.dart';
 import 'package:fusionreflow/domain/models/import_update.dart';
+import 'package:fusionreflow/ui/core/theme/app_icons.dart';
+import 'package:fusionreflow/ui/core/widgets/app_icon.dart';
 import 'package:fusionreflow/ui/import/widgets/importing_book_card.dart';
 import 'package:fusionreflow/ui/library/widgets/book_card.dart';
 import 'package:fusionreflow/ui/library/widgets/continue_reading_card.dart';
@@ -149,6 +151,26 @@ void main() {
     await tester.pumpAndSettle();
   });
 
+  testWidgets('sort chip matches the design', (tester) async {
+    await pumpLibrary(tester, books: [bookEntry()]);
+
+    final chip = find.byKey(const Key('sort_menu'));
+    expect(tester.getSize(chip).height, 36);
+    Finder asset(WidgetPredicate p) =>
+        find.descendant(of: chip, matching: find.byWidgetPredicate(p));
+    expect(
+      asset((w) => w is AppIcon && w.asset == AppIcons.sort && w.size == 16),
+      findsOneWidget,
+    );
+    expect(
+      asset(
+        (w) => w is AppIcon && w.asset == AppIcons.chevronDown && w.size == 14,
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Недавние'), findsOneWidget);
+  });
+
   testWidgets('tablet shows sort chips and four columns', (tester) async {
     await pumpLibrary(
       tester,
@@ -267,6 +289,8 @@ void main() {
     await pumpLibrary(tester, picked: null);
 
     await tester.tap(find.byKey(const Key('add_book')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('pick_file')));
     await tester.pumpAndSettle();
 
     expect(find.byType(LibraryEmptyView), findsOneWidget);

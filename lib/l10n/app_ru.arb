@@ -59,5 +59,7 @@
   "fileSizeMb": "{size} МБ",
   "readerPlaceholderTitle": "Читалка появится позже",
   "readerPlaceholderPosition": "Откроется на {percent}%",
-  "readerBookNotFound": "Книга не найдена"
+  "readerBookNotFound": "Книга не найдена",
+  "importSheetTitle": "Добавить книгу",
+  "importSheetFormats": "EPUB, FB2, FB2.ZIP"
 }

@@ -35,9 +35,12 @@ Future<LibraryHarness> pumpLibrary(
   return (books: bookRepo, imports: importRepo);
 }
 
-/// Taps "Add" and lets the import start (no settle: the spinner never stops).
+/// Taps "Add", then "Choose file" in the sheet, and lets the import start (no
+/// settle afterwards: the spinner never stops).
 Future<void> startImport(WidgetTester tester) async {
   await tester.tap(find.byKey(const Key('add_book')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(const Key('pick_file')));
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 100));
 }

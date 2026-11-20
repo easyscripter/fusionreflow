@@ -221,4 +221,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readerBookNotFound => 'Book not found';
+
+  @override
+  String get importSheetTitle => 'Add a book';
+
+  @override
+  String get importSheetFormats => 'EPUB, FB2, FB2.ZIP';
 }

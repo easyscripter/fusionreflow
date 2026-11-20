@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fusionreflow/domain/models/library_sort.dart';
 import 'package:fusionreflow/l10n/app_localizations.dart';
 import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
+import 'package:fusionreflow/ui/library/widgets/sort_chip.dart';
 import 'package:fusionreflow/utils/window_size_class.dart';
 
 /// Сортировка и счётчик: на телефоне чип с меню, на планшете три чипа.
@@ -47,10 +48,9 @@ class LibrarySortBar extends StatelessWidget {
                           child: Text(_label(l10n, value)),
                         ),
                     ],
-                    builder: (context, controller, _) => ActionChip(
+                    builder: (context, controller, _) => SortChip(
                       key: const Key('sort_menu'),
-                      label: Text(_label(l10n, sort)),
-                      avatar: const Icon(Icons.sort, size: AppSizes.icon),
+                      label: _label(l10n, sort),
                       onPressed: () => controller.isOpen
                           ? controller.close()
                           : controller.open(),
