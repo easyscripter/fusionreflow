@@ -29,6 +29,9 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.library}) {
                 path: AppRoutes.library,
                 builder: (context, state) => const LibraryScreen(),
                 routes: [
+                  // Спайк мягких переносов этапа 0: нужен golden-тестам и
+                  // hyphen_spike_device_test. Только в debug; уйдёт с
+                  // задачей 5.1.
                   if (kDebugMode)
                     GoRoute(
                       path: 'hyphen-spike',

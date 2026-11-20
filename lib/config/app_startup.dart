@@ -4,9 +4,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_startup.g.dart';
 
-/// Сколько ждать инициализации, прежде чем показать ошибку вместо вечного
-/// сплеша.
-const Duration startupTimeout = Duration(seconds: 20);
+/// Сколько секунд ждать инициализации, прежде чем показать ошибку вместо
+/// вечного сплеша.
+const int startupTimeoutSeconds = 20;
+
+/// [startupTimeoutSeconds] как [Duration].
+const Duration startupTimeout = Duration(seconds: startupTimeoutSeconds);
 
 /// Ошибку запуска не повторяем сами (Riverpod по умолчанию повторяет): её
 /// сразу видит человек и решает кнопкой «Повторить».
