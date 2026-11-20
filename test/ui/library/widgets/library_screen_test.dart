@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fusionreflow/data/services/document_channel.dart';
 import 'package:fusionreflow/domain/models/book_format.dart';
 import 'package:fusionreflow/domain/models/import_update.dart';
 import 'package:fusionreflow/ui/core/theme/app_icons.dart';
@@ -189,7 +190,9 @@ void main() {
 
   testWidgets('a failing picker shows a snackbar', (tester) async {
     final h = await pumpLibrary(tester);
-    h.imports.pickError = PlatformException(code: 'pick_failed');
+    h.imports.pickError = PlatformException(
+      code: DocumentChannel.errorPickFailed,
+    );
 
     await tester.tap(find.byKey(const Key('add_book')));
     await tester.pumpAndSettle();

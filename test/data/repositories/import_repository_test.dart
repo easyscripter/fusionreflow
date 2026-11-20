@@ -5,6 +5,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusionreflow/data/repositories/import_repository.dart';
 import 'package:fusionreflow/data/services/bridge_import_event.dart';
+import 'package:fusionreflow/data/services/document_channel.dart';
 import 'package:fusionreflow/domain/models/book_format.dart';
 import 'package:fusionreflow/domain/models/import_source.dart';
 import 'package:fusionreflow/domain/models/import_update.dart';
@@ -54,10 +55,10 @@ void main() {
   });
 
   test('picker busy means no file, other picker errors propagate', () async {
-    picker.pickError = PlatformException(code: 'busy');
+    picker.pickError = PlatformException(code: DocumentChannel.errorBusy);
     expect(await repo.pick(), isNull);
 
-    picker.pickError = PlatformException(code: 'pick_failed');
+    picker.pickError = PlatformException(code: DocumentChannel.errorPickFailed);
     await expectLater(repo.pick(), throwsA(isA<PlatformException>()));
   });
 
@@ -73,7 +74,7 @@ void main() {
   });
 
   test('openFd error is noAccess', () async {
-    picker.openFdError = PlatformException(code: 'gone');
+    picker.openFdError = PlatformException(code: DocumentChannel.errorNoAccess);
     final updates = await repo.convert(_epub).toList();
     expect(updates, [const ImportUpdate.failed(ImportFailure.noAccess)]);
     expect(rustFake.importCalls, isEmpty);

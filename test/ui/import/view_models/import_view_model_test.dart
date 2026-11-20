@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fusionreflow/data/repositories/book_exceptions.dart';
 import 'package:fusionreflow/data/repositories/book_repository.dart';
 import 'package:fusionreflow/data/repositories/import_repository.dart';
+import 'package:fusionreflow/data/services/document_channel.dart';
 import 'package:fusionreflow/domain/models/book_format.dart';
 import 'package:fusionreflow/domain/models/import_source.dart';
 import 'package:fusionreflow/domain/models/import_update.dart';
@@ -219,7 +220,9 @@ void main() {
   });
 
   test('pick error is reported, then another try works', () async {
-    imports.pickError = PlatformException(code: 'pick_failed');
+    imports.pickError = PlatformException(
+      code: DocumentChannel.errorPickFailed,
+    );
     await vm().pickAndImport();
     expect(state(), const ImportState.pickFailed());
 

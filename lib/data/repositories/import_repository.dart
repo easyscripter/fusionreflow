@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:fusionreflow/data/services/bridge_import_event.dart';
+import 'package:fusionreflow/data/services/document_channel.dart';
 import 'package:fusionreflow/data/services/document_picker_service.dart';
 import 'package:fusionreflow/data/services/rust_core_service.dart';
 import 'package:fusionreflow/domain/models/import_source.dart';
@@ -47,7 +48,7 @@ class BridgeImportRepository implements ImportRepository {
       file = await _picker.pick();
     } on PlatformException catch (e) {
       // Выбор уже открыт (двойной тап): это не сбой, ничего не показываем.
-      if (e.code == 'busy') return null;
+      if (e.code == DocumentChannel.errorBusy) return null;
       rethrow;
     }
     if (file == null) return null;

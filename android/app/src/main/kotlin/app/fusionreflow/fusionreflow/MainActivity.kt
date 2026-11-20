@@ -1,71 +1,66 @@
 package app.fusionreflow.fusionreflow
 
-import android.app.Activity
-import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
-import io.flutter.embedding.android.FlutterActivity
+import androidx.activity.result.contract.ActivityResultContracts
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
 /**
- * Канал `app.fusionreflow/documents`: системный выбор файла (SAF) и
- * дескриптор выбранного файла для Rust. Без копирования файла в кэш.
+ * Канал [DocumentChannel.CHANNEL]: системный выбор файла (SAF) и дескриптор
+ * выбранного файла для Rust. Без копирования файла в кэш.
+ *
+ * Базовый класс — [FlutterFragmentActivity] (это `ComponentActivity`), чтобы
+ * пользоваться Activity Result API вместо устаревших
+ * `startActivityForResult` / `onActivityResult`.
  */
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
     private var pendingPick: MethodChannel.Result? = null
+
+    // У FB2 на Android часто нет MIME-типа, поэтому выбор открыт для любых файлов.
+    private val openDocument =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            val result = pendingPick ?: return@registerForActivityResult
+            pendingPick = null
+            if (uri == null) {
+                result.success(null) // человек закрыл выбор
+                return@registerForActivityResult
+            }
+            try {
+                result.success(describe(uri))
+            } catch (e: Exception) {
+                result.error(DocumentChannel.ERROR_PICK_FAILED, e.message, null)
+            }
+        }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DocumentChannel.CHANNEL)
             .setMethodCallHandler(::onCall)
     }
 
     private fun onCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
-            "pick" -> pick(result)
-            "openFd" -> openFd(call.argument<String>("uri"), result)
+            DocumentChannel.METHOD_PICK -> pick(result)
+            DocumentChannel.METHOD_OPEN_FD -> openFd(call.argument<String>(DocumentChannel.ARG_URI), result)
             else -> result.notImplemented()
         }
     }
 
     private fun pick(result: MethodChannel.Result) {
         if (pendingPick != null) {
-            result.error("busy", "A file picker is already open", null)
+            result.error(DocumentChannel.ERROR_BUSY, "A file picker is already open", null)
             return
         }
         pendingPick = result
-        // У FB2 на Android часто нет MIME-типа, поэтому */*.
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-            .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("*/*")
         try {
-            startActivityForResult(intent, REQUEST_PICK)
+            openDocument.launch(arrayOf("*/*"))
         } catch (e: Exception) {
             // Нет приложения для выбора файла: иначе все следующие pick отвечали бы busy.
             pendingPick = null
-            result.error("pick_failed", e.message, null)
-        }
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode != REQUEST_PICK) {
-            super.onActivityResult(requestCode, resultCode, data)
-            return
-        }
-        val result = pendingPick ?: return
-        pendingPick = null
-        val uri = data?.data
-        if (resultCode != Activity.RESULT_OK || uri == null) {
-            result.success(null)
-            return
-        }
-        try {
-            result.success(describe(uri))
-        } catch (e: Exception) {
-            result.error("pick_failed", e.message, null)
+            result.error(DocumentChannel.ERROR_PICK_FAILED, e.message, null)
         }
     }
 
@@ -81,32 +76,27 @@ class MainActivity : FlutterActivity() {
             }
         }
         return mapOf(
-            "uri" to uri.toString(),
-            "name" to (name ?: uri.lastPathSegment ?: ""),
-            "size" to size,
+            DocumentChannel.KEY_URI to uri.toString(),
+            DocumentChannel.KEY_NAME to (name ?: uri.lastPathSegment ?: ""),
+            DocumentChannel.KEY_SIZE to size,
         )
     }
 
     /** Новый дескриптор: владение переходит Dart и дальше мосту (он закроет). */
     private fun openFd(uri: String?, result: MethodChannel.Result) {
         if (uri == null) {
-            result.error("bad_args", "uri is required", null)
+            result.error(DocumentChannel.ERROR_BAD_ARGS, "uri is required", null)
             return
         }
         try {
             val fd = contentResolver.openFileDescriptor(Uri.parse(uri), "r")?.detachFd()
             if (fd == null) {
-                result.error("no_file", "Cannot open $uri", null)
+                result.error(DocumentChannel.ERROR_NO_FILE, "Cannot open $uri", null)
             } else {
                 result.success(fd)
             }
         } catch (e: Exception) {
-            result.error("no_access", e.message, null)
+            result.error(DocumentChannel.ERROR_NO_ACCESS, e.message, null)
         }
-    }
-
-    private companion object {
-        const val CHANNEL = "app.fusionreflow/documents"
-        const val REQUEST_PICK = 4101
     }
 }

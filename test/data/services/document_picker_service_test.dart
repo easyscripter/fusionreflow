@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fusionreflow/data/services/document_channel.dart';
 import 'package:fusionreflow/data/services/document_picker_service.dart';
 
 const _channel = MethodChannel('app.fusionreflow/documents');
@@ -17,7 +18,7 @@ void _handle(Future<Object?>? Function(MethodCall call) handler) {
 void main() {
   test('pick maps channel result', () async {
     _handle((call) async {
-      expect(call.method, 'pick');
+      expect(call.method, DocumentChannel.methodPick);
       return {'uri': 'content://x', 'name': 'a.epub', 'size': 10};
     });
     final file = await const DocumentPickerService().pick();
@@ -41,7 +42,10 @@ void main() {
     });
     expect(await const DocumentPickerService().openFd('content://x'), 42);
 
-    _handle((call) async => throw PlatformException(code: 'gone'));
+    _handle(
+      (call) async =>
+          throw PlatformException(code: DocumentChannel.errorNoAccess),
+    );
     await expectLater(
       const DocumentPickerService().openFd('content://x'),
       throwsA(isA<PlatformException>()),
