@@ -23,8 +23,14 @@ class FakeBookRepository implements BookRepository {
   /// Thrown by [watchAll] when set.
   Exception? watchError;
 
-  /// Bytes and formats passed to [add].
-  final List<(Uint8List, BookFormat)> added = [];
+  /// Bytes, formats and sizes passed to [add].
+  final List<(Uint8List, BookFormat, int?)> added = [];
+
+  /// Ids passed to [delete].
+  final List<String> deleted = [];
+
+  /// Thrown by [delete] when set.
+  Exception? deleteError;
 
   /// What [add] returns; when null a new book `new` is created.
   BookEntry? addResult;
@@ -41,6 +47,9 @@ class FakeBookRepository implements BookRepository {
     _changes.add(books);
   }
 
+  /// Fails the [watchAll] stream of every watcher.
+  void emitError(Object error) => _changes.addError(error);
+
   @override
   Stream<List<BookEntry>> watchAll() async* {
     watchCalls++;
@@ -51,13 +60,24 @@ class FakeBookRepository implements BookRepository {
   }
 
   @override
-  Future<BookEntry> add(Uint8List bytes, BookFormat format) async {
-    added.add((bytes, format));
+  Future<BookEntry> add(
+    Uint8List bytes,
+    BookFormat format, {
+    int? sourceSize,
+  }) async {
+    added.add((bytes, format, sourceSize));
     final error = addError;
     if (error != null) throw error;
     final book = addResult ?? bookEntry(id: 'new', title: 'New book');
     if (!_books.any((b) => b.id == book.id)) emit([book, ..._books]);
     return book;
+  }
+
+  @override
+  Stream<BookEntry?> watch(String id) async* {
+    BookEntry? find() => _books.where((b) => b.id == id).firstOrNull;
+    yield find();
+    yield* _changes.stream.map((_) => find());
   }
 
   @override
@@ -71,5 +91,13 @@ class FakeBookRepository implements BookRepository {
   ) => throw UnimplementedError();
 
   @override
-  Future<void> delete(String id) => throw UnimplementedError();
+  Future<void> delete(String id) async {
+    deleted.add(id);
+    final error = deleteError;
+    if (error != null) throw error;
+    emit([
+      for (final b in _books)
+        if (b.id != id) b,
+    ]);
+  }
 }

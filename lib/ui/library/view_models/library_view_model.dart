@@ -46,6 +46,18 @@ class LibraryViewModel extends _$LibraryViewModel {
     _emit();
   }
 
+  /// Deletes book [id]. Returns false if the repository failed; the error is
+  /// not rethrown, the View shows `bookDeleteFailed`. The book leaves the grid
+  /// through watchAll.
+  Future<bool> deleteBook(String id) async {
+    try {
+      await ref.read(bookRepositoryProvider).delete(id);
+      return true;
+    } on Object {
+      return false;
+    }
+  }
+
   void _emit() {
     final continueReading = _continueReading(_books);
     final sorted = sortBooks(_books, _sort);

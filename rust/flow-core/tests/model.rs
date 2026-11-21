@@ -107,6 +107,7 @@ fn sample_book() -> Book {
             authors: vec!["A".into(), "B".into()],
             language: Some("ru".into()),
             cover: Some(ResourceId(0)),
+            description: None,
         },
         toc: vec![TocEntry {
             level: 1,
@@ -208,4 +209,23 @@ fn regenerate_golden_fixture() {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
     std::fs::write(&path, encode(&sample_book()).unwrap()).unwrap();
+}
+
+#[test]
+fn description_roundtrips() {
+    let mut book = sample_book();
+    book.meta.description = Some("A\n\nB".into());
+    assert_eq!(decode(&encode(&book).unwrap()).unwrap(), book);
+}
+
+#[test]
+fn absent_description_is_not_encoded() {
+    let bytes = encode(&sample_book()).unwrap();
+    assert!(!bytes.windows(11).any(|w| w == b"description"));
+    let mut with = sample_book();
+    with.meta.description = Some("x".into());
+    assert!(encode(&with)
+        .unwrap()
+        .windows(11)
+        .any(|w| w == b"description"));
 }

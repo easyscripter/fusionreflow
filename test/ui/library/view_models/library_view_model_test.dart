@@ -97,4 +97,32 @@ void main() {
     await pumpEventQueue();
     expect(container.read(libraryViewModelProvider).hasError, isTrue);
   });
+
+  test('deleteBook deletes and returns true', () async {
+    repo.emit([bookEntry(id: 'a'), bookEntry(id: 'b')]);
+    await state();
+
+    expect(
+      await container.read(libraryViewModelProvider.notifier).deleteBook('a'),
+      isTrue,
+    );
+
+    expect(repo.deleted, ['a']);
+    expect((await state()).books.map((b) => b.id), ['b']);
+  });
+
+  test('deleteBook returns false on error', () async {
+    repo
+      ..emit([bookEntry(id: 'a')])
+      ..deleteError = Exception('boom');
+    await state();
+
+    expect(
+      await container.read(libraryViewModelProvider.notifier).deleteBook('a'),
+      isFalse,
+    );
+
+    expect(container.read(libraryViewModelProvider).hasError, isFalse);
+    expect((await state()).books.map((b) => b.id), ['a']);
+  });
 }

@@ -20,5 +20,7 @@ abstract class BookEntry with _$BookEntry {
     required double progress,
     String? language,
     DateTime? lastReadAt,
+    String? description,
+    int? sourceSize,
   }) = _BookEntry;
 }

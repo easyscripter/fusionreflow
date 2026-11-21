@@ -145,6 +145,28 @@ class $BooksTable extends Books with TableInfo<$BooksTable, BookRow> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceSizeMeta = const VerificationMeta(
+    'sourceSize',
+  );
+  @override
+  late final GeneratedColumn<int> sourceSize = GeneratedColumn<int>(
+    'source_size',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _deletedAtMeta = const VerificationMeta(
     'deletedAt',
   );
@@ -171,6 +193,8 @@ class $BooksTable extends Books with TableInfo<$BooksTable, BookRow> {
     chapter,
     offset,
     progress,
+    description,
+    sourceSize,
     deletedAt,
   ];
   @override
@@ -266,6 +290,21 @@ class $BooksTable extends Books with TableInfo<$BooksTable, BookRow> {
         progress.isAcceptableOrUnknown(data['progress']!, _progressMeta),
       );
     }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_size')) {
+      context.handle(
+        _sourceSizeMeta,
+        sourceSize.isAcceptableOrUnknown(data['source_size']!, _sourceSizeMeta),
+      );
+    }
     if (data.containsKey('deleted_at')) {
       context.handle(
         _deletedAtMeta,
@@ -337,6 +376,14 @@ class $BooksTable extends Books with TableInfo<$BooksTable, BookRow> {
         DriftSqlType.double,
         data['${effectivePrefix}progress'],
       )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      sourceSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}source_size'],
+      ),
       deletedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
@@ -395,6 +442,13 @@ class BookRow extends DataClass implements Insertable<BookRow> {
   /// Read share, `0.0..1.0`.
   final double progress;
 
+  /// Plain-text annotation from the book; null — none or added before v2.
+  final String? description;
+
+  /// Size of the source file in bytes as reported by the file picker; null —
+  /// unknown.
+  final int? sourceSize;
+
   /// Soft deletion time.
   final DateTime? deletedAt;
   const BookRow({
@@ -411,6 +465,8 @@ class BookRow extends DataClass implements Insertable<BookRow> {
     required this.chapter,
     required this.offset,
     required this.progress,
+    this.description,
+    this.sourceSize,
     this.deletedAt,
   });
   @override
@@ -439,6 +495,12 @@ class BookRow extends DataClass implements Insertable<BookRow> {
     map['chapter'] = Variable<int>(chapter);
     map['offset'] = Variable<int>(offset);
     map['progress'] = Variable<double>(progress);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    if (!nullToAbsent || sourceSize != null) {
+      map['source_size'] = Variable<int>(sourceSize);
+    }
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
     }
@@ -464,6 +526,12 @@ class BookRow extends DataClass implements Insertable<BookRow> {
       chapter: Value(chapter),
       offset: Value(offset),
       progress: Value(progress),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      sourceSize: sourceSize == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceSize),
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
@@ -491,6 +559,8 @@ class BookRow extends DataClass implements Insertable<BookRow> {
       chapter: serializer.fromJson<int>(json['chapter']),
       offset: serializer.fromJson<int>(json['offset']),
       progress: serializer.fromJson<double>(json['progress']),
+      description: serializer.fromJson<String?>(json['description']),
+      sourceSize: serializer.fromJson<int?>(json['sourceSize']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
@@ -513,6 +583,8 @@ class BookRow extends DataClass implements Insertable<BookRow> {
       'chapter': serializer.toJson<int>(chapter),
       'offset': serializer.toJson<int>(offset),
       'progress': serializer.toJson<double>(progress),
+      'description': serializer.toJson<String?>(description),
+      'sourceSize': serializer.toJson<int?>(sourceSize),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
   }
@@ -531,6 +603,8 @@ class BookRow extends DataClass implements Insertable<BookRow> {
     int? chapter,
     int? offset,
     double? progress,
+    Value<String?> description = const Value.absent(),
+    Value<int?> sourceSize = const Value.absent(),
     Value<DateTime?> deletedAt = const Value.absent(),
   }) => BookRow(
     id: id ?? this.id,
@@ -546,6 +620,8 @@ class BookRow extends DataClass implements Insertable<BookRow> {
     chapter: chapter ?? this.chapter,
     offset: offset ?? this.offset,
     progress: progress ?? this.progress,
+    description: description.present ? description.value : this.description,
+    sourceSize: sourceSize.present ? sourceSize.value : this.sourceSize,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
   BookRow copyWithCompanion(BooksCompanion data) {
@@ -569,6 +645,12 @@ class BookRow extends DataClass implements Insertable<BookRow> {
       chapter: data.chapter.present ? data.chapter.value : this.chapter,
       offset: data.offset.present ? data.offset.value : this.offset,
       progress: data.progress.present ? data.progress.value : this.progress,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      sourceSize: data.sourceSize.present
+          ? data.sourceSize.value
+          : this.sourceSize,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
@@ -589,6 +671,8 @@ class BookRow extends DataClass implements Insertable<BookRow> {
           ..write('chapter: $chapter, ')
           ..write('offset: $offset, ')
           ..write('progress: $progress, ')
+          ..write('description: $description, ')
+          ..write('sourceSize: $sourceSize, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
@@ -609,6 +693,8 @@ class BookRow extends DataClass implements Insertable<BookRow> {
     chapter,
     offset,
     progress,
+    description,
+    sourceSize,
     deletedAt,
   );
   @override
@@ -628,6 +714,8 @@ class BookRow extends DataClass implements Insertable<BookRow> {
           other.chapter == this.chapter &&
           other.offset == this.offset &&
           other.progress == this.progress &&
+          other.description == this.description &&
+          other.sourceSize == this.sourceSize &&
           other.deletedAt == this.deletedAt);
 }
 
@@ -645,6 +733,8 @@ class BooksCompanion extends UpdateCompanion<BookRow> {
   final Value<int> chapter;
   final Value<int> offset;
   final Value<double> progress;
+  final Value<String?> description;
+  final Value<int?> sourceSize;
   final Value<DateTime?> deletedAt;
   final Value<int> rowid;
   const BooksCompanion({
@@ -661,6 +751,8 @@ class BooksCompanion extends UpdateCompanion<BookRow> {
     this.chapter = const Value.absent(),
     this.offset = const Value.absent(),
     this.progress = const Value.absent(),
+    this.description = const Value.absent(),
+    this.sourceSize = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -678,6 +770,8 @@ class BooksCompanion extends UpdateCompanion<BookRow> {
     this.chapter = const Value.absent(),
     this.offset = const Value.absent(),
     this.progress = const Value.absent(),
+    this.description = const Value.absent(),
+    this.sourceSize = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -702,6 +796,8 @@ class BooksCompanion extends UpdateCompanion<BookRow> {
     Expression<int>? chapter,
     Expression<int>? offset,
     Expression<double>? progress,
+    Expression<String>? description,
+    Expression<int>? sourceSize,
     Expression<DateTime>? deletedAt,
     Expression<int>? rowid,
   }) {
@@ -719,6 +815,8 @@ class BooksCompanion extends UpdateCompanion<BookRow> {
       if (chapter != null) 'chapter': chapter,
       if (offset != null) 'offset': offset,
       if (progress != null) 'progress': progress,
+      if (description != null) 'description': description,
+      if (sourceSize != null) 'source_size': sourceSize,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -738,6 +836,8 @@ class BooksCompanion extends UpdateCompanion<BookRow> {
     Value<int>? chapter,
     Value<int>? offset,
     Value<double>? progress,
+    Value<String?>? description,
+    Value<int?>? sourceSize,
     Value<DateTime?>? deletedAt,
     Value<int>? rowid,
   }) {
@@ -755,6 +855,8 @@ class BooksCompanion extends UpdateCompanion<BookRow> {
       chapter: chapter ?? this.chapter,
       offset: offset ?? this.offset,
       progress: progress ?? this.progress,
+      description: description ?? this.description,
+      sourceSize: sourceSize ?? this.sourceSize,
       deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -806,6 +908,12 @@ class BooksCompanion extends UpdateCompanion<BookRow> {
     if (progress.present) {
       map['progress'] = Variable<double>(progress.value);
     }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (sourceSize.present) {
+      map['source_size'] = Variable<int>(sourceSize.value);
+    }
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
@@ -831,6 +939,8 @@ class BooksCompanion extends UpdateCompanion<BookRow> {
           ..write('chapter: $chapter, ')
           ..write('offset: $offset, ')
           ..write('progress: $progress, ')
+          ..write('description: $description, ')
+          ..write('sourceSize: $sourceSize, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -863,6 +973,8 @@ typedef $$BooksTableCreateCompanionBuilder = BooksCompanion Function({
   Value<int> chapter,
   Value<int> offset,
   Value<double> progress,
+  Value<String?> description,
+  Value<int?> sourceSize,
   Value<DateTime?> deletedAt,
   Value<int> rowid,
 });
@@ -880,6 +992,8 @@ typedef $$BooksTableUpdateCompanionBuilder = BooksCompanion Function({
   Value<int> chapter,
   Value<int> offset,
   Value<double> progress,
+  Value<String?> description,
+  Value<int?> sourceSize,
   Value<DateTime?> deletedAt,
   Value<int> rowid,
 });
@@ -956,6 +1070,16 @@ class $$BooksTableFilterComposer extends Composer<_$AppDatabase, $BooksTable> {
 
   ColumnFilters<double> get progress => $composableBuilder(
     column: $table.progress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sourceSize => $composableBuilder(
+    column: $table.sourceSize,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1039,6 +1163,16 @@ class $$BooksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sourceSize => $composableBuilder(
+    column: $table.sourceSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
     column: $table.deletedAt,
     builder: (column) => ColumnOrderings(column),
@@ -1099,6 +1233,16 @@ class $$BooksTableAnnotationComposer
   GeneratedColumn<double> get progress =>
       $composableBuilder(column: $table.progress, builder: (column) => column);
 
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get sourceSize => $composableBuilder(
+    column: $table.sourceSize,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 }
@@ -1144,6 +1288,8 @@ class $$BooksTableTableManager
                 Value<int> chapter = const Value.absent(),
                 Value<int> offset = const Value.absent(),
                 Value<double> progress = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<int?> sourceSize = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BooksCompanion(
@@ -1160,6 +1306,8 @@ class $$BooksTableTableManager
                 chapter: chapter,
                 offset: offset,
                 progress: progress,
+                description: description,
+                sourceSize: sourceSize,
                 deletedAt: deletedAt,
                 rowid: rowid,
               ),
@@ -1178,6 +1326,8 @@ class $$BooksTableTableManager
                 Value<int> chapter = const Value.absent(),
                 Value<int> offset = const Value.absent(),
                 Value<double> progress = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<int?> sourceSize = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BooksCompanion.insert(
@@ -1194,6 +1344,8 @@ class $$BooksTableTableManager
                 chapter: chapter,
                 offset: offset,
                 progress: progress,
+                description: description,
+                sourceSize: sourceSize,
                 deletedAt: deletedAt,
                 rowid: rowid,
               ),

@@ -11,9 +11,12 @@ import 'package:go_router/go_router.dart';
 /// Книга в сетке: обложка, название, автор, прогресс и формат.
 class BookCard extends StatelessWidget {
   /// Creates the card.
-  const new({required this.book, super.key});
+  const new({required this.book, this.onLongPress, super.key});
 
   final BookEntry book;
+
+  /// Long press: the book actions menu.
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +28,7 @@ class BookCard extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(AppRadius.control),
       onTap: () => context.push(AppRoutes.readerOf(book.id)),
+      onLongPress: onLongPress,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -41,6 +41,9 @@ class FakeRustCoreService implements RustCoreService {
     return 'hyphenated:$text';
   }
 
+  /// `description` that [bookMeta] reports for book `n`; absent means none.
+  final Map<int, String> descriptions = {};
+
   @override
   Future<BookMeta> bookMeta(Uint8List bytes) async {
     final n = bytes.first;
@@ -50,6 +53,7 @@ class FakeRustCoreService implements RustCoreService {
       authors: ['A$n'],
       sourceHash: 'h$n',
       converterVersion: 'test',
+      description: descriptions[n],
     );
   }
 

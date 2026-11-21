@@ -33,6 +33,14 @@ void main() {
     expect(find.byKey(const Key('library_screen')), findsOneWidget);
   });
 
+  testWidgets('book details route is outside the shell', (tester) async {
+    await pumpApp(tester, location: AppRoutes.bookDetailsOf('x'));
+
+    expect(find.byKey(const Key('book_details')), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byType(NavigationRail), findsNothing);
+  });
+
   testWidgets('reader route is outside the shell', (tester) async {
     await pumpApp(tester, location: AppRoutes.readerOf('x'));
 

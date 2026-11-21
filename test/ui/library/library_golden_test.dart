@@ -6,6 +6,7 @@ import 'package:fusionreflow/domain/models/import_source.dart';
 import 'package:fusionreflow/domain/models/import_update.dart';
 
 import '../../helpers/book_entry.dart';
+import '../../helpers/golden.dart';
 import '../../helpers/library_harness.dart';
 import '../../helpers/load_golden_fonts.dart';
 
@@ -59,51 +60,30 @@ final List<BookEntry> _books = [
   ),
 ];
 
-Future<void> _expect(WidgetTester tester, String name) => expectLater(
-  find.byType(MaterialApp),
-  matchesGoldenFile('goldens/$name.png'),
-);
-
-/// Golden-тест с настоящими тенями: с отключёнными flutter_test рисует их
-/// жёсткой чёрной обводкой (так выглядела кнопка «Добавить»). Значение
-/// возвращается до конца теста, иначе binding падает.
-void _golden(String name, Future<void> Function(WidgetTester tester) body) {
-  testWidgets(name, tags: 'golden', (tester) async {
-    debugDisableShadows = false;
-    try {
-      await body(tester);
-    } finally {
-      debugDisableShadows = true;
-    }
-  });
-}
-
 void main() {
   setUpAll(loadGoldenFonts);
 
-  _golden('library_phone_light', (tester) async {
+  goldenTest('library_phone_light', (tester) async {
     await pumpLibrary(tester, books: _books);
-    await _expect(tester, 'library_phone_light');
+    await expectGolden('library_phone_light');
   });
 
-  _golden('library_phone_dark', (tester) async {
-    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
-    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+  goldenTest('library_phone_dark', (tester) async {
     await pumpLibrary(tester, books: _books);
-    await _expect(tester, 'library_phone_dark');
-  });
+    await expectGolden('library_phone_dark');
+  }, dark: true);
 
-  _golden('library_empty_phone_light', (tester) async {
+  goldenTest('library_empty_phone_light', (tester) async {
     await pumpLibrary(tester);
-    await _expect(tester, 'library_empty_phone_light');
+    await expectGolden('library_empty_phone_light');
   });
 
-  _golden('library_tablet_light', (tester) async {
+  goldenTest('library_tablet_light', (tester) async {
     await pumpLibrary(tester, books: _books, size: const Size(820, 1180));
-    await _expect(tester, 'library_tablet_light');
+    await expectGolden('library_tablet_light');
   });
 
-  _golden('library_importing_phone_light', (tester) async {
+  goldenTest('library_importing_phone_light', (tester) async {
     final h = await pumpLibrary(
       tester,
       books: _books,
@@ -116,10 +96,10 @@ void main() {
     await startImport(tester);
     h.imports.current.add(const ImportUpdate.progress(done: 1, total: 3));
     await settleImport(tester);
-    await _expect(tester, 'library_importing_phone_light');
+    await expectGolden('library_importing_phone_light');
   });
 
-  _golden('import_pdf_later_phone_light', (tester) async {
+  goldenTest('import_pdf_later_phone_light', (tester) async {
     final h = await pumpLibrary(
       tester,
       picked: const ImportSource(
@@ -133,22 +113,18 @@ void main() {
     h.imports.current.add(const ImportUpdate.failed(ImportFailure.pdfNotYet));
     await settleImport(tester);
     await tester.pumpAndSettle();
-    await _expect(tester, 'import_pdf_later_phone_light');
+    await expectGolden('import_pdf_later_phone_light');
   });
 
-  _golden('add_book_sheet_phone_dark', (tester) async {
-    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
-    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+  goldenTest('add_book_sheet_phone_dark', (tester) async {
     await pumpLibrary(tester, books: _books);
     await tester.tap(find.byKey(const Key('add_book')));
     await tester.pumpAndSettle();
-    await _expect(tester, 'add_book_sheet_phone_dark');
-  });
+    await expectGolden('add_book_sheet_phone_dark');
+  }, dark: true);
 
-  _golden('library_empty_phone_dark', (tester) async {
-    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
-    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+  goldenTest('library_empty_phone_dark', (tester) async {
     await pumpLibrary(tester);
-    await _expect(tester, 'library_empty_phone_dark');
-  });
+    await expectGolden('library_empty_phone_dark');
+  }, dark: true);
 }

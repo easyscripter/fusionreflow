@@ -6,7 +6,5 @@ part 'reader_placeholder_view_model.g.dart';
 
 /// Книга [bookId] из библиотеки; null, если её нет (или удалена).
 @riverpod
-Stream<BookEntry?> readerPlaceholderViewModel(Ref ref, String bookId) => ref
-    .watch(bookRepositoryProvider)
-    .watchAll()
-    .map((books) => books.where((b) => b.id == bookId).firstOrNull);
+Stream<BookEntry?> readerPlaceholderViewModel(Ref ref, String bookId) =>
+    ref.watch(bookRepositoryProvider).watch(bookId);

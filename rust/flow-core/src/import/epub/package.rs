@@ -1,4 +1,5 @@
 //! `container.xml`, the OPF package document and `encryption.xml`.
+use super::description::plain_description;
 use super::path::resolve;
 use super::xml::{attr, collapse, end_name, event_text, name, reader};
 use quick_xml::events::Event;
@@ -24,6 +25,7 @@ pub(super) struct Package {
     pub title: String,
     pub authors: Vec<String>,
     pub language: Option<String>,
+    pub description: Option<String>,
     pub manifest: HashMap<String, Item>,
     /// Manifest ids in document order (for deterministic scans).
     pub order: Vec<String>,
@@ -76,6 +78,7 @@ pub(super) fn parse_container(xml: &str) -> Option<String> {
 enum Capture {
     Title,
     Language,
+    Description,
     Creator {
         id: Option<String>,
         role: Option<String>,
@@ -90,6 +93,7 @@ pub(super) fn parse_opf(xml: &str, opf_path: &str) -> Result<Package, String> {
     let mut r = reader(xml, true);
     let mut p = Package::default();
     let mut title_seen = false;
+    let mut description_seen = false;
     let mut cap: Option<(Capture, String, String)> = None; // kind, element, text
     let mut creators: Vec<(String, Option<String>, Option<String>)> = Vec::new();
     let mut roles: HashMap<String, String> = HashMap::new();
@@ -98,6 +102,18 @@ pub(super) fn parse_opf(xml: &str, opf_path: &str) -> Result<Package, String> {
         if let (Some((_, _, buf)), Some(t)) = (cap.as_mut(), event_text(&ev)) {
             buf.push_str(&t);
             continue;
+        }
+        if let Some((Capture::Description, cn, buf)) = cap.as_mut() {
+            // Real child elements (not escaped HTML): keep their boundaries for `plain_description`.
+            let tag = match &ev {
+                Event::Start(e) | Event::Empty(e) => Some(format!("<{}>", name(e))),
+                Event::End(e) if end_name(e) != *cn => Some(format!("</{}>", end_name(e))),
+                _ => None,
+            };
+            if let Some(tag) = tag.filter(|t| *t != format!("<{cn}>")) {
+                buf.push_str(&tag);
+                continue;
+            }
         }
         let (start, empty) = match &ev {
             Event::Start(e) => (Some(e), false),
@@ -112,6 +128,10 @@ pub(super) fn parse_opf(xml: &str, opf_path: &str) -> Result<Package, String> {
                     Some(Capture::Title)
                 }
                 "language" => Some(Capture::Language),
+                "description" if !description_seen => {
+                    description_seen = true;
+                    Some(Capture::Description)
+                }
                 "creator" => Some(Capture::Creator {
                     id: attr(e, "id"),
                     role: attr(e, "role"),
@@ -167,6 +187,7 @@ pub(super) fn parse_opf(xml: &str, opf_path: &str) -> Result<Package, String> {
                 if let Some((kind, _, buf)) = cap.take() {
                     let text = collapse(&buf);
                     match kind {
+                        Capture::Description => p.description = plain_description(&buf),
                         Capture::Title => p.title = text,
                         Capture::Language => {
                             if p.language.is_none() && !text.is_empty() {

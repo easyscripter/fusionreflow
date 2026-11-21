@@ -481,6 +481,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn’t open the file picker'**
   String get importPickFailed;
+
+  /// Semantics label of the book actions dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Book actions'**
+  String get bookActionsTitle;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Book info'**
+  String get bookActionDetails;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete book'**
+  String get bookActionDelete;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get bookActionClose;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the book?'**
+  String get bookDeleteTitle;
+
+  /// Delete confirmation text.
+  ///
+  /// In en, this message translates to:
+  /// **'“{title}” will be removed from the library along with reading progress. The original file on your phone stays unchanged.'**
+  String bookDeleteMessage(String title);
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get bookDeleteCancel;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get bookDeleteConfirm;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Book deleted'**
+  String get bookDeleted;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t delete the book'**
+  String get bookDeleteFailed;
+
+  /// Semantics label of the back button on the book card.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get bookBack;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Author unknown'**
+  String get bookNoAuthor;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get bookNotStarted;
+
+  /// Reading progress label on the book card.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% read'**
+  String bookReadPercent(int percent);
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get bookFinished;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Start reading'**
+  String get bookStartReading;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue reading'**
+  String get bookContinueReading;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'About this book'**
+  String get bookAbout;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Read more'**
+  String get bookReadMore;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'The file has no description.'**
+  String get bookNoDescription;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken from the file’s metadata and shown as is.'**
+  String get bookDescriptionNote;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get bookDescriptionClose;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get bookDetailsTitle;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get bookDetailFormat;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'File size'**
+  String get bookDetailSize;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get bookDetailLanguage;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get bookDetailAdded;
+
+  /// Book actions and details screen text.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get bookLanguageUnknown;
 }
 
 class _AppLocalizationsDelegate

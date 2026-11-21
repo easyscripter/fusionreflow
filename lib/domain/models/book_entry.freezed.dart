@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$BookEntry {
 
- String get id; String get title; List<String> get authors; BookFormat get format; String get sourceHash; String get converterVersion; DateTime get addedAt; ReadingPosition get position; double get progress; String? get language; DateTime? get lastReadAt;
+ String get id; String get title; List<String> get authors; BookFormat get format; String get sourceHash; String get converterVersion; DateTime get addedAt; ReadingPosition get position; double get progress; String? get language; DateTime? get lastReadAt; String? get description; int? get sourceSize;
 /// Create a copy of BookEntry
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,20 +27,20 @@ $BookEntryCopyWith<BookEntry> get copyWith => _$BookEntryCopyWithImpl<BookEntry>
 @override
 bool operator ==(Object other) {
   final _this = this as BookEntry;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BookEntry&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&const DeepCollectionEquality().equals(other.authors, _this.authors)&&(identical(other.format, _this.format) || other.format == _this.format)&&(identical(other.sourceHash, _this.sourceHash) || other.sourceHash == _this.sourceHash)&&(identical(other.converterVersion, _this.converterVersion) || other.converterVersion == _this.converterVersion)&&(identical(other.addedAt, _this.addedAt) || other.addedAt == _this.addedAt)&&(identical(other.position, _this.position) || other.position == _this.position)&&(identical(other.progress, _this.progress) || other.progress == _this.progress)&&(identical(other.language, _this.language) || other.language == _this.language)&&(identical(other.lastReadAt, _this.lastReadAt) || other.lastReadAt == _this.lastReadAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BookEntry&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&const DeepCollectionEquality().equals(other.authors, _this.authors)&&(identical(other.format, _this.format) || other.format == _this.format)&&(identical(other.sourceHash, _this.sourceHash) || other.sourceHash == _this.sourceHash)&&(identical(other.converterVersion, _this.converterVersion) || other.converterVersion == _this.converterVersion)&&(identical(other.addedAt, _this.addedAt) || other.addedAt == _this.addedAt)&&(identical(other.position, _this.position) || other.position == _this.position)&&(identical(other.progress, _this.progress) || other.progress == _this.progress)&&(identical(other.language, _this.language) || other.language == _this.language)&&(identical(other.lastReadAt, _this.lastReadAt) || other.lastReadAt == _this.lastReadAt)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.sourceSize, _this.sourceSize) || other.sourceSize == _this.sourceSize));
 }
 
 
 @override
 int get hashCode {
   final _this = this as BookEntry;
-  return Object.hash(runtimeType,_this.id,_this.title,const DeepCollectionEquality().hash(_this.authors),_this.format,_this.sourceHash,_this.converterVersion,_this.addedAt,_this.position,_this.progress,_this.language,_this.lastReadAt);
+  return Object.hash(runtimeType,_this.id,_this.title,const DeepCollectionEquality().hash(_this.authors),_this.format,_this.sourceHash,_this.converterVersion,_this.addedAt,_this.position,_this.progress,_this.language,_this.lastReadAt,_this.description,_this.sourceSize);
 }
 
 @override
 String toString() {
   final _this = this as BookEntry;
-  return 'BookEntry(id: ${_this.id}, title: ${_this.title}, authors: ${_this.authors}, format: ${_this.format}, sourceHash: ${_this.sourceHash}, converterVersion: ${_this.converterVersion}, addedAt: ${_this.addedAt}, position: ${_this.position}, progress: ${_this.progress}, language: ${_this.language}, lastReadAt: ${_this.lastReadAt})';
+  return 'BookEntry(id: ${_this.id}, title: ${_this.title}, authors: ${_this.authors}, format: ${_this.format}, sourceHash: ${_this.sourceHash}, converterVersion: ${_this.converterVersion}, addedAt: ${_this.addedAt}, position: ${_this.position}, progress: ${_this.progress}, language: ${_this.language}, lastReadAt: ${_this.lastReadAt}, description: ${_this.description}, sourceSize: ${_this.sourceSize})';
 }
 
 
@@ -51,7 +51,7 @@ abstract mixin class $BookEntryCopyWith<$Res>  {
   factory $BookEntryCopyWith(BookEntry value, $Res Function(BookEntry) _then) = _$BookEntryCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, List<String> authors, BookFormat format, String sourceHash, String converterVersion, DateTime addedAt, ReadingPosition position, double progress, String? language, DateTime? lastReadAt
+ String id, String title, List<String> authors, BookFormat format, String sourceHash, String converterVersion, DateTime addedAt, ReadingPosition position, double progress, String? language, DateTime? lastReadAt, String? description, int? sourceSize
 });
 
 
@@ -68,7 +68,7 @@ class _$BookEntryCopyWithImpl<$Res>
 
 /// Create a copy of BookEntry
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? authors = null,Object? format = null,Object? sourceHash = null,Object? converterVersion = null,Object? addedAt = null,Object? position = null,Object? progress = null,Object? language = freezed,Object? lastReadAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? authors = null,Object? format = null,Object? sourceHash = null,Object? converterVersion = null,Object? addedAt = null,Object? position = null,Object? progress = null,Object? language = freezed,Object? lastReadAt = freezed,Object? description = freezed,Object? sourceSize = freezed,}) {
   return _then(BookEntry(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -81,7 +81,9 @@ as DateTime,position: null == position ? _self.position : position // ignore: ca
 as ReadingPosition,progress: null == progress ? _self.progress : progress // ignore: cast_nullable_to_non_nullable
 as double,language: freezed == language ? _self.language : language // ignore: cast_nullable_to_non_nullable
 as String?,lastReadAt: freezed == lastReadAt ? _self.lastReadAt : lastReadAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,sourceSize: freezed == sourceSize ? _self.sourceSize : sourceSize // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 /// Create a copy of BookEntry
@@ -175,10 +177,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  List<String> authors,  BookFormat format,  String sourceHash,  String converterVersion,  DateTime addedAt,  ReadingPosition position,  double progress,  String? language,  DateTime? lastReadAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  List<String> authors,  BookFormat format,  String sourceHash,  String converterVersion,  DateTime addedAt,  ReadingPosition position,  double progress,  String? language,  DateTime? lastReadAt,  String? description,  int? sourceSize)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BookEntry() when $default != null:
-return $default(_that.id,_that.title,_that.authors,_that.format,_that.sourceHash,_that.converterVersion,_that.addedAt,_that.position,_that.progress,_that.language,_that.lastReadAt);case _:
+return $default(_that.id,_that.title,_that.authors,_that.format,_that.sourceHash,_that.converterVersion,_that.addedAt,_that.position,_that.progress,_that.language,_that.lastReadAt,_that.description,_that.sourceSize);case _:
   return orElse();
 
 }
@@ -196,10 +198,10 @@ return $default(_that.id,_that.title,_that.authors,_that.format,_that.sourceHash
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  List<String> authors,  BookFormat format,  String sourceHash,  String converterVersion,  DateTime addedAt,  ReadingPosition position,  double progress,  String? language,  DateTime? lastReadAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  List<String> authors,  BookFormat format,  String sourceHash,  String converterVersion,  DateTime addedAt,  ReadingPosition position,  double progress,  String? language,  DateTime? lastReadAt,  String? description,  int? sourceSize)  $default,) {final _that = this;
 switch (_that) {
 case _BookEntry():
-return $default(_that.id,_that.title,_that.authors,_that.format,_that.sourceHash,_that.converterVersion,_that.addedAt,_that.position,_that.progress,_that.language,_that.lastReadAt);case _:
+return $default(_that.id,_that.title,_that.authors,_that.format,_that.sourceHash,_that.converterVersion,_that.addedAt,_that.position,_that.progress,_that.language,_that.lastReadAt,_that.description,_that.sourceSize);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -216,10 +218,10 @@ return $default(_that.id,_that.title,_that.authors,_that.format,_that.sourceHash
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  List<String> authors,  BookFormat format,  String sourceHash,  String converterVersion,  DateTime addedAt,  ReadingPosition position,  double progress,  String? language,  DateTime? lastReadAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  List<String> authors,  BookFormat format,  String sourceHash,  String converterVersion,  DateTime addedAt,  ReadingPosition position,  double progress,  String? language,  DateTime? lastReadAt,  String? description,  int? sourceSize)?  $default,) {final _that = this;
 switch (_that) {
 case _BookEntry() when $default != null:
-return $default(_that.id,_that.title,_that.authors,_that.format,_that.sourceHash,_that.converterVersion,_that.addedAt,_that.position,_that.progress,_that.language,_that.lastReadAt);case _:
+return $default(_that.id,_that.title,_that.authors,_that.format,_that.sourceHash,_that.converterVersion,_that.addedAt,_that.position,_that.progress,_that.language,_that.lastReadAt,_that.description,_that.sourceSize);case _:
   return null;
 
 }
@@ -231,7 +233,7 @@ return $default(_that.id,_that.title,_that.authors,_that.format,_that.sourceHash
 
 
 class _BookEntry implements BookEntry {
-  const _BookEntry({required this.id, required this.title, required  List<String> authors, required this.format, required this.sourceHash, required this.converterVersion, required this.addedAt, required this.position, required this.progress, this.language, this.lastReadAt}): _authors = authors;
+  const _BookEntry({required this.id, required this.title, required  List<String> authors, required this.format, required this.sourceHash, required this.converterVersion, required this.addedAt, required this.position, required this.progress, this.language, this.lastReadAt, this.description, this.sourceSize}): _authors = authors;
   
 
 @override final  String id;
@@ -251,6 +253,8 @@ class _BookEntry implements BookEntry {
 @override final  double progress;
 @override final  String? language;
 @override final  DateTime? lastReadAt;
+@override final  String? description;
+@override final  int? sourceSize;
 
 /// Create a copy of BookEntry
 /// with the given fields replaced by the non-null parameter values.
@@ -262,18 +266,18 @@ _$BookEntryCopyWith<_BookEntry> get copyWith => __$BookEntryCopyWithImpl<_BookEn
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BookEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.authors, _authors)&&(identical(other.format, format) || other.format == format)&&(identical(other.sourceHash, sourceHash) || other.sourceHash == sourceHash)&&(identical(other.converterVersion, converterVersion) || other.converterVersion == converterVersion)&&(identical(other.addedAt, addedAt) || other.addedAt == addedAt)&&(identical(other.position, position) || other.position == position)&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.language, language) || other.language == language)&&(identical(other.lastReadAt, lastReadAt) || other.lastReadAt == lastReadAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BookEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.authors, _authors)&&(identical(other.format, format) || other.format == format)&&(identical(other.sourceHash, sourceHash) || other.sourceHash == sourceHash)&&(identical(other.converterVersion, converterVersion) || other.converterVersion == converterVersion)&&(identical(other.addedAt, addedAt) || other.addedAt == addedAt)&&(identical(other.position, position) || other.position == position)&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.language, language) || other.language == language)&&(identical(other.lastReadAt, lastReadAt) || other.lastReadAt == lastReadAt)&&(identical(other.description, description) || other.description == description)&&(identical(other.sourceSize, sourceSize) || other.sourceSize == sourceSize));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(_authors),format,sourceHash,converterVersion,addedAt,position,progress,language,lastReadAt);
+    return Object.hash(runtimeType,id,title,const DeepCollectionEquality().hash(_authors),format,sourceHash,converterVersion,addedAt,position,progress,language,lastReadAt,description,sourceSize);
 }
 
 @override
 String toString() {
-    return 'BookEntry(id: $id, title: $title, authors: $authors, format: $format, sourceHash: $sourceHash, converterVersion: $converterVersion, addedAt: $addedAt, position: $position, progress: $progress, language: $language, lastReadAt: $lastReadAt)';
+    return 'BookEntry(id: $id, title: $title, authors: $authors, format: $format, sourceHash: $sourceHash, converterVersion: $converterVersion, addedAt: $addedAt, position: $position, progress: $progress, language: $language, lastReadAt: $lastReadAt, description: $description, sourceSize: $sourceSize)';
 }
 
 
@@ -284,7 +288,7 @@ abstract mixin class _$BookEntryCopyWith<$Res> implements $BookEntryCopyWith<$Re
   factory _$BookEntryCopyWith(_BookEntry value, $Res Function(_BookEntry) _then) = __$BookEntryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, List<String> authors, BookFormat format, String sourceHash, String converterVersion, DateTime addedAt, ReadingPosition position, double progress, String? language, DateTime? lastReadAt
+ String id, String title, List<String> authors, BookFormat format, String sourceHash, String converterVersion, DateTime addedAt, ReadingPosition position, double progress, String? language, DateTime? lastReadAt, String? description, int? sourceSize
 });
 
 
@@ -301,7 +305,7 @@ class __$BookEntryCopyWithImpl<$Res>
 
 /// Create a copy of BookEntry
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? authors = null,Object? format = null,Object? sourceHash = null,Object? converterVersion = null,Object? addedAt = null,Object? position = null,Object? progress = null,Object? language = freezed,Object? lastReadAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? authors = null,Object? format = null,Object? sourceHash = null,Object? converterVersion = null,Object? addedAt = null,Object? position = null,Object? progress = null,Object? language = freezed,Object? lastReadAt = freezed,Object? description = freezed,Object? sourceSize = freezed,}) {
   return _then(_BookEntry(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -314,7 +318,9 @@ as DateTime,position: null == position ? _self.position : position // ignore: ca
 as ReadingPosition,progress: null == progress ? _self.progress : progress // ignore: cast_nullable_to_non_nullable
 as double,language: freezed == language ? _self.language : language // ignore: cast_nullable_to_non_nullable
 as String?,lastReadAt: freezed == lastReadAt ? _self.lastReadAt : lastReadAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,sourceSize: freezed == sourceSize ? _self.sourceSize : sourceSize // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

@@ -69,7 +69,7 @@ final class ReaderPlaceholderViewModelProvider
 }
 
 String _$readerPlaceholderViewModelHash() =>
-    r'9574d0a887eb713af2dd445d56555efc3f588b94';
+    r'de9a9968cd9b465abafb237ca25656526d57ce5f';
 
 /// Книга [bookId] из библиотеки; null, если её нет (или удалена).
 

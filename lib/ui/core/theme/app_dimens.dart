@@ -33,4 +33,7 @@ abstract final class AppSizes {
   static const double dragHandleHeight = 4;
   static const double dividerThickness = 1;
   static const double chipLabelHeight = 16;
+
+  /// Width of the book card column on a tablet.
+  static const double detailsMaxWidth = 600;
 }

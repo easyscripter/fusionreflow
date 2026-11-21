@@ -351,12 +351,14 @@ impl SseDecode for crate::api::book::BookMeta {
         let mut var_title = <String>::sse_decode(deserializer);
         let mut var_authors = <Vec<String>>::sse_decode(deserializer);
         let mut var_language = <Option<String>>::sse_decode(deserializer);
+        let mut var_description = <Option<String>>::sse_decode(deserializer);
         let mut var_sourceHash = <String>::sse_decode(deserializer);
         let mut var_converterVersion = <String>::sse_decode(deserializer);
         return crate::api::book::BookMeta {
             title: var_title,
             authors: var_authors,
             language: var_language,
+            description: var_description,
             source_hash: var_sourceHash,
             converter_version: var_converterVersion,
         };
@@ -601,6 +603,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::book::BookMeta {
             self.title.into_into_dart().into_dart(),
             self.authors.into_into_dart().into_dart(),
             self.language.into_into_dart().into_dart(),
+            self.description.into_into_dart().into_dart(),
             self.source_hash.into_into_dart().into_dart(),
             self.converter_version.into_into_dart().into_dart(),
         ]
@@ -803,6 +806,7 @@ impl SseEncode for crate::api::book::BookMeta {
         <String>::sse_encode(self.title, serializer);
         <Vec<String>>::sse_encode(self.authors, serializer);
         <Option<String>>::sse_encode(self.language, serializer);
+        <Option<String>>::sse_encode(self.description, serializer);
         <String>::sse_encode(self.source_hash, serializer);
         <String>::sse_encode(self.converter_version, serializer);
     }

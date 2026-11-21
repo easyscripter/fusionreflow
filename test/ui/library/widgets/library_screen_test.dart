@@ -306,6 +306,25 @@ void main() {
     expect(h.books.added, hasLength(1));
   });
 
+  testWidgets('delete during import keeps import card', (tester) async {
+    final h = await pumpLibrary(
+      tester,
+      books: [bookEntry(id: 'a', title: 'Пример книги')],
+    );
+
+    await startImport(tester);
+    await tester.longPress(find.byType(BookCard));
+    await settleImport(tester);
+    await tester.tap(find.byKey(const Key('book_action_delete')));
+    await settleImport(tester);
+    await tester.tap(find.byKey(const Key('delete_confirm')));
+    await settleImport(tester);
+
+    expect(h.books.deleted, ['a']);
+    expect(find.byKey(const Key('importing_book')), findsOneWidget);
+    expect(h.imports.cancelCalls, 0);
+  });
+
   testWidgets('busy import shows snackbar', (tester) async {
     final h = await pumpLibrary(tester);
 

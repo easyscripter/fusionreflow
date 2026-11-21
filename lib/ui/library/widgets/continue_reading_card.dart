@@ -13,9 +13,12 @@ import 'package:go_router/go_router.dart';
 /// «Продолжить чтение»: обложка, название, «автор · N%», полоса прогресса.
 class ContinueReadingCard extends StatelessWidget {
   /// Creates the card.
-  const new({required this.book, super.key});
+  const new({required this.book, this.onLongPress, super.key});
 
   final BookEntry book;
+
+  /// Long press: the book actions menu.
+  final VoidCallback? onLongPress;
 
   static const double _coverWidth = 72;
 
@@ -39,6 +42,7 @@ class ContinueReadingCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadius.dialog),
         onTap: open,
+        onLongPress: onLongPress,
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.s12),
           child: Row(

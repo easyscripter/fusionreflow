@@ -10,6 +10,11 @@ abstract final class AppRoutes {
   static String readerOf(String bookId) =>
       '/reader/${Uri.encodeComponent(bookId)}';
 
+  /// Book card; pushed on top of the shell.
+  static const bookDetails = '/book/:bookId';
+  static String bookDetailsOf(String bookId) =>
+      '/book/${Uri.encodeComponent(bookId)}';
+
   /// Только debug-сборка.
   static const hyphenSpike = '/library/hyphen-spike';
 }

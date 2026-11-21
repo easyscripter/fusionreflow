@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fusionreflow/routing/app_routes.dart';
+import 'package:fusionreflow/ui/book_details/widgets/book_details_screen.dart';
 import 'package:fusionreflow/ui/bookmarks/widgets/bookmarks_screen.dart';
 import 'package:fusionreflow/ui/library/widgets/library_screen.dart';
 import 'package:fusionreflow/ui/reader/widgets/reader_placeholder_screen.dart';
@@ -61,6 +62,12 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.library}) {
             ],
           ),
         ],
+      ),
+      // Book card: outside the shell, like the reader.
+      GoRoute(
+        path: AppRoutes.bookDetails,
+        builder: (context, state) =>
+            BookDetailsScreen(bookId: state.pathParameters['bookId'] ?? ''),
       ),
       // Полноэкранная читалка: вне оболочки, без навигационной панели.
       GoRoute(

@@ -330,14 +330,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   BookMeta dco_decode_book_meta(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 5)
-      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
     return BookMeta(
       title: dco_decode_String(arr[0]),
       authors: dco_decode_list_String(arr[1]),
       language: dco_decode_opt_String(arr[2]),
-      sourceHash: dco_decode_String(arr[3]),
-      converterVersion: dco_decode_String(arr[4]),
+      description: dco_decode_opt_String(arr[3]),
+      sourceHash: dco_decode_String(arr[4]),
+      converterVersion: dco_decode_String(arr[5]),
     );
   }
 
@@ -511,12 +512,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_title = sse_decode_String(deserializer);
     var var_authors = sse_decode_list_String(deserializer);
     var var_language = sse_decode_opt_String(deserializer);
+    var var_description = sse_decode_opt_String(deserializer);
     var var_sourceHash = sse_decode_String(deserializer);
     var var_converterVersion = sse_decode_String(deserializer);
     return BookMeta(
       title: var_title,
       authors: var_authors,
       language: var_language,
+      description: var_description,
       sourceHash: var_sourceHash,
       converterVersion: var_converterVersion,
     );
@@ -735,6 +738,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.title, serializer);
     sse_encode_list_String(self.authors, serializer);
     sse_encode_opt_String(self.language, serializer);
+    sse_encode_opt_String(self.description, serializer);
     sse_encode_String(self.sourceHash, serializer);
     sse_encode_String(self.converterVersion, serializer);
   }

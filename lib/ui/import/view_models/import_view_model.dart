@@ -102,7 +102,9 @@ class ImportViewModel extends _$ImportViewModel {
     final format = source.format;
     if (format == null) return _failed(source, ImportFailure.unsupportedFormat);
     try {
-      final book = await ref.read(bookRepositoryProvider).add(bytes, format);
+      final book = await ref
+          .read(bookRepositoryProvider)
+          .add(bytes, format, sourceSize: source.sizeBytes);
       return ImportState.added(bookId: book.id);
     } on Object {
       // Нечитаемая книга (BookFormatException) и ошибка записи — одна карточка.

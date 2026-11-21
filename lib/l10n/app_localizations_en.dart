@@ -234,4 +234,93 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importPickFailed => 'Couldn’t open the file picker';
+
+  @override
+  String get bookActionsTitle => 'Book actions';
+
+  @override
+  String get bookActionDetails => 'Book info';
+
+  @override
+  String get bookActionDelete => 'Delete book';
+
+  @override
+  String get bookActionClose => 'Close';
+
+  @override
+  String get bookDeleteTitle => 'Delete the book?';
+
+  @override
+  String bookDeleteMessage(String title) {
+    return '“$title” will be removed from the library along with reading progress. The original file on your phone stays unchanged.';
+  }
+
+  @override
+  String get bookDeleteCancel => 'Cancel';
+
+  @override
+  String get bookDeleteConfirm => 'Delete';
+
+  @override
+  String get bookDeleted => 'Book deleted';
+
+  @override
+  String get bookDeleteFailed => 'Couldn’t delete the book';
+
+  @override
+  String get bookBack => 'Back';
+
+  @override
+  String get bookNoAuthor => 'Author unknown';
+
+  @override
+  String get bookNotStarted => 'Not started';
+
+  @override
+  String bookReadPercent(int percent) {
+    return '$percent% read';
+  }
+
+  @override
+  String get bookFinished => 'Finished';
+
+  @override
+  String get bookStartReading => 'Start reading';
+
+  @override
+  String get bookContinueReading => 'Continue reading';
+
+  @override
+  String get bookAbout => 'About this book';
+
+  @override
+  String get bookReadMore => 'Read more';
+
+  @override
+  String get bookNoDescription => 'The file has no description.';
+
+  @override
+  String get bookDescriptionNote =>
+      'Taken from the file’s metadata and shown as is.';
+
+  @override
+  String get bookDescriptionClose => 'Close';
+
+  @override
+  String get bookDetailsTitle => 'Details';
+
+  @override
+  String get bookDetailFormat => 'Format';
+
+  @override
+  String get bookDetailSize => 'File size';
+
+  @override
+  String get bookDetailLanguage => 'Language';
+
+  @override
+  String get bookDetailAdded => 'Added';
+
+  @override
+  String get bookLanguageUnknown => 'Unknown';
 }

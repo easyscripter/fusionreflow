@@ -15,6 +15,8 @@ pub struct BookMeta {
     pub title: String,
     pub authors: Vec<String>,
     pub language: Option<String>,
+    /// Plain-text annotation, paragraphs separated by "\n\n".
+    pub description: Option<String>,
     pub source_hash: String,
     pub converter_version: String,
 }
@@ -27,6 +29,7 @@ pub fn book_meta(bytes: Vec<u8>) -> Result<BookMeta, FormatError> {
         title: book.meta.title,
         authors: book.meta.authors,
         language: book.meta.language,
+        description: book.meta.description,
         source_hash: book.source_hash,
         converter_version: book.converter_version,
     })
@@ -48,6 +51,15 @@ mod tests {
         assert_eq!(meta.language.as_deref(), Some("ru"));
         assert_eq!(meta.source_hash, "ab".repeat(32));
         assert_eq!(meta.converter_version, "0.1.0");
+        assert_eq!(meta.description, None);
+    }
+
+    #[test]
+    fn book_meta_reads_description() {
+        let mut book = flow_core::decode(FIXTURE).unwrap();
+        book.meta.description = Some("D".into());
+        let bytes = flow_core::encode(&book).unwrap();
+        assert_eq!(book_meta(bytes).unwrap().description.as_deref(), Some("D"));
     }
 
     #[test]

@@ -26,8 +26,14 @@ class _FakeBookRepository implements BookRepository {
   }
 
   @override
-  Future<BookEntry> add(Uint8List bytes, BookFormat format) =>
-      throw UnimplementedError();
+  Stream<BookEntry?> watch(String id) => throw UnimplementedError();
+
+  @override
+  Future<BookEntry> add(
+    Uint8List bytes,
+    BookFormat format, {
+    int? sourceSize,
+  }) => throw UnimplementedError();
 
   @override
   Future<Uint8List> load(String id) => throw UnimplementedError();
