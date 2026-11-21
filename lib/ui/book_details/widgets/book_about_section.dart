@@ -16,6 +16,28 @@ class BookAboutSection extends StatelessWidget {
   static const double _lineHeight = 22;
   static const double _linkHeight = 32;
 
+  /// Не влезает ли [text] в [_previewLines] строк так же, как в `Text` ниже.
+  static bool _exceedsPreview(
+    BuildContext context,
+    String text,
+    TextStyle? style,
+    double width,
+  ) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      locale: Localizations.maybeLocaleOf(context),
+      textHeightBehavior: DefaultTextStyle.of(context).textHeightBehavior,
+      maxLines: _previewLines,
+    );
+    try {
+      return (painter..layout(maxWidth: width)).didExceedMaxLines;
+    } finally {
+      painter.dispose();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -39,12 +61,7 @@ class BookAboutSection extends StatelessWidget {
         builder: (context, constraints) {
           final overflows =
               text.isNotEmpty &&
-              (TextPainter(
-                text: TextSpan(text: preview, style: style),
-                textDirection: Directionality.of(context),
-                textScaler: MediaQuery.textScalerOf(context),
-                maxLines: _previewLines,
-              )..layout(maxWidth: constraints.maxWidth)).didExceedMaxLines;
+              _exceedsPreview(context, preview, style, constraints.maxWidth);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

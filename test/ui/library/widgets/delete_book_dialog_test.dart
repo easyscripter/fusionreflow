@@ -51,6 +51,37 @@ void main() {
     expect(find.byType(BookCard), findsOneWidget);
   });
 
+  testWidgets('dialog looks like the mockup', (tester) async {
+    await pumpLibrary(tester, books: [book]);
+
+    await askDelete(tester);
+
+    final surface = find
+        .ancestor(
+          of: find.text('Удалить книгу?'),
+          matching: find.byType(Material),
+        )
+        .first;
+    expect(tester.getSize(surface).width, 326);
+    final style = DefaultTextStyle.of(
+      tester.element(find.text('Удалить книгу?')),
+    ).style;
+    expect(style.fontSize, 20);
+    expect(style.fontWeight, const FontWeight(650));
+  });
+
+  testWidgets('confirm after the library is gone does nothing', (tester) async {
+    final h = await pumpLibrary(tester, books: [book]);
+
+    await askDelete(tester);
+    h.books.emitError(Exception('stream failed'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('delete_confirm')));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('untitled book in message', (tester) async {
     await pumpLibrary(
       tester,

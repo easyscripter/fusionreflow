@@ -35,18 +35,22 @@ class BookDetailsTable extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: _rowPadding),
+        // Оба Flexible: при крупном шрифте подпись и значение переносятся.
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              name,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontSize: _rowTextSize,
-                color: muted,
+            Flexible(
+              child: Text(
+                name,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontSize: _rowTextSize,
+                  color: muted,
+                ),
               ),
             ),
             const SizedBox(width: AppSpacing.s16),
-            Expanded(child: value),
+            Flexible(child: value),
           ],
         ),
       ),

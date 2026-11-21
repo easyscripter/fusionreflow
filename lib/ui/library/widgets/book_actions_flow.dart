@@ -32,7 +32,8 @@ Future<void> showBookActions(
         context: context,
         builder: (_) => DeleteBookDialog(book: book),
       );
-      if (confirmed != true) return;
+      // Экран мог уйти (ошибка потока книг) за время диалога.
+      if (confirmed != true || !context.mounted) return;
       final deleted = await ref
           .read(libraryViewModelProvider.notifier)
           .deleteBook(book.id);

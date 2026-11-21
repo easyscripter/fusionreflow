@@ -12,6 +12,7 @@ import 'package:fusionreflow/routing/app_router.dart';
 import 'fake_book_repository.dart';
 import 'fake_import_repository.dart';
 import 'fake_rust_core_service.dart';
+import 'preload_locale_names.dart';
 
 /// Pumps the whole app with an instantly ready startup, a [size] window and
 /// the `ru` locale. [location] starts the router there; [overrides] are added
@@ -38,6 +39,7 @@ Future<void> pumpApp(
       ..clearLocaleTestValue()
       ..clearLocalesTestValue();
   });
+  await preloadLocaleNames(tester);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -56,10 +58,5 @@ Future<void> pumpApp(
       child: const FusionReflowApp(),
     ),
   );
-  // The language names (CLDR) load from an asset: real I/O, which the fake
-  // clock of a widget test does not wait for.
-  await tester.runAsync(() => Future<void>.delayed(_assetLoad));
   await tester.pumpAndSettle();
 }
-
-const Duration _assetLoad = Duration(milliseconds: 100);

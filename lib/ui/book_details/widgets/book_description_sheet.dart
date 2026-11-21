@@ -1,20 +1,30 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:fusionreflow/l10n/app_localizations.dart';
 import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
 import 'package:fusionreflow/ui/core/theme/app_icons.dart';
 import 'package:fusionreflow/ui/core/widgets/app_icon.dart';
 
-/// Открывает [BookDescriptionSheet] поверх оболочки, до 90% высоты экрана.
-Future<void> showBookDescription(BuildContext context, String description) =>
-    showModalBottomSheet<void>(
-      context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(context).height * 0.9,
-      ),
-      builder: (_) => BookDescriptionSheet(description: description),
-    );
+/// Отступ листа от верха экрана (макет `book-description`), dp.
+const double _sheetTop = 150;
+
+/// Самая большая доля экрана, которую занимает лист.
+const double _sheetMaxShare = 0.9;
+
+/// Открывает [BookDescriptionSheet] поверх оболочки: от `top: 150` макета, но
+/// не выше 90% высоты экрана.
+Future<void> showBookDescription(BuildContext context, String description) {
+  final screen = MediaQuery.sizeOf(context).height;
+  final height = math.min(screen - _sheetTop, screen * _sheetMaxShare);
+  return showModalBottomSheet<void>(
+    context: context,
+    useRootNavigator: true,
+    isScrollControlled: true,
+    constraints: BoxConstraints.tightFor(height: height),
+    builder: (_) => BookDescriptionSheet(description: description),
+  );
+}
 
 /// Лист с полным описанием книги: абзацы и сноска об источнике текста.
 class BookDescriptionSheet extends StatelessWidget {
@@ -42,7 +52,6 @@ class BookDescriptionSheet extends StatelessWidget {
     return SafeArea(
       key: const Key('book_description'),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
@@ -79,7 +88,7 @@ class BookDescriptionSheet extends StatelessWidget {
               ],
             ),
           ),
-          Flexible(
+          Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.s20,

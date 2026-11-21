@@ -4,8 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fusionreflow/l10n/app_localizations.dart';
 import 'package:fusionreflow/ui/core/language_label.dart';
 
+import '../../helpers/preload_locale_names.dart';
+
 Future<String?> _label(WidgetTester tester, Locale locale, String? tag) async {
   late BuildContext captured;
+  await preloadLocaleNames(tester, [locale]);
   await tester.pumpWidget(
     MaterialApp(
       locale: locale,
@@ -21,10 +24,6 @@ Future<String?> _label(WidgetTester tester, Locale locale, String? tag) async {
         },
       ),
     ),
-  );
-  // The CLDR data comes from an asset: real I/O, outside the fake clock.
-  await tester.runAsync(
-    () => Future<void>.delayed(const Duration(milliseconds: 100)),
   );
   await tester.pumpAndSettle();
   return languageLabel(captured, tag);

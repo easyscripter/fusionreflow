@@ -82,17 +82,19 @@ void main() {
     expect(find.text('Продолжить чтение'), findsOneWidget);
   });
 
-  testWidgets('read more only when text overflows', (tester) async {
+  testWidgets('no read more for a short description', (tester) async {
     await _open(tester, [full]);
-    expect(find.byKey(const Key('book_read_more')), findsNothing);
 
+    expect(find.byKey(const Key('book_read_more')), findsNothing);
+  });
+
+  testWidgets('read more shows for a long description', (tester) async {
     await _open(tester, [full.copyWith(description: _long)]);
+
     expect(find.byKey(const Key('book_read_more')), findsOneWidget);
   });
 
   testWidgets('read more opens description sheet', (tester) async {
-    await _open(tester, [full.copyWith(description: 'Первый.\n\nВторой.')]);
-    // Short text does not overflow: use a long first paragraph instead.
     await _open(tester, [full.copyWith(description: '$_long\n\nВторой.')]);
 
     await tester.tap(find.byKey(const Key('book_read_more')));
@@ -111,6 +113,44 @@ void main() {
     await tester.tap(find.byKey(const Key('book_description_close')));
     await tester.pumpAndSettle();
     expect(sheet, findsNothing);
+  });
+
+  testWidgets('description sheet starts 150 dp from the top', (tester) async {
+    await _open(tester, [full.copyWith(description: '$_long\n\nВторой.')]);
+
+    await tester.tap(find.byKey(const Key('book_read_more')));
+    await tester.pumpAndSettle();
+
+    expect(tester.getTopLeft(find.byType(BottomSheet)).dy, 150);
+  });
+
+  testWidgets('huge description scrolls and keeps the note', (tester) async {
+    final huge = List.generate(40, (i) => 'Абзац $i. $_long').join('\n\n');
+    await _open(tester, [full.copyWith(description: huge)]);
+    await tester.tap(find.byKey(const Key('book_read_more')));
+    await tester.pumpAndSettle();
+    final first = find.descendant(
+      of: find.byKey(const Key('book_description')),
+      matching: find.textContaining('Абзац 0.'),
+    );
+    final note = find.text(
+      'Текст взят из метаданных файла и показан как есть.',
+    );
+    final noteTop = tester.getTopLeft(note).dy;
+    final firstTop = tester.getTopLeft(first).dy;
+
+    await tester.drag(
+      find.descendant(
+        of: find.byKey(const Key('book_description')),
+        matching: find.byType(SingleChildScrollView),
+      ),
+      const Offset(0, -300),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.getTopLeft(first).dy, lessThan(firstTop));
+    expect(tester.getTopLeft(note).dy, noteTop);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('read button opens reader', (tester) async {
@@ -177,6 +217,13 @@ void main() {
     await tester.tap(find.byKey(const Key('book_action_details')));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+    // ListView is lazy: the details table is built only once scrolled to.
+    await tester.drag(find.byType(ListView), const Offset(0, -3000));
+    await tester.pumpAndSettle();
+    expect(find.text('Детали'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.drag(find.byType(ListView), const Offset(0, 3000));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('book_read_more')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('book_description')), findsOneWidget);

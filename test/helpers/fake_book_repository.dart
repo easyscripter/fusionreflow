@@ -47,6 +47,9 @@ class FakeBookRepository implements BookRepository {
     _changes.add(books);
   }
 
+  /// Fails the [watchAll] stream of every watcher.
+  void emitError(Object error) => _changes.addError(error);
+
   @override
   Stream<List<BookEntry>> watchAll() async* {
     watchCalls++;

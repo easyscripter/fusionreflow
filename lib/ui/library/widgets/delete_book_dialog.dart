@@ -29,6 +29,11 @@ class DeleteBookDialog extends StatelessWidget {
     );
     return AlertDialog(
       key: const Key('book_delete'),
+      insetPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.s32,
+        vertical: AppSpacing.s24,
+      ),
+      titleTextStyle: Theme.of(context).textTheme.titleLarge,
       title: Text(l10n.bookDeleteTitle),
       content: Text(
         l10n.bookDeleteMessage(book.displayTitle(l10n)),
