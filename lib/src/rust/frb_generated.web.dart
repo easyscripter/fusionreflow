@@ -38,13 +38,49 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  Block dco_decode_block(dynamic raw);
+
+  @protected
+  BlockNode dco_decode_block_node(dynamic raw);
+
+  @protected
+  Book dco_decode_book(dynamic raw);
+
+  @protected
   BookMeta dco_decode_book_meta(dynamic raw);
+
+  @protected
+  bool dco_decode_bool(dynamic raw);
 
   @protected
   ImportError dco_decode_box_autoadd_import_error(dynamic raw);
 
   @protected
+  LinkTarget dco_decode_box_autoadd_link_target(dynamic raw);
+
+  @protected
+  ListMarker dco_decode_box_autoadd_list_marker(dynamic raw);
+
+  @protected
   Progress dco_decode_box_autoadd_progress(dynamic raw);
+
+  @protected
+  ResourceId dco_decode_box_autoadd_resource_id(dynamic raw);
+
+  @protected
+  SourceRef dco_decode_box_autoadd_source_ref(dynamic raw);
+
+  @protected
+  Style dco_decode_box_autoadd_style(dynamic raw);
+
+  @protected
+  Table dco_decode_box_autoadd_table(dynamic raw);
+
+  @protected
+  double dco_decode_f_32(dynamic raw);
+
+  @protected
+  F32Array4 dco_decode_f_32_array_4(dynamic raw);
 
   @protected
   FormatError dco_decode_format_error(dynamic raw);
@@ -62,7 +98,31 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ImportEvent dco_decode_import_event(dynamic raw);
 
   @protected
+  Inline dco_decode_inline(dynamic raw);
+
+  @protected
+  LinkTarget dco_decode_link_target(dynamic raw);
+
+  @protected
   List<String> dco_decode_list_String(dynamic raw);
+
+  @protected
+  List<BlockNode> dco_decode_list_block_node(dynamic raw);
+
+  @protected
+  List<Inline> dco_decode_list_inline(dynamic raw);
+
+  @protected
+  List<List<Inline>> dco_decode_list_list_inline(dynamic raw);
+
+  @protected
+  List<List<List<Inline>>> dco_decode_list_list_list_inline(dynamic raw);
+
+  @protected
+  ListMarker dco_decode_list_marker(dynamic raw);
+
+  @protected
+  Float32List dco_decode_list_prim_f_32_strict(dynamic raw);
 
   @protected
   List<int> dco_decode_list_prim_u_8_loose(dynamic raw);
@@ -71,16 +131,52 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<Resource> dco_decode_list_resource(dynamic raw);
+
+  @protected
+  List<TocEntry> dco_decode_list_toc_entry(dynamic raw);
+
+  @protected
+  Meta dco_decode_meta(dynamic raw);
+
+  @protected
   String? dco_decode_opt_String(dynamic raw);
+
+  @protected
+  ResourceId? dco_decode_opt_box_autoadd_resource_id(dynamic raw);
+
+  @protected
+  SourceRef? dco_decode_opt_box_autoadd_source_ref(dynamic raw);
 
   @protected
   Progress dco_decode_progress(dynamic raw);
 
   @protected
+  Resource dco_decode_resource(dynamic raw);
+
+  @protected
+  ResourceId dco_decode_resource_id(dynamic raw);
+
+  @protected
+  Script dco_decode_script(dynamic raw);
+
+  @protected
   SourceKind dco_decode_source_kind(dynamic raw);
 
   @protected
+  SourceRef dco_decode_source_ref(dynamic raw);
+
+  @protected
   Stage dco_decode_stage(dynamic raw);
+
+  @protected
+  Style dco_decode_style(dynamic raw);
+
+  @protected
+  Table dco_decode_table(dynamic raw);
+
+  @protected
+  TocEntry dco_decode_toc_entry(dynamic raw);
 
   @protected
   int dco_decode_u_32(dynamic raw);
@@ -90,6 +186,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void dco_decode_unit(dynamic raw);
+
+  @protected
+  BigInt dco_decode_usize(dynamic raw);
 
   @protected
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
@@ -103,13 +202,49 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
+  Block sse_decode_block(SseDeserializer deserializer);
+
+  @protected
+  BlockNode sse_decode_block_node(SseDeserializer deserializer);
+
+  @protected
+  Book sse_decode_book(SseDeserializer deserializer);
+
+  @protected
   BookMeta sse_decode_book_meta(SseDeserializer deserializer);
+
+  @protected
+  bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
   ImportError sse_decode_box_autoadd_import_error(SseDeserializer deserializer);
 
   @protected
+  LinkTarget sse_decode_box_autoadd_link_target(SseDeserializer deserializer);
+
+  @protected
+  ListMarker sse_decode_box_autoadd_list_marker(SseDeserializer deserializer);
+
+  @protected
   Progress sse_decode_box_autoadd_progress(SseDeserializer deserializer);
+
+  @protected
+  ResourceId sse_decode_box_autoadd_resource_id(SseDeserializer deserializer);
+
+  @protected
+  SourceRef sse_decode_box_autoadd_source_ref(SseDeserializer deserializer);
+
+  @protected
+  Style sse_decode_box_autoadd_style(SseDeserializer deserializer);
+
+  @protected
+  Table sse_decode_box_autoadd_table(SseDeserializer deserializer);
+
+  @protected
+  double sse_decode_f_32(SseDeserializer deserializer);
+
+  @protected
+  F32Array4 sse_decode_f_32_array_4(SseDeserializer deserializer);
 
   @protected
   FormatError sse_decode_format_error(SseDeserializer deserializer);
@@ -127,7 +262,33 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ImportEvent sse_decode_import_event(SseDeserializer deserializer);
 
   @protected
+  Inline sse_decode_inline(SseDeserializer deserializer);
+
+  @protected
+  LinkTarget sse_decode_link_target(SseDeserializer deserializer);
+
+  @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer);
+
+  @protected
+  List<BlockNode> sse_decode_list_block_node(SseDeserializer deserializer);
+
+  @protected
+  List<Inline> sse_decode_list_inline(SseDeserializer deserializer);
+
+  @protected
+  List<List<Inline>> sse_decode_list_list_inline(SseDeserializer deserializer);
+
+  @protected
+  List<List<List<Inline>>> sse_decode_list_list_list_inline(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ListMarker sse_decode_list_marker(SseDeserializer deserializer);
+
+  @protected
+  Float32List sse_decode_list_prim_f_32_strict(SseDeserializer deserializer);
 
   @protected
   List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer);
@@ -136,16 +297,56 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
+  List<Resource> sse_decode_list_resource(SseDeserializer deserializer);
+
+  @protected
+  List<TocEntry> sse_decode_list_toc_entry(SseDeserializer deserializer);
+
+  @protected
+  Meta sse_decode_meta(SseDeserializer deserializer);
+
+  @protected
   String? sse_decode_opt_String(SseDeserializer deserializer);
+
+  @protected
+  ResourceId? sse_decode_opt_box_autoadd_resource_id(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  SourceRef? sse_decode_opt_box_autoadd_source_ref(
+    SseDeserializer deserializer,
+  );
 
   @protected
   Progress sse_decode_progress(SseDeserializer deserializer);
 
   @protected
+  Resource sse_decode_resource(SseDeserializer deserializer);
+
+  @protected
+  ResourceId sse_decode_resource_id(SseDeserializer deserializer);
+
+  @protected
+  Script sse_decode_script(SseDeserializer deserializer);
+
+  @protected
   SourceKind sse_decode_source_kind(SseDeserializer deserializer);
 
   @protected
+  SourceRef sse_decode_source_ref(SseDeserializer deserializer);
+
+  @protected
   Stage sse_decode_stage(SseDeserializer deserializer);
+
+  @protected
+  Style sse_decode_style(SseDeserializer deserializer);
+
+  @protected
+  Table sse_decode_table(SseDeserializer deserializer);
+
+  @protected
+  TocEntry sse_decode_toc_entry(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_32(SseDeserializer deserializer);
@@ -157,7 +358,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_decode_unit(SseDeserializer deserializer);
 
   @protected
-  bool sse_decode_bool(SseDeserializer deserializer);
+  BigInt sse_decode_usize(SseDeserializer deserializer);
 
   @protected
   void sse_encode_AnyhowException(
@@ -175,7 +376,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
+  void sse_encode_block(Block self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_block_node(BlockNode self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_book(Book self, SseSerializer serializer);
+
+  @protected
   void sse_encode_book_meta(BookMeta self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_import_error(
@@ -184,7 +397,43 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_link_target(
+    LinkTarget self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_list_marker(
+    ListMarker self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_progress(Progress self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_resource_id(
+    ResourceId self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_source_ref(
+    SourceRef self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_style(Style self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_table(Table self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_f_32(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_f_32_array_4(F32Array4 self, SseSerializer serializer);
 
   @protected
   void sse_encode_format_error(FormatError self, SseSerializer serializer);
@@ -202,7 +451,43 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_import_event(ImportEvent self, SseSerializer serializer);
 
   @protected
+  void sse_encode_inline(Inline self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_link_target(LinkTarget self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_block_node(
+    List<BlockNode> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_inline(List<Inline> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_list_inline(
+    List<List<Inline>> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_list_list_inline(
+    List<List<List<Inline>>> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_marker(ListMarker self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_prim_f_32_strict(
+    Float32List self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_prim_u_8_loose(List<int> self, SseSerializer serializer);
@@ -214,16 +499,58 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_resource(List<Resource> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_toc_entry(List<TocEntry> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_meta(Meta self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_resource_id(
+    ResourceId? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_source_ref(
+    SourceRef? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_progress(Progress self, SseSerializer serializer);
 
   @protected
+  void sse_encode_resource(Resource self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_resource_id(ResourceId self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_script(Script self, SseSerializer serializer);
+
+  @protected
   void sse_encode_source_kind(SourceKind self, SseSerializer serializer);
 
   @protected
+  void sse_encode_source_ref(SourceRef self, SseSerializer serializer);
+
+  @protected
   void sse_encode_stage(Stage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_style(Style self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_table(Table self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_toc_entry(TocEntry self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_32(int self, SseSerializer serializer);
@@ -235,7 +562,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_unit(void self, SseSerializer serializer);
 
   @protected
-  void sse_encode_bool(bool self, SseSerializer serializer);
+  void sse_encode_usize(BigInt self, SseSerializer serializer);
 }
 
 // Section: wire_class
