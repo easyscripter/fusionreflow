@@ -8,12 +8,12 @@ part of 'book_details_view_model.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Книга [bookId] для карточки; null — книги нет или она удалена.
+/// Book [bookId] for the card; null when it is missing or deleted.
 
 @ProviderFor(bookDetailsViewModel)
 final bookDetailsViewModelProvider = BookDetailsViewModelFamily._();
 
-/// Книга [bookId] для карточки; null — книги нет или она удалена.
+/// Book [bookId] for the card; null when it is missing or deleted.
 
 final class BookDetailsViewModelProvider
     extends
@@ -23,7 +23,7 @@ final class BookDetailsViewModelProvider
           Stream<BookEntry?>
         >
     with $FutureModifier<BookEntry?>, $StreamProvider<BookEntry?> {
-  /// Книга [bookId] для карточки; null — книги нет или она удалена.
+  /// Book [bookId] for the card; null when it is missing or deleted.
   BookDetailsViewModelProvider._({
     required BookDetailsViewModelFamily super.from,
     required String super.argument,
@@ -70,7 +70,7 @@ final class BookDetailsViewModelProvider
 String _$bookDetailsViewModelHash() =>
     r'1bb9144d50dc51367d9766d1703de040c5061728';
 
-/// Книга [bookId] для карточки; null — книги нет или она удалена.
+/// Book [bookId] for the card; null when it is missing or deleted.
 
 final class BookDetailsViewModelFamily extends $Family
     with $FunctionalFamilyOverride<Stream<BookEntry?>, String> {
@@ -83,7 +83,7 @@ final class BookDetailsViewModelFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Книга [bookId] для карточки; null — книги нет или она удалена.
+  /// Book [bookId] for the card; null when it is missing or deleted.
 
   BookDetailsViewModelProvider call(String bookId) =>
       BookDetailsViewModelProvider._(argument: bookId, from: this);
