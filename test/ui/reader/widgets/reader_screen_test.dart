@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'dart:ui' show DisplayFeature, DisplayFeatureState, DisplayFeatureType;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -293,5 +295,29 @@ void main() {
         .viewport;
     // 98 (inset + 8) + 34 for the title line, instead of the plain 64.
     expect(viewport?.height, 844 - 132 - 66);
+  });
+
+  testWidgets('side cutout in landscape does not push the header down', (
+    tester,
+  ) async {
+    tester.view.displayFeatures = const [
+      DisplayFeature(
+        bounds: Rect.fromLTWH(0, 150, 40, 40),
+        type: DisplayFeatureType.cutout,
+        state: DisplayFeatureState.unknown,
+      ),
+    ];
+    addTearDown(tester.view.reset);
+    await _open(tester, _repo(), size: const Size(844, 390));
+
+    expect(tester.getTopLeft(find.text('Первая')).dy, lessThan(40));
+  });
+
+  testWidgets('page number is centered whatever the side labels are', (
+    tester,
+  ) async {
+    await _open(tester, _repo());
+
+    expect(tester.getCenter(_footerPage()).dx, closeTo(195, 0.5));
   });
 }

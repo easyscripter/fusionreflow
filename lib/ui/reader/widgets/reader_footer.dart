@@ -24,9 +24,13 @@ class ReaderFooter extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: readerChromeMargin),
       child: DefaultTextStyle.merge(
         style: TextStyle(fontSize: 12, color: color),
+        // Equal thirds: the page number stays in the middle.
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text(chapter ?? ''), Text(page), Text(percent)],
+          children: [
+            Expanded(child: Text(chapter ?? '')),
+            Text(page),
+            Expanded(child: Text(percent, textAlign: TextAlign.end)),
+          ],
         ),
       ),
     ),

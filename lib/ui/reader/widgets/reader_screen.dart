@@ -77,7 +77,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final provider = readerViewModelProvider(widget.bookId);
     final media = MediaQuery.of(context);
     final cutout = media.displayFeatures
-        .where((f) => f.type == DisplayFeatureType.cutout)
+        // Only a cutout on the top edge covers the header; a side one (the
+        // phone turned) does not.
+        .where((f) => f.type == DisplayFeatureType.cutout && f.bounds.top <= 0)
         .fold<double>(0, (m, f) => math.max(m, f.bounds.bottom));
     final topInset = math.max(
       math.max(media.padding.top, media.viewPadding.top),
