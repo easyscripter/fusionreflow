@@ -3,19 +3,27 @@ import 'package:fusionreflow/ui/reader/reader_page_metrics.dart';
 
 /// Chapter title above the page text.
 class ReaderHeader extends StatelessWidget {
-  const new({required this.title, required this.color, super.key});
+  const new({
+    required this.title,
+    required this.color,
+    this.topInset = 0,
+    super.key,
+  });
 
   /// Null: the chapter has no title, the header stays empty.
   final String? title;
   final Color color;
 
+  /// Top area covered by a cutout or a system bar.
+  final double topInset;
+
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: readerHeaderHeight,
+    height: readerHeaderHeightFor(topInset),
     child: Padding(
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         readerChromeMargin,
-        readerHeaderTop,
+        readerHeaderTopFor(topInset),
         readerChromeMargin,
         0,
       ),

@@ -322,4 +322,27 @@ void main() {
       expect(lines[i].height, greaterThan(0));
     }
   });
+
+  test('table_header_is_not_left_alone_at_page_bottom', () async {
+    const row = [
+      [FlowTextSpan('ячейка')],
+      [FlowTextSpan('вторая')],
+    ];
+    // Vary the text above the table so that some run leaves room for
+    // exactly one table row at the bottom of the page.
+    for (var n = 1; n <= 40; n++) {
+      final s = section([
+        for (var i = 0; i < n; i++) para(2),
+        FlowTable([for (var i = 0; i < 40; i++) row]),
+      ]);
+      final pages = await _paginator.paginate(s, _phone, testStyle);
+      for (var p = 0; p < pages.length - 1; p++) {
+        final rows = pages[p].items.whereType<FlowRowItem>().length;
+        final nextRows = pages[p + 1].items.whereType<FlowRowItem>().length;
+        if (rows == 1 && nextRows > 0) {
+          fail('n=$n: one table row alone at the bottom of page $p');
+        }
+      }
+    }
+  });
 }

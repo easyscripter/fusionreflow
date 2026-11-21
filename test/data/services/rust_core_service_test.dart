@@ -150,7 +150,7 @@ void main() {
   });
 
   test('bookContent maps the bridge book to the render model', () async {
-    final service = RustCoreService();
+    final service = RustCoreService(decode: decodeBook);
     final bytes = Uint8List.fromList([3]);
 
     final book = await service.bookContent(bytes);

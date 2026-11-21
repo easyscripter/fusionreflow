@@ -56,10 +56,17 @@ class ReaderViewModel extends _$ReaderViewModel {
       if (!_current(token)) return;
       final latest = state.requireValue;
       if (latest.chapterIndex != chapter) continue; // the user turned a page
+      // The page that holds the old position stays open; the position
+      // becomes its first character, so the next layout starts there.
+      final index = pageIndexOf(laidOut, latest.position.offset);
       state = AsyncData(
         latest.copyWith(
           pages: {chapter: laidOut},
-          pageIndex: pageIndexOf(laidOut, latest.position.offset),
+          pageIndex: index,
+          position: ReadingPosition(
+            chapter: chapter,
+            offset: laidOut[index].start,
+          ),
         ),
       );
       break;

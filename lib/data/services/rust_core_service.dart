@@ -1,3 +1,4 @@
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:flow_render/flow_render.dart';
@@ -20,9 +21,10 @@ part 'rust_core_service.g.dart';
 class RustCoreService {
   /// Creates the service; `_load` loads the native library (injectable for
   /// tests).
-  new({this._load = RustLib.init});
+  new({this._load = RustLib.init, this._decode = decodeBookInBackground});
 
   final Future<void> Function() _load;
+  final Future<FlowBook> Function(Uint8List bytes) _decode;
   Future<void>? _loading;
 
   /// Loads the native library; safe to call again (retry after a failed or
@@ -48,10 +50,10 @@ class RustCoreService {
 
   /// Reads the whole book of CBOR-encoded [bytes] for the reader.
   ///
-  /// Runs on the bridge's thread pool. Bridge errors (`FormatError`) are not
-  /// caught here.
-  Future<FlowBook> bookContent(Uint8List bytes) async =>
-      flowBookOf(await rust_book.bookContent(bytes: bytes));
+  /// Decoding and mapping run in a background isolate: the answer of a large
+  /// book is millions of objects, which would freeze the UI. Bridge errors
+  /// (`FormatError`) are not caught here.
+  Future<FlowBook> bookContent(Uint8List bytes) => _decode(bytes);
 
   /// Converts the file behind [fd] (Rust takes ownership and closes it).
   /// The first event is `Started(jobId)`; the stream ends after `Done` or
@@ -97,6 +99,18 @@ class RustCoreService {
     BookFormat.fb2Zip => rust_import.SourceKind.fb2Zip,
   };
 }
+
+/// Reads the book of [bytes] on the calling isolate.
+Future<FlowBook> decodeBook(Uint8List bytes) async =>
+    flowBookOf(await rust_book.bookContent(bytes: bytes));
+
+/// Reads the book of [bytes] in a new isolate (each isolate loads the native
+/// library itself).
+Future<FlowBook> decodeBookInBackground(Uint8List bytes) =>
+    Isolate.run(() async {
+      await RustLib.init();
+      return await decodeBook(bytes);
+    });
 
 /// Provides the [RustCoreService].
 @Riverpod(keepAlive: true)

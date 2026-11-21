@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flow_render/flow_render.dart';
 import 'package:flow_render/widgets.dart';
 import 'package:flutter/material.dart';
@@ -50,9 +52,16 @@ class _ReaderPageTurnerState extends State<ReaderPageTurner>
   double _to = 0;
   int _turning = 0;
 
+  void _precache() {
+    for (final page in [widget.previous, widget.next]) {
+      if (page != null) unawaited(FlowPageView.precache(page));
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _precache();
     _controller.addListener(() {
       final t = Curves.easeOut.transform(_controller.value);
       setState(() => _offset = _from + (_to - _from) * t);
@@ -67,6 +76,10 @@ class _ReaderPageTurnerState extends State<ReaderPageTurner>
   @override
   void didUpdateWidget(ReaderPageTurner oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.next != widget.next ||
+        oldWidget.previous != widget.previous) {
+      _precache();
+    }
     if (oldWidget.current != widget.current) {
       _controller.stop();
       _offset = 0;

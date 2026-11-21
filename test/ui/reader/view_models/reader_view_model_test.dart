@@ -189,8 +189,9 @@ void main() {
 
     expect(state().viewport, landscape);
     expect(state().currentPage?.contains(2500), isTrue);
+    final landscapeStart = state().currentPage!.start;
     await vm().setViewport(portrait, testFlowStyle);
-    expect(state().currentPage?.contains(2500), isTrue);
+    expect(state().currentPage?.contains(landscapeStart), isTrue);
     expect(repo.saved, isEmpty);
   });
 
@@ -248,5 +249,39 @@ void main() {
     container.dispose();
 
     await pending;
+  });
+
+  test('rotation_after_paging_keeps_first_char_of_page', () async {
+    await start(position: const ReadingPosition(chapter: 1, offset: 0));
+    for (var i = 0; i < 3; i++) {
+      await vm().showPage(1);
+    }
+    final shownStart = state().currentPage!.start;
+    expect(state().position.offset, shownStart);
+
+    await vm().setViewport(landscape, testFlowStyle);
+
+    // The page on screen holds the first character of the old page, and
+    // the position is now the start of that page.
+    expect(state().currentPage!.contains(shownStart), isTrue);
+    expect(state().position.offset, state().currentPage!.start);
+    final landscapeStart = state().currentPage!.start;
+
+    await vm().setViewport(portrait, testFlowStyle);
+
+    expect(state().currentPage!.contains(landscapeStart), isTrue);
+    expect(state().position.offset, state().currentPage!.start);
+  });
+
+  test('progress is weighted by the text of the chapters', () {
+    // Chapter 4 of 5 is long, but the book is dominated by the last one.
+    const state = ReaderState(
+      book: FlowBook('', [FlowSection([])]),
+      position: ReadingPosition(chapter: 3, offset: 30000),
+      chapterLengths: [759, 21, 1823, 60013, 5066792],
+    );
+
+    expect(state.progress, closeTo((2603 + 30000) / 5129408, 1e-12));
+    expect(state.progress * 100, lessThan(1));
   });
 }

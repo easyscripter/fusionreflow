@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:math' as math;
+import 'dart:ui' show DisplayFeatureType;
 
 import 'package:flow_render/flow_render.dart';
 import 'package:flutter/material.dart';
@@ -73,6 +75,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         ? ReaderPalette.dark
         : ReaderPalette.light;
     final provider = readerViewModelProvider(widget.bookId);
+    final media = MediaQuery.of(context);
+    final cutout = media.displayFeatures
+        .where((f) => f.type == DisplayFeatureType.cutout)
+        .fold<double>(0, (m, f) => math.max(m, f.bounds.bottom));
+    final topInset = math.max(
+      math.max(media.padding.top, media.viewPadding.top),
+      cutout,
+    );
     ref.listen(provider.select((s) => s.value?.saveFailures ?? 0), (
       before,
       after,
@@ -96,12 +106,17 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
               palette: palette,
               onBack: _back,
             ),
-            data: (state) => _page(context, state, palette),
+            data: (state) => _page(context, state, palette, topInset),
           ),
     );
   }
 
-  Widget _page(BuildContext context, ReaderState state, ReaderPalette palette) {
+  Widget _page(
+    BuildContext context,
+    ReaderState state,
+    ReaderPalette palette,
+    double topInset,
+  ) {
     final l10n = AppLocalizations.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -110,7 +125,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         _reportViewport(
           Size(
             constraints.maxWidth,
-            (constraints.maxHeight - readerHeaderHeight - readerFooterHeight)
+            (constraints.maxHeight -
+                    readerHeaderHeightFor(topInset) -
+                    readerFooterHeight)
                 .clamp(1, double.infinity),
           ),
           style,
@@ -120,7 +137,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         final title = state.chapterTitle;
         return Column(
           children: [
-            ReaderHeader(title: title, color: palette.onSurfaceVariant),
+            ReaderHeader(
+              title: title,
+              color: palette.onSurfaceVariant,
+              topInset: topInset,
+            ),
             Expanded(
               child: ReaderPageTurner(
                 current: page,

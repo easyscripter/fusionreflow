@@ -70,3 +70,4 @@ docs/reviews/
 test/ui/spikes/failures/
 packages/*/build/
 packages/*/pubspec.lock
+android/.kotlin/

@@ -43,4 +43,11 @@ void main() {
     expect(style.fontFamily, 'Literata');
     expect(style.codeFontFamily, 'JetBrainsMono');
   });
+
+  test('header grows with the top inset', () {
+    expect(readerHeaderHeightFor(0), 64);
+    expect(readerHeaderHeightFor(20), 64); // fits the 30 above
+    expect(readerHeaderHeightFor(90), 132);
+    expect(readerHeaderTopFor(90), 98);
+  });
 }

@@ -5,14 +5,20 @@ import 'package:flow_render/src/layout/flow_page.dart';
 import 'package:flow_render/src/style/flow_style.dart';
 import 'package:flutter/rendering.dart';
 
-/// Paints one [FlowPage]; [images] are the decoded pictures by their bytes
-/// (compared by identity).
+/// Paints one [FlowPage]; [image] finds the decoded picture of some bytes and
+/// [revision] changes when pictures became ready.
 class FlowPagePainter extends CustomPainter {
-  const new({required this.page, required this.style, required this.images});
+  const new({
+    required this.page,
+    required this.style,
+    required this.image,
+    required this.revision,
+  });
 
   final FlowPage page;
   final FlowStyle style;
-  final Map<Uint8List, ui.Image> images;
+  final ui.Image? Function(Uint8List bytes) image;
+  final int revision;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -41,16 +47,16 @@ class FlowPagePainter extends CustomPainter {
       ..translate(shift.dx, shift.dy);
     item.painter.paint(canvas, Offset.zero);
     for (final inline in item.inlineImages) {
-      final image = images[inline.bytes];
-      if (image == null) continue;
-      _drawImage(canvas, image, inline.box);
+      final decoded = image(inline.bytes);
+      if (decoded == null) continue;
+      _drawImage(canvas, decoded, inline.box);
     }
     canvas.restore();
   }
 
   void _paintPicture(Canvas canvas, FlowPictureItem item) {
-    final image = images[item.bytes];
-    if (item.broken || image == null) {
+    final decoded = image(item.bytes);
+    if (item.broken || decoded == null) {
       if (item.broken) {
         canvas.drawRect(
           item.rect.deflate(0.5),
@@ -61,7 +67,7 @@ class FlowPagePainter extends CustomPainter {
       }
       return;
     }
-    _drawImage(canvas, image, item.rect);
+    _drawImage(canvas, decoded, item.rect);
   }
 
   void _drawImage(Canvas canvas, ui.Image image, Rect target) =>
@@ -90,5 +96,5 @@ class FlowPagePainter extends CustomPainter {
   bool shouldRepaint(FlowPagePainter oldDelegate) =>
       oldDelegate.page != page ||
       oldDelegate.style != style ||
-      oldDelegate.images != images;
+      oldDelegate.revision != revision;
 }

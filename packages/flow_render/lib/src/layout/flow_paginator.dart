@@ -19,6 +19,9 @@ const double _cellPadX = 6;
 const double _cellPadY = 4;
 const double _brokenImageLines = 3;
 
+/// Longest stretch of layout work without giving the event loop a turn.
+const int _sliceMs = 8;
+
 /// A piece of a block that never splits across pages: a text line, an image,
 /// a table row.
 class _Row {
@@ -361,7 +364,13 @@ class _Run {
         ),
       );
     }
-    return _Laid(rows, before: 0.5 * _line, after: 0.5 * _line);
+    // Like paragraphs: the header row never stays alone at the page bottom.
+    return _Laid(
+      rows,
+      before: 0.5 * _line,
+      after: 0.5 * _line,
+      lineRules: true,
+    );
   }
 
   double _oneLine(String text) {
@@ -419,7 +428,13 @@ class _Run {
       offset += block.length;
     }
     _Laid? previous;
+    final slice = Stopwatch()..start();
     for (var i = 0; i < section.blocks.length; i++) {
+      // Let the UI draw frames between the blocks of a long chapter.
+      if (slice.elapsedMilliseconds >= _sliceMs) {
+        await Future<void>.delayed(Duration.zero);
+        slice.reset();
+      }
       final laid = await _layout(i);
       if (laid.rows.isEmpty) continue;
       await _flow(i, laid, previous);

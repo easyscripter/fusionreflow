@@ -1,9 +1,8 @@
 import 'dart:async';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:flow_render/src/layout/flow_page.dart';
 import 'package:flow_render/src/style/flow_style.dart';
+import 'package:flow_render/src/widgets/flow_image_cache.dart';
 import 'package:flow_render/src/widgets/flow_page_painter.dart';
 import 'package:flutter/widgets.dart';
 
@@ -15,70 +14,40 @@ class FlowPageView extends StatefulWidget {
   final FlowPage page;
   final FlowStyle style;
 
+  /// Starts decoding the pictures of [page], so that a view of it built
+  /// later draws them at once.
+  static Future<void> precache(FlowPage page) => FlowImageCache.precache(page);
+
   @override
   State<FlowPageView> createState() => _FlowPageViewState();
 }
 
 class _FlowPageViewState extends State<FlowPageView> {
-  Map<Uint8List, ui.Image> _images = Map.identity();
+  /// Changes when a picture becomes ready, to repaint.
+  int _revision = 0;
 
   @override
   void initState() {
     super.initState();
-    unawaited(_decode(widget.page));
+    _decode();
   }
 
   @override
   void didUpdateWidget(FlowPageView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.page != widget.page) unawaited(_decode(widget.page));
+    if (oldWidget.page != widget.page) _decode();
   }
 
-  @override
-  void dispose() {
-    _release(_images);
-    super.dispose();
-  }
-
-  void _release(Map<Uint8List, ui.Image> images) {
-    for (final image in images.values) {
-      image.dispose();
+  void _decode() {
+    final page = widget.page;
+    for (final bytes in FlowImageCache.picturesOf(page)) {
+      if (FlowImageCache.lookup(bytes) != null) continue;
+      unawaited(
+        FlowImageCache.load(bytes).then((_) {
+          if (mounted && widget.page == page) setState(() => _revision++);
+        }),
+      );
     }
-  }
-
-  Iterable<Uint8List> _pictures(FlowPage page) sync* {
-    for (final item in page.items) {
-      switch (item) {
-        case FlowPictureItem(:final bytes, :final broken) when !broken:
-          yield bytes;
-        case FlowLineItem(:final inlineImages):
-          for (final inline in inlineImages) {
-            yield inline.bytes;
-          }
-        default:
-      }
-    }
-  }
-
-  Future<void> _decode(FlowPage page) async {
-    final decoded = Map<Uint8List, ui.Image>.identity();
-    for (final bytes in _pictures(page)) {
-      try {
-        final codec = await ui.instantiateImageCodec(bytes);
-        final frame = await codec.getNextFrame();
-        codec.dispose();
-        decoded[bytes] = frame.image;
-      } on Exception {
-        // A picture that cannot be decoded stays empty.
-      }
-    }
-    if (!mounted || widget.page != page) {
-      _release(decoded);
-      return;
-    }
-    final old = _images;
-    setState(() => _images = decoded);
-    _release(old);
   }
 
   @override
@@ -87,7 +56,8 @@ class _FlowPageViewState extends State<FlowPageView> {
     painter: FlowPagePainter(
       page: widget.page,
       style: widget.style,
-      images: _images,
+      image: FlowImageCache.lookup,
+      revision: _revision,
     ),
   );
 }

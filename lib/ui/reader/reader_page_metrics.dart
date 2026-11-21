@@ -11,6 +11,14 @@ const double readerHeaderHeight = 64;
 /// Space above the header text.
 const double readerHeaderTop = 30;
 
+/// Space above the header text on a screen whose top [inset] (display cutout,
+/// status bar) is covered: the title stays under it.
+double readerHeaderTopFor(double inset) => math.max(readerHeaderTop, inset + 8);
+
+/// Height of the header for the top [inset].
+double readerHeaderHeightFor(double inset) =>
+    readerHeaderTopFor(inset) + readerHeaderHeight - readerHeaderTop;
+
 /// Height of the footer (chapter, page, percent) under the page text.
 const double readerFooterHeight = 66;
 

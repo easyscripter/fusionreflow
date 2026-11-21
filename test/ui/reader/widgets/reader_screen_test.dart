@@ -8,6 +8,7 @@ import 'package:fusionreflow/data/repositories/book_exceptions.dart';
 import 'package:fusionreflow/domain/models/reading_position.dart';
 import 'package:fusionreflow/routing/app_routes.dart';
 import 'package:fusionreflow/ui/core/theme/reader_palette.dart';
+import 'package:fusionreflow/ui/reader/view_models/reader_state.dart';
 import 'package:fusionreflow/ui/reader/view_models/reader_view_model.dart';
 import 'package:fusionreflow/ui/reader/widgets/reader_page_turner.dart';
 import 'package:fusionreflow/ui/reader/widgets/reader_screen.dart';
@@ -248,5 +249,49 @@ void main() {
 
     expect(find.text('100%'), findsOneWidget);
     expect(find.text('Глава 3 из 3'), findsNothing);
+  });
+
+  testWidgets('rotation after tap paging keeps the first line of the page', (
+    tester,
+  ) async {
+    await _open(tester, _repo());
+    final model = readerViewModelProvider(_id);
+    for (var i = 0; i < 3; i++) {
+      await tester.tapAt(const Offset(370, 400));
+      await tester.pumpAndSettle();
+    }
+    final before = _container(tester).read(model).requireValue;
+    final start = before.currentPage!.start;
+    expect(before.position.offset, start);
+
+    tester.view.physicalSize = const Size(844, 390);
+    await tester.pumpAndSettle();
+
+    final after = _container(tester).read(model).requireValue;
+    expect(after.currentPage!.contains(start), isTrue);
+    expect(after.position.offset, after.currentPage!.start);
+
+    tester.view.physicalSize = const Size(390, 844);
+    await tester.pumpAndSettle();
+
+    final back = _container(tester).read(model).requireValue;
+    expect(back.currentPage!.contains(after.currentPage!.start), isTrue);
+  });
+
+  testWidgets('header stays below a display cutout', (tester) async {
+    tester.view
+      ..padding = const FakeViewPadding(top: 90)
+      ..viewPadding = const FakeViewPadding(top: 90);
+    addTearDown(tester.view.reset);
+    await _open(tester, _repo());
+
+    final title = tester.getTopLeft(find.text('Первая'));
+    expect(title.dy, greaterThanOrEqualTo(90));
+    final viewport = _container(tester)
+        .read(readerViewModelProvider(_id))
+        .requireValue
+        .viewport;
+    // 98 (inset + 8) + 34 for the title line, instead of the plain 64.
+    expect(viewport?.height, 844 - 132 - 66);
   });
 }
