@@ -16,8 +16,9 @@ import 'preload_locale_names.dart';
 
 /// Pumps the whole app with an instantly ready startup, a [size] window and
 /// the `ru` locale. [location] starts the router there; [overrides] are added
-/// last, so they win. [books] and [imports] are the library and importer
-/// fakes (empty ones by default).
+/// last, so they win. [settle] false pumps one frame only (for screens
+/// that animate forever, like a spinner). [books] and [imports] are the
+/// library and importer fakes (empty ones by default).
 Future<void> pumpApp(
   WidgetTester tester, {
   Size size = const Size(390, 844),
@@ -25,6 +26,7 @@ Future<void> pumpApp(
   List<Override> overrides = const [],
   FakeBookRepository? books,
   FakeImportRepository? imports,
+  bool settle = true,
 }) async {
   tester.view
     ..physicalSize = size
@@ -58,5 +60,9 @@ Future<void> pumpApp(
       child: const FusionReflowApp(),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
 }

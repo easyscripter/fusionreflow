@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusionreflow/routing/app_router.dart';
 import 'package:fusionreflow/routing/app_routes.dart';
+import 'package:fusionreflow/ui/reader/widgets/reader_screen.dart';
 
 import '../helpers/pump_app.dart';
 
@@ -44,7 +45,7 @@ void main() {
   testWidgets('reader route is outside the shell', (tester) async {
     await pumpApp(tester, location: AppRoutes.readerOf('x'));
 
-    expect(find.byKey(const Key('reader_placeholder')), findsOneWidget);
+    expect(find.byType(ReaderScreen), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
     expect(find.byType(NavigationRail), findsNothing);
   });

@@ -96,7 +96,7 @@ void main() {
 
     await tester.tap(find.byType(BookCard).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(BackButton));
+    await tester.tap(find.text('Назад'));
     await tester.pumpAndSettle();
 
     expect(find.text('Название'), findsWidgets);

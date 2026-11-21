@@ -214,12 +214,28 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get readerPlaceholderTitle => 'Читалка появится позже';
+  String get readerOpenFailed => 'Не удалось открыть книгу';
 
   @override
-  String readerPlaceholderPosition(int percent) {
-    return 'Откроется на $percent%';
+  String get readerBack => 'Назад';
+
+  @override
+  String readerChapterOf(int index, int count) {
+    return 'Глава $index из $count';
   }
+
+  @override
+  String readerPageOf(int index, int count) {
+    return '$index из $count';
+  }
+
+  @override
+  String readerPercent(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get readerSavePositionFailed => 'Не удалось сохранить место чтения';
 
   @override
   String get readerBookNotFound => 'Книга не найдена';

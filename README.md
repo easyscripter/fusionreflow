@@ -28,6 +28,8 @@ Third-party components:
 
 - **Literata** font (`assets/fonts/literata/`): SIL Open Font License 1.1,
   see `assets/fonts/literata/OFL.txt`.
+- **JetBrains Mono** font (`assets/fonts/jetbrains_mono/`): SIL Open Font
+  License 1.1, see `assets/fonts/jetbrains_mono/OFL.txt`.
 - **Golos Text** font (`assets/fonts/golos_text/`): SIL Open Font License 1.1,
   see `assets/fonts/golos_text/OFL.txt`.
 - **Hyphenation dictionaries** (`rust/flow-core/dictionaries/`, see `NOTICE.md`

@@ -10,6 +10,7 @@ import 'package:fusionreflow/ui/import/widgets/importing_book_card.dart';
 import 'package:fusionreflow/ui/library/widgets/book_card.dart';
 import 'package:fusionreflow/ui/library/widgets/continue_reading_card.dart';
 import 'package:fusionreflow/ui/library/widgets/library_empty_view.dart';
+import 'package:fusionreflow/ui/reader/widgets/reader_screen.dart';
 import 'package:fusionreflow/ui/spikes/widgets/hyphen_spike_screen.dart';
 
 import '../../../helpers/book_entry.dart';
@@ -247,7 +248,7 @@ void main() {
     expect(find.byType(LibraryEmptyView), findsOneWidget);
   });
 
-  testWidgets('tap book opens reader placeholder', (tester) async {
+  testWidgets('tap book opens reader', (tester) async {
     await pumpLibrary(
       tester,
       books: [
@@ -258,10 +259,10 @@ void main() {
 
     await tester.tap(find.byType(BookCard));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('reader_placeholder')), findsOneWidget);
-    expect(find.text('Откроется на 72%'), findsOneWidget);
+    expect(find.byType(ReaderScreen), findsOneWidget);
+    expect(find.byType(ReaderScreen), findsOneWidget);
 
-    await tester.tap(find.byType(BackButton));
+    await tester.tap(find.text('Назад'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('library_screen')), findsOneWidget);
   });
@@ -275,7 +276,7 @@ void main() {
     await tester.tap(find.byType(ContinueReadingCard));
     await tester.pumpAndSettle();
 
-    expect(find.text('Откроется на 50%'), findsOneWidget);
+    expect(find.byType(ReaderScreen), findsOneWidget);
   });
 
   testWidgets('import shows progress card and cancel', (tester) async {
@@ -301,8 +302,7 @@ void main() {
     await settleImport(tester);
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('reader_placeholder')), findsOneWidget);
-    expect(find.text('New book'), findsWidgets);
+    expect(find.byType(ReaderScreen), findsOneWidget);
     expect(h.books.added, hasLength(1));
   });
 

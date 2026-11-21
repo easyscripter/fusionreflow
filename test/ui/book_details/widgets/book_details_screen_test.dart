@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fusionreflow/domain/models/book_entry.dart';
 import 'package:fusionreflow/routing/app_routes.dart';
 import 'package:fusionreflow/ui/library/widgets/book_card.dart';
+import 'package:fusionreflow/ui/reader/widgets/reader_screen.dart';
 import 'package:intl/intl.dart';
 
 import '../../../helpers/book_entry.dart';
@@ -163,9 +164,9 @@ void main() {
 
     await tester.tap(find.byKey(const Key('book_read')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('reader_placeholder')), findsOneWidget);
+    expect(find.byType(ReaderScreen), findsOneWidget);
 
-    await tester.tap(find.byType(BackButton));
+    await tester.tap(find.text('Назад'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('book_details')), findsOneWidget);
   });

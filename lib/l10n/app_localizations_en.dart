@@ -212,12 +212,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get readerPlaceholderTitle => 'The reader is coming later';
+  String get readerOpenFailed => 'Couldn\'t open the book';
 
   @override
-  String readerPlaceholderPosition(int percent) {
-    return 'Opens at $percent%';
+  String get readerBack => 'Back';
+
+  @override
+  String readerChapterOf(int index, int count) {
+    return 'Chapter $index of $count';
   }
+
+  @override
+  String readerPageOf(int index, int count) {
+    return '$index of $count';
+  }
+
+  @override
+  String readerPercent(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get readerSavePositionFailed => 'Couldn\'t save your reading position';
 
   @override
   String get readerBookNotFound => 'Book not found';

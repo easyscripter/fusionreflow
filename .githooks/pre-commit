@@ -3,7 +3,7 @@
 #   git config core.hooksPath .githooks
 # Runs only the part of the project touched by the commit:
 #   rust/**                         -> cargo fmt --check, clippy -D warnings, cargo test
-#   lib/, test/, pubspec.* etc.     -> dart format, dart analyze, flutter test
+#   lib/, test/, packages/, pubspec.* etc. -> dart format, dart analyze, flutter test
 # Bypassing with --no-verify is forbidden.
 set -euo pipefail
 
@@ -20,7 +20,7 @@ dart=0
 while IFS= read -r path; do
   case "$path" in
     rust/*) rust=1 ;;
-    lib/* | test/* | integration_test/* | test_driver/* | tool/* | \
+    lib/* | test/* | integration_test/* | test_driver/* | tool/* | packages/* | \
       pubspec.yaml | pubspec.lock | analysis_options.yaml | l10n.yaml) dart=1 ;;
   esac
 done <<< "$staged"
@@ -62,13 +62,16 @@ fi
 
 if [ "$dart" -eq 1 ]; then
   # Explicit folders: `dart format .` would also check build/ (generated cargokit code).
-  step dart format --output=none --set-exit-if-changed lib test integration_test test_driver tool
+  step dart format --output=none --set-exit-if-changed lib test integration_test test_driver tool packages
   # dart analyze, not flutter analyze: only it runs analyzer plugins (riverpod_lint).
   # --fatal-infos: lint findings are "info" and would not fail the run otherwise.
   step dart analyze --fatal-infos
   # Golden pixels differ between platforms, so (like CI) they are not run here.
   echo "SKIPPED: golden tests (tag 'golden') - pixel output is platform-specific; run in CI and QA" >&2
   step flutter test --exclude-tags golden
+  for package in packages/*/; do
+    (cd "$package" && step flutter test --exclude-tags golden)
+  done
 fi
 
 echo "pre-commit: all checks passed" >&2

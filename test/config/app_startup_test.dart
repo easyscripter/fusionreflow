@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flow_render/flow_render.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusionreflow/config/app_startup.dart';
@@ -27,6 +28,9 @@ class _FakeBookRepository implements BookRepository {
 
   @override
   Stream<BookEntry?> watch(String id) => throw UnimplementedError();
+
+  @override
+  Future<FlowBook> open(String id) => throw UnimplementedError();
 
   @override
   Future<BookEntry> add(

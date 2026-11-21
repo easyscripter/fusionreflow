@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:flow_render/flow_render.dart';
 import 'package:fusionreflow/data/services/bridge_import_event.dart';
+import 'package:fusionreflow/data/services/flow_book_mapper.dart';
 import 'package:fusionreflow/domain/models/book_format.dart';
 import 'package:fusionreflow/domain/models/import_update.dart';
 import 'package:fusionreflow/src/rust/api/book.dart' as rust_book;
@@ -43,6 +45,13 @@ class RustCoreService {
   /// Bridge errors (`FormatError`) are not caught here.
   Future<rust_book.BookMeta> bookMeta(Uint8List bytes) =>
       rust_book.bookMeta(bytes: bytes);
+
+  /// Reads the whole book of CBOR-encoded [bytes] for the reader.
+  ///
+  /// Runs on the bridge's thread pool. Bridge errors (`FormatError`) are not
+  /// caught here.
+  Future<FlowBook> bookContent(Uint8List bytes) async =>
+      flowBookOf(await rust_book.bookContent(bytes: bytes));
 
   /// Converts the file behind [fd] (Rust takes ownership and closes it).
   /// The first event is `Started(jobId)`; the stream ends after `Done` or

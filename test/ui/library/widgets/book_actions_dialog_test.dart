@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusionreflow/ui/library/widgets/book_card.dart';
+import 'package:fusionreflow/ui/reader/widgets/reader_screen.dart';
 
 import '../../../helpers/book_entry.dart';
 import '../../../helpers/library_harness.dart';
@@ -58,7 +59,7 @@ void main() {
     await tester.tap(find.byType(BookCard));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('reader_placeholder')), findsOneWidget);
+    expect(find.byType(ReaderScreen), findsOneWidget);
   });
 
   testWidgets('close does nothing', (tester) async {

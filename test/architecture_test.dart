@@ -93,6 +93,44 @@ void main() {
     expect(violations, isEmpty);
   });
 
+  test('view models do not import the render package widgets', () {
+    final violations = [
+      for (final file in sources.where(
+        (f) => _rel(f).contains('/view_models/'),
+      ))
+        if (file.readAsStringSync().contains(
+          'package:flow_render/widgets.dart',
+        ))
+          _rel(file),
+    ];
+    expect(violations, isEmpty);
+  });
+
+  test('flow_render does not depend on the app or Riverpod', () {
+    final files = Directory('packages/flow_render/lib')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.dart'))
+        .toList();
+    expect(files, isNotEmpty);
+    final violations = [
+      for (final file in files)
+        for (final banned in const [
+          'package:fusionreflow/',
+          'package:flutter_riverpod/',
+          'package:riverpod',
+          'package:hooks_riverpod/',
+        ])
+          if (file.readAsStringSync().contains(banned))
+            '${_rel(file)} imports $banned',
+    ];
+    expect(violations, isEmpty);
+    final pubspec = File('packages/flow_render/pubspec.yaml')
+        .readAsStringSync();
+    expect(pubspec, isNot(contains('riverpod')));
+    expect(pubspec, isNot(contains('fusionreflow')));
+  });
+
   test('one public widget per file, named after the file', () {
     final widgetRe = RegExp(
       r'^class (\w+) extends (?:StatelessWidget|StatefulWidget|ConsumerWidget|ConsumerStatefulWidget)',

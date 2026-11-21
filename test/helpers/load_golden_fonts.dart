@@ -27,6 +27,9 @@ Future<void> loadGoldenFonts() async {
     'assets/fonts/literata/Literata-Regular.ttf',
     'assets/fonts/literata/Literata-Italic.ttf',
   ]);
+  await _load('JetBrainsMono', [
+    'assets/fonts/jetbrains_mono/JetBrainsMono-Regular.ttf',
+  ]);
   final flutterRoot = Platform.environment['FLUTTER_ROOT'];
   if (flutterRoot != null) {
     await _load('MaterialIcons', [

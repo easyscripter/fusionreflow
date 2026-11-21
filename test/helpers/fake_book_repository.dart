@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flow_render/flow_render.dart';
+import 'package:fusionreflow/data/repositories/book_exceptions.dart';
 import 'package:fusionreflow/data/repositories/book_repository.dart';
 import 'package:fusionreflow/domain/models/book_entry.dart';
 import 'package:fusionreflow/domain/models/book_format.dart';
@@ -80,15 +82,48 @@ class FakeBookRepository implements BookRepository {
     yield* _changes.stream.map((_) => find());
   }
 
+  /// Books [open] returns by id; an id that is not here is not found.
+  final Map<String, FlowBook> opened = {};
+
+  /// Thrown by [open] when set (before the lookup).
+  Object? openError;
+
+  /// Ids passed to [open].
+  final List<String> openCalls = [];
+
+  /// Completes [open] when set; lets a test keep the book loading.
+  Completer<void>? openGate;
+
+  @override
+  Future<FlowBook> open(String id) async {
+    openCalls.add(id);
+    await openGate?.future;
+    final error = openError;
+    // ignore: only_throw_errors (tests throw Errors and Exceptions alike)
+    if (error != null) throw error;
+    return opened[id] ?? (throw BookNotFoundException(id));
+  }
+
   @override
   Future<Uint8List> load(String id) => throw UnimplementedError();
+
+  /// `(id, position, progress)` of every [savePosition] call.
+  final List<(String, ReadingPosition, double)> saved = [];
+
+  /// Thrown by [savePosition] when set.
+  Object? saveError;
 
   @override
   Future<void> savePosition(
     String id,
     ReadingPosition position,
     double progress,
-  ) => throw UnimplementedError();
+  ) async {
+    saved.add((id, position, progress));
+    final error = saveError;
+    // ignore: only_throw_errors (tests throw Errors and Exceptions alike)
+    if (error != null) throw error;
+  }
 
   @override
   Future<void> delete(String id) async {
