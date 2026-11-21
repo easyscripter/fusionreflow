@@ -103,6 +103,18 @@ pub(super) fn parse_opf(xml: &str, opf_path: &str) -> Result<Package, String> {
             buf.push_str(&t);
             continue;
         }
+        if let Some((Capture::Description, cn, buf)) = cap.as_mut() {
+            // Real child elements (not escaped HTML): keep their boundaries for `plain_description`.
+            let tag = match &ev {
+                Event::Start(e) | Event::Empty(e) => Some(format!("<{}>", name(e))),
+                Event::End(e) if end_name(e) != *cn => Some(format!("</{}>", end_name(e))),
+                _ => None,
+            };
+            if let Some(tag) = tag.filter(|t| *t != format!("<{cn}>")) {
+                buf.push_str(&tag);
+                continue;
+            }
+        }
         let (start, empty) = match &ev {
             Event::Start(e) => (Some(e), false),
             Event::Empty(e) => (Some(e), true),

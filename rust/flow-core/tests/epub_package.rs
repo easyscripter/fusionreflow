@@ -276,3 +276,12 @@ fn no_description_is_none() {
     let b = convert(epub_with_meta("")).expect("convert");
     assert_eq!(b.meta.description, None);
 }
+
+#[test]
+fn description_with_child_elements_keeps_paragraphs() {
+    let b = convert(epub_with_meta(
+        "<dc:description><p>A</p><p>B</p>one<br/>two</dc:description>",
+    ))
+    .expect("convert");
+    assert_eq!(b.meta.description.as_deref(), Some("A\n\nB\n\none\n\ntwo"));
+}
