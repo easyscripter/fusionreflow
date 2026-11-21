@@ -8,7 +8,7 @@ import 'package:fusionreflow/ui/core/theme/app_cover_palette.dart';
 import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
 import 'package:fusionreflow/ui/library/widgets/book_cover.dart';
 
-/// Шапка карточки: обложка, название, авторы и строка «формат · размер · язык».
+/// Card header: cover, title, authors and a "format · size · language" line.
 class BookDetailsHeader extends StatelessWidget {
   /// Creates the header for [book].
   const new({required this.book, super.key});
@@ -45,7 +45,7 @@ class BookDetailsHeader extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Название и авторы читаются из подписей ниже, а не дважды.
+          // Title and authors are read from the captions below, not twice.
           ExcludeSemantics(
             child: SizedBox(
               width: _coverWidth,

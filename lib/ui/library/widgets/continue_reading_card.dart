@@ -17,7 +17,7 @@ class ContinueReadingCard extends StatelessWidget {
 
   final BookEntry book;
 
-  /// Долгое нажатие: меню действий с книгой.
+  /// Long press: the book actions menu.
   final VoidCallback? onLongPress;
 
   static const double _coverWidth = 72;

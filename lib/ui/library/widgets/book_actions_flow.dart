@@ -8,14 +8,14 @@ import 'package:fusionreflow/ui/library/widgets/book_actions_dialog.dart';
 import 'package:fusionreflow/ui/library/widgets/delete_book_dialog.dart';
 import 'package:go_router/go_router.dart';
 
-/// Долгое нажатие на книгу: меню действий → карточка или удаление с
-/// подтверждением. Не виджет: это навигация, логики в ней нет.
+/// Long press on a book: actions menu → book card, or delete with a
+/// confirmation. Not a widget: it is navigation, there is no logic in it.
 Future<void> showBookActions(
   BuildContext context,
   WidgetRef ref,
   BookEntry book,
 ) async {
-  // До await: после диалогов context уже может быть не тот.
+  // Taken before the first await: after the dialogs the context may be gone.
   final messenger = ScaffoldMessenger.of(context);
   final router = GoRouter.of(context);
   final l10n = AppLocalizations.of(context);
@@ -32,7 +32,7 @@ Future<void> showBookActions(
         context: context,
         builder: (_) => DeleteBookDialog(book: book),
       );
-      // Экран мог уйти (ошибка потока книг) за время диалога.
+      // The screen may be gone (the book stream failed) during the dialog.
       if (confirmed != true || !context.mounted) return;
       final deleted = await ref
           .read(libraryViewModelProvider.notifier)

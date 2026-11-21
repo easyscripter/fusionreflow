@@ -19,7 +19,7 @@ class BookGrid extends StatelessWidget {
 
   final List<BookEntry> books;
 
-  /// Долгое нажатие на книгу; на карточке импорта ничего не делает.
+  /// Long press on a book; the import card ignores it.
   final void Function(BookEntry book)? onBookLongPress;
   final ImportRunning? importing;
 

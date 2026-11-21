@@ -3,8 +3,8 @@ import 'package:fusionreflow/l10n/app_localizations.dart';
 import 'package:fusionreflow/ui/book_details/widgets/book_description_sheet.dart';
 import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
 
-/// «Об этой книге»: описание в две строки и «Читать полностью», если оно
-/// длиннее. Без описания — «В файле нет описания.».
+/// "About this book": a two-line description and a "Read more" link when it
+/// is longer. Without a description it says so instead.
 class BookAboutSection extends StatelessWidget {
   /// Creates the section; [description] is plain text with `\n\n` paragraphs.
   const new({required this.description, super.key});
@@ -16,7 +16,8 @@ class BookAboutSection extends StatelessWidget {
   static const double _lineHeight = 22;
   static const double _linkHeight = 32;
 
-  /// Не влезает ли [text] в [_previewLines] строк так же, как в `Text` ниже.
+  /// Whether [text] needs more than [_previewLines] lines, measured the
+  /// same way as the `Text` below.
   static bool _exceedsPreview(
     BuildContext context,
     String text,
@@ -48,7 +49,8 @@ class BookAboutSection extends StatelessWidget {
       height: _lineHeight / _textSize,
       color: theme.colorScheme.onSurfaceVariant,
     );
-    // В превью абзацы идут подряд: пустая строка съела бы одну из двух.
+    // Paragraphs run together in the preview: a blank line would eat one of the
+    // two lines.
     final preview = text.split('\n\n').join(' ');
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -65,7 +67,7 @@ class BookAboutSection extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Wrap: при крупном шрифте ссылка уходит на строку ниже.
+              // Wrap: at a large font the link drops to the next line.
               Wrap(
                 alignment: WrapAlignment.spaceBetween,
                 crossAxisAlignment: WrapCrossAlignment.center,

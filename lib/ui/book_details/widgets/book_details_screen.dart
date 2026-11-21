@@ -11,7 +11,7 @@ import 'package:fusionreflow/ui/core/theme/app_icons.dart';
 import 'package:fusionreflow/ui/core/widgets/app_icon.dart';
 import 'package:go_router/go_router.dart';
 
-/// Карточка книги: шапка, прогресс, описание и детали.
+/// Book card: header, progress, description and details.
 class BookDetailsScreen extends ConsumerWidget {
   /// Creates the screen for book [bookId].
   const new({required this.bookId, super.key});

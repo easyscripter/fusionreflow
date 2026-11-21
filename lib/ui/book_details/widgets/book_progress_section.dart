@@ -6,7 +6,7 @@ import 'package:fusionreflow/routing/app_routes.dart';
 import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
 import 'package:go_router/go_router.dart';
 
-/// Статус чтения, полоса прогресса и кнопка «Начать / Продолжить чтение».
+/// Reading status, progress bar and the "Start / Continue reading" button.
 class BookProgressSection extends StatelessWidget {
   /// Creates the section for [book].
   const new({required this.book, super.key});

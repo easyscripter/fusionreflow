@@ -6,14 +6,14 @@ import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
 import 'package:fusionreflow/ui/core/theme/app_icons.dart';
 import 'package:fusionreflow/ui/core/widgets/app_icon.dart';
 
-/// Отступ листа от верха экрана (макет `book-description`), dp.
+/// Gap between the top of the screen and the sheet (mockup), dp.
 const double _sheetTop = 150;
 
-/// Самая большая доля экрана, которую занимает лист.
+/// The largest share of the screen the sheet may take.
 const double _sheetMaxShare = 0.9;
 
-/// Открывает [BookDescriptionSheet] поверх оболочки: от `top: 150` макета, но
-/// не выше 90% высоты экрана.
+/// Opens [BookDescriptionSheet] over the shell: 150 dp from the top as in the
+/// mockup, but no taller than 90% of the screen.
 Future<void> showBookDescription(BuildContext context, String description) {
   final screen = MediaQuery.sizeOf(context).height;
   final height = math.min(screen - _sheetTop, screen * _sheetMaxShare);
@@ -26,7 +26,7 @@ Future<void> showBookDescription(BuildContext context, String description) {
   );
 }
 
-/// Лист с полным описанием книги: абзацы и сноска об источнике текста.
+/// Full book description: paragraphs and a footnote on where the text is from.
 class BookDescriptionSheet extends StatelessWidget {
   /// Creates the sheet; paragraphs of [description] are split by `\n\n`.
   const new({required this.description, super.key});

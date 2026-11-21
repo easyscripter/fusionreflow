@@ -34,6 +34,6 @@ abstract final class AppSizes {
   static const double dividerThickness = 1;
   static const double chipLabelHeight = 16;
 
-  /// Ширина колонки карточки книги на планшете.
+  /// Width of the book card column on a tablet.
   static const double detailsMaxWidth = 600;
 }

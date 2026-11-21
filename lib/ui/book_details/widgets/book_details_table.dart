@@ -7,7 +7,7 @@ import 'package:fusionreflow/ui/core/language_label.dart';
 import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
 import 'package:intl/intl.dart';
 
-/// «Детали»: формат, размер файла, язык и дата добавления.
+/// "Details": format, file size, language and date added.
 class BookDetailsTable extends StatelessWidget {
   /// Creates the table for [book].
   const new({required this.book, super.key});
@@ -35,7 +35,7 @@ class BookDetailsTable extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: _rowPadding),
-        // Оба Flexible: при крупном шрифте подпись и значение переносятся.
+        // Both are Flexible: at a large font the label and the value wrap.
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,

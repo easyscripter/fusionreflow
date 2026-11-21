@@ -63,7 +63,7 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.library}) {
           ),
         ],
       ),
-      // Карточка книги: вне оболочки, как читалка.
+      // Book card: outside the shell, like the reader.
       GoRoute(
         path: AppRoutes.bookDetails,
         builder: (context, state) =>

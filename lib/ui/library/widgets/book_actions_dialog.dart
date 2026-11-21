@@ -7,17 +7,17 @@ import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
 import 'package:fusionreflow/ui/core/theme/app_icons.dart';
 import 'package:fusionreflow/ui/core/widgets/app_icon.dart';
 
-/// Действие, выбранное в [BookActionsDialog].
+/// The action chosen in [BookActionsDialog].
 enum BookAction {
-  /// Открыть карточку книги.
+  /// Open the book card.
   details,
 
-  /// Удалить книгу (после подтверждения).
+  /// Delete the book (after confirmation).
   delete,
 }
 
-/// Меню долгого нажатия на книгу: «Информация о книге» и «Удалить книгу».
-/// Возвращает [BookAction] через `Navigator.pop`; «Закрыть» — null.
+/// Long-press menu of a book: "Book info" and "Delete book". Pops a
+/// [BookAction]; "Close" pops null.
 class BookActionsDialog extends StatelessWidget {
   /// Creates the dialog for [book].
   const new({required this.book, super.key});
@@ -95,7 +95,7 @@ class BookActionsDialog extends StatelessWidget {
                     SizedBox(
                       width: _coverWidth,
                       child: ExcludeSemantics(
-                        // Макет: на обложке 48 dp текста нет, только цвет.
+                        // Mockup: the 48 dp cover has no text, just the color.
                         child: AspectRatio(
                           aspectRatio: 2 / 3,
                           child: DecoratedBox(

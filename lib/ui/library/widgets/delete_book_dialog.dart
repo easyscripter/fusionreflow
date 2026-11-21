@@ -4,7 +4,7 @@ import 'package:fusionreflow/l10n/app_localizations.dart';
 import 'package:fusionreflow/ui/core/book_labels.dart';
 import 'package:fusionreflow/ui/core/theme/app_dimens.dart';
 
-/// Подтверждение удаления книги. Возвращает true, если человек подтвердил.
+/// Delete confirmation. Pops true when the user confirms.
 class DeleteBookDialog extends StatelessWidget {
   /// Creates the dialog for [book].
   const new({required this.book, super.key});
