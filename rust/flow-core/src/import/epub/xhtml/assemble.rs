@@ -174,6 +174,15 @@ impl Builder<'_> {
 
     pub(super) fn finish_pre(&mut self) {
         let Some(buf) = self.pre.take() else { return };
+        let merge = std::mem::take(&mut self.pre_merge);
+        if merge {
+            let line = buf.replace(['\r', '\n'], " ");
+            let line = line.trim_matches([' ', '\t']);
+            if !line.is_empty() {
+                self.push_code_line(line.to_owned());
+            }
+            return;
+        }
         let buf = buf.replace("\r\n", "\n");
         let mut lines: Vec<String> = buf
             .strip_prefix('\n')
@@ -186,6 +195,25 @@ impl Builder<'_> {
         }
         if !lines.is_empty() {
             self.push_block(DBlock::Code(lines));
+        }
+    }
+
+    /// Adds a code line to the code block just before it, or starts one.
+    fn push_code_line(&mut self, line: String) {
+        let last = match self.containers.last_mut() {
+            Some(c) => c.blocks.last_mut(),
+            None => self.tops.last_mut().map(|t| &mut t.block),
+        };
+        if let Some(DBlock::Code(lines)) = last {
+            lines.push(line);
+            if self.containers.is_empty() {
+                let ids = std::mem::take(&mut self.ids);
+                if let Some(t) = self.tops.last_mut() {
+                    t.anchors.extend(ids);
+                }
+            }
+        } else {
+            self.push_block(DBlock::Code(vec![line]));
         }
     }
 

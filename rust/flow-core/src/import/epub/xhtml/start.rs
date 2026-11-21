@@ -46,6 +46,9 @@ impl Builder<'_> {
         if matches!(n, "aside" | "div" | "section" | "li" | "p") && self.footnote_start(e) {
             return Kind::Footnote;
         }
+        if let Some(kind) = self.mono_kind(n, e) {
+            return kind;
+        }
         match n {
             "svg" => Kind::Svg,
             "b" | "strong" => Kind::Bold,
@@ -87,6 +90,24 @@ impl Builder<'_> {
                 Kind::Block
             }
             _ => Kind::Plain,
+        }
+    }
+
+    /// Code by stylesheet: a monospace `p` is a code line, a monospace `span` inline code.
+    fn mono_kind(&mut self, n: &str, e: &BytesStart<'_>) -> Option<Kind> {
+        let class = attr(e, "class")?;
+        if !class.split_whitespace().any(|c| self.mono.contains(c)) {
+            return None;
+        }
+        match n {
+            "span" => Some(Kind::Code),
+            "p" if self.pre.is_none() && self.table.is_none() && self.fig.is_none() => {
+                self.flush();
+                self.pre = Some(String::new());
+                self.pre_merge = true;
+                Some(Kind::Pre)
+            }
+            _ => None,
         }
     }
 
