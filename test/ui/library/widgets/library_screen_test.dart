@@ -43,7 +43,8 @@ void main() {
     );
 
     expect(find.byType(ContinueReadingCard), findsOneWidget);
-    expect(find.byType(BookCard), findsNWidgets(3));
+    // The book being read is also in the grid.
+    expect(find.byType(BookCard), findsNWidgets(4));
     expect(find.text('4 книги'), findsOneWidget);
     expect(find.text('Продолжить чтение'), findsOneWidget);
     expect(find.text('Author · 30%'), findsOneWidget);
@@ -257,7 +258,7 @@ void main() {
       ],
     );
 
-    await tester.tap(find.byType(BookCard));
+    await tester.tap(find.byType(BookCard).first);
     await tester.pumpAndSettle();
     expect(find.byType(ReaderScreen), findsOneWidget);
     expect(find.byType(ReaderScreen), findsOneWidget);
@@ -369,10 +370,11 @@ void main() {
       ],
     );
 
-    final label = tester.getSemantics(find.byType(BookCard)).label;
+    // The card of the book being read comes first (sorted by last read).
+    final label = tester.getSemantics(find.byType(BookCard).last).label;
     expect('Дюна'.allMatches(label), hasLength(1));
     final bar = tester.widget<LinearProgressIndicator>(
-      find.byType(LinearProgressIndicator),
+      find.byType(LinearProgressIndicator).first,
     );
     expect(bar.semanticsLabel, '10%');
     semantics.dispose();

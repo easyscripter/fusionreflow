@@ -63,10 +63,7 @@ class LibraryViewModel extends _$LibraryViewModel {
     final sorted = sortBooks(_books, _sort);
     _out.add(
       LibraryState(
-        books: [
-          for (final book in sorted)
-            if (book.id != continueReading?.id) book,
-        ],
+        books: sorted,
         totalCount: _books.length,
         sort: _sort,
         continueReading: continueReading,
