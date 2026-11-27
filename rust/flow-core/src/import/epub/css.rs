@@ -1,23 +1,32 @@
 //! Minimal stylesheet reading: which classes the book sets in a monospace font.
 //! Many books mark code only this way (`p.listing { font-family: monospace }`).
-use super::xml::{attr, end_name, name, reader};
+//! A broken or oversized stylesheet is skipped, never fatal.
+use super::archive::{Archive, ArchiveError};
+use super::xml::{attr, decode_bytes, end_name, has_token, name, reader};
 use quick_xml::events::Event;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
-/// Font family names that make a class "code" (lowercase substrings).
-const MONO_FONTS: [&str; 3] = ["mono", "consol", "courier"];
+/// A larger stylesheet is ignored.
+const MAX_CSS_BYTES: usize = 1 << 20;
+/// Distinct stylesheets looked at per chapter.
+const MAX_SHEETS_PER_CHAPTER: usize = 16;
+/// Distinct stylesheets read per book.
+const MAX_SHEETS_PER_BOOK: usize = 64;
+/// Monospace classes kept per stylesheet.
+const MAX_CLASSES: usize = 1024;
 
 /// `href`s of the `<link rel="stylesheet">` elements in the document head.
-pub(super) fn stylesheet_hrefs(xml: &str) -> Vec<String> {
+fn stylesheet_hrefs(xml: &str) -> Vec<String> {
     let mut r = reader(xml, false);
     let mut out = Vec::new();
     loop {
         match r.read_event() {
             Ok(Event::Start(e) | Event::Empty(e)) => match name(&e).as_str() {
-                "link"
-                    if attr(&e, "rel").is_some_and(|v| v.to_lowercase().contains("stylesheet")) =>
-                {
-                    out.extend(attr(&e, "href"));
+                "link" => {
+                    let rel = attr(&e, "rel").map(|v| v.to_lowercase());
+                    if has_token(rel, &["stylesheet"]) {
+                        out.extend(attr(&e, "href"));
+                    }
                 }
                 "body" => break,
                 _ => {}
@@ -30,30 +39,96 @@ pub(super) fn stylesheet_hrefs(xml: &str) -> Vec<String> {
     out
 }
 
+/// Monospace classes per stylesheet entry, each read once per book.
+#[derive(Default)]
+pub(super) struct Stylesheets(HashMap<String, HashSet<String>>);
+
+impl Stylesheets {
+    /// Class sets of the stylesheets a chapter links. The only error is the
+    /// archive-wide size limit.
+    pub fn for_chapter(
+        &mut self,
+        a: &mut Archive<'_>,
+        chapter: &str,
+        xml: &str,
+    ) -> Result<Vec<&HashSet<String>>, ArchiveError> {
+        let mut seen = HashSet::new();
+        let mut paths = Vec::new();
+        for href in stylesheet_hrefs(xml) {
+            if paths.len() >= MAX_SHEETS_PER_CHAPTER {
+                break;
+            }
+            if !seen.insert(href.clone()) {
+                continue;
+            }
+            let Some(path) = a.locate(chapter, &href) else {
+                continue;
+            };
+            if paths.contains(&path) {
+                continue;
+            }
+            if !self.0.contains_key(&path) {
+                if self.0.len() >= MAX_SHEETS_PER_BOOK {
+                    continue;
+                }
+                let classes = match a.read(&path) {
+                    Ok(b) if b.len() <= MAX_CSS_BYTES => mono_classes(&decode_bytes(&b)),
+                    Err(ArchiveError::TotalTooLarge) => return Err(ArchiveError::TotalTooLarge),
+                    _ => HashSet::new(),
+                };
+                self.0.insert(path.clone(), classes);
+            }
+            paths.push(path);
+        }
+        Ok(paths.iter().filter_map(|p| self.0.get(p)).collect())
+    }
+}
+
 fn strip_comments(css: &str) -> String {
     let mut out = String::with_capacity(css.len());
     let mut rest = css;
-    while let Some(i) = rest.find("/*") {
-        out.push_str(&rest[..i]);
-        rest = rest[i..].split_once("*/").map_or("", |(_, tail)| tail);
+    while let Some((before, after)) = rest.split_once("/*") {
+        out.push_str(before);
+        rest = after.split_once("*/").map_or("", |(_, tail)| tail);
     }
     out.push_str(rest);
     out
 }
 
-fn is_mono(decls: &str) -> bool {
-    decls.split(';').any(|d| {
-        d.split_once(':').is_some_and(|(k, v)| {
-            let v = v.to_lowercase();
-            k.trim().eq_ignore_ascii_case("font-family") && MONO_FONTS.iter().any(|f| v.contains(f))
-        })
+/// A monospace family name: `monospace`, or a word like `Mono`, `UbuntuMono`,
+/// `Consolas`, `Courier` (but not `Monotype` or `Monomakh`).
+fn is_mono_name(family: &str) -> bool {
+    family.split([' ', '-', '_']).any(|w| {
+        w == "monospace"
+            || w.ends_with("mono")
+            || matches!(w, "consol" | "consola" | "consolas")
+            || w.starts_with("courier")
     })
 }
 
-/// Class names of rules whose `font-family` is monospace. Only the last
-/// compound selector counts and the tag is ignored (`p.a` and `span.a` both give `a`).
-// shortcut: no cascade, specificity or descendant selectors; revisit if a book needs them.
-pub(super) fn mono_classes(css: &str) -> HashSet<String> {
+/// Only the first family of the list counts, plus the generic `monospace`.
+fn is_mono(decls: &str) -> bool {
+    decls.split(';').any(|d| {
+        let Some((key, value)) = d.split_once(':') else {
+            return false;
+        };
+        if !key.trim().eq_ignore_ascii_case("font-family") {
+            return false;
+        }
+        let value = value.to_lowercase();
+        let value = value.split('!').next().unwrap_or_default();
+        let mut families = value
+            .split(',')
+            .map(|f| f.trim_matches(|c: char| c.is_whitespace() || c == '"' || c == '\''));
+        families.next().is_some_and(is_mono_name) || families.any(|f| f == "monospace")
+    })
+}
+
+/// Class names of `.a` / `tag.a` rules whose `font-family` is monospace; the tag
+/// is ignored. Descendant, compound (`.a.b`) and pseudo selectors are skipped:
+/// taking one of their classes alone would turn body text into code.
+// shortcut: no cascade, specificity or `font:` shorthand; revisit if a book needs them.
+fn mono_classes(css: &str) -> HashSet<String> {
     let css = strip_comments(css);
     let mut out = HashSet::new();
     for rule in css.split('}') {
@@ -64,16 +139,13 @@ pub(super) fn mono_classes(css: &str) -> HashSet<String> {
             continue;
         }
         let selectors = head.rsplit(['{', ';']).next().unwrap_or_default();
-        for sel in selectors.split(',') {
-            let Some(last) = sel.split_whitespace().next_back() else {
-                continue;
-            };
-            if last.contains([':', '[', '>', '+', '~']) {
+        for sel in selectors.split(',').map(str::trim) {
+            if sel.contains(|c: char| c.is_whitespace() || ":[>+~#".contains(c)) {
                 continue;
             }
-            for part in last.split('.').skip(1) {
-                let class = part.split('#').next().unwrap_or_default();
-                if !class.is_empty() {
+            let mut parts = sel.split('.').skip(1);
+            if let (Some(class), None) = (parts.next(), parts.next()) {
+                if !class.is_empty() && out.len() < MAX_CLASSES {
                     out.insert(class.to_owned());
                 }
             }
@@ -86,18 +158,30 @@ pub(super) fn mono_classes(css: &str) -> HashSet<String> {
 mod tests {
     use super::*;
 
-    #[test]
-    fn finds_classes_with_comments_and_groups() {
-        let css = "/* a { font-family: monospace } */ p.a, span.b {font-family: 'Courier New'} .c{font-family: serif} @media print { .d { font-family: monospace } } p.e:hover{font-family:monospace}";
-        let m = mono_classes(css);
-        let mut v: Vec<_> = m.iter().map(String::as_str).collect();
+    fn sorted(css: &str) -> Vec<String> {
+        let mut v: Vec<_> = mono_classes(css).into_iter().collect();
         v.sort_unstable();
-        assert_eq!(v, ["a", "b", "d"]);
+        v
+    }
+
+    #[test]
+    fn finds_simple_selectors_with_comments_groups_and_media() {
+        let css = "/* a { font-family: monospace } */ p.a, span.b {font-family: 'Courier New'} .c{font-family: serif} @media print { .d { font-family: monospace } } p.e:hover{font-family:monospace}";
+        assert_eq!(sorted(css), ["a", "b", "d"]);
+    }
+
+    #[test]
+    fn class_count_is_capped() {
+        let css: String = (0..MAX_CLASSES + 10)
+            .map(|i| format!(".c{i},"))
+            .collect::<String>()
+            + ".z{font-family:monospace}";
+        assert_eq!(mono_classes(&css).len(), MAX_CLASSES);
     }
 
     #[test]
     fn finds_stylesheet_links_only_in_head() {
-        let x = r#"<html><head><link rel="stylesheet" href="a.css"/><link rel="icon" href="i"/></head><body><link rel="stylesheet" href="b.css"/></body></html>"#;
+        let x = r#"<html><head><link rel="alternate Stylesheet" href="a.css"/><link rel="nostylesheet" href="i"/></head><body><link rel="stylesheet" href="b.css"/></body></html>"#;
         assert_eq!(stylesheet_hrefs(x), ["a.css"]);
     }
 
@@ -105,5 +189,31 @@ mod tests {
     fn unterminated_comment_and_junk_do_not_panic() {
         assert!(mono_classes("/* x { .a {font-family: mono}").is_empty());
         assert!(mono_classes("}}{{ ;; font-family").is_empty());
+    }
+
+    #[test]
+    fn repeated_links_give_one_set_and_sheets_are_capped() {
+        use super::super::archive::Limits;
+        use std::io::{Cursor, Write};
+        let mut z = zip::ZipWriter::new(Cursor::new(Vec::new()));
+        for i in 0..MAX_SHEETS_PER_CHAPTER + 4 {
+            z.start_file(format!("{i}.css"), zip::write::SimpleFileOptions::default())
+                .expect("start");
+            z.write_all(b".a{font-family:monospace}").expect("write");
+        }
+        let mut src = Cursor::new(z.finish().expect("finish").into_inner());
+        let mut a = Archive::open(&mut src, Limits::DEFAULT).expect("zip");
+        let link = |h: &str| format!(r#"<link rel="stylesheet" href="{h}"/>"#);
+        let mut sheets = Stylesheets::default();
+
+        let same = link("0.css").repeat(100) + &link("./0.css");
+        let got = sheets.for_chapter(&mut a, "c.xhtml", &same);
+        assert_eq!(got.expect("sheets").len(), 1);
+
+        let many: String = (0..MAX_SHEETS_PER_CHAPTER + 4)
+            .map(|i| link(&format!("{i}.css")))
+            .collect();
+        let got = sheets.for_chapter(&mut a, "c.xhtml", &many);
+        assert_eq!(got.expect("sheets").len(), MAX_SHEETS_PER_CHAPTER);
     }
 }

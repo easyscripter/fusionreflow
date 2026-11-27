@@ -35,10 +35,15 @@ enum Kind {
     Link(usize),
     Block,
     Heading,
-    List { ordered: bool, next: u32 },
+    List {
+        ordered: bool,
+        next: u32,
+    },
     Li,
     Quote,
     Pre,
+    /// A monospace paragraph demoted to running text.
+    CodeParagraph,
     Footnote,
     Table,
     NestedTable,
@@ -93,7 +98,7 @@ struct Counts {
 struct Builder<'a> {
     chapter: &'a str,
     /// Classes set in a monospace font by the book's stylesheets.
-    mono: &'a HashSet<String>,
+    mono: &'a [&'a HashSet<String>],
     images: &'a mut dyn Images,
     frames: Vec<Frame>,
     skip: usize,
@@ -106,6 +111,9 @@ struct Builder<'a> {
     pre: Option<String>,
     /// `pre` was opened by a monospace paragraph: one line, joins a preceding code block.
     pre_merge: bool,
+    /// Set while the last block is a code block built from monospace paragraphs:
+    /// the number of blank lines waiting for the next code line.
+    code_join: Option<usize>,
     containers: Vec<Container>,
     tops: Vec<Top>,
     ids: Vec<String>,
@@ -117,7 +125,7 @@ struct Builder<'a> {
 pub(super) fn parse_chapter(
     xml: &str,
     chapter: &str,
-    mono: &HashSet<String>,
+    mono: &[&HashSet<String>],
     images: &mut dyn Images,
 ) -> Vec<Top> {
     let mut r = reader(xml, false);
@@ -147,13 +155,14 @@ pub(super) fn parse_chapter(
 impl<'a> Builder<'a> {
     pub(super) fn new(
         chapter: &'a str,
-        mono: &'a HashSet<String>,
+        mono: &'a [&'a HashSet<String>],
         images: &'a mut dyn Images,
     ) -> Self {
         Self {
             chapter,
             mono,
             pre_merge: false,
+            code_join: None,
             images,
             frames: Vec::new(),
             skip: 0,
@@ -239,7 +248,18 @@ impl<'a> Builder<'a> {
             return;
         }
         if let Some(buf) = self.pre.as_mut() {
-            buf.push_str(s);
+            if self.pre_merge {
+                // HTML whitespace: only `<br>` ends a line of a monospace paragraph.
+                for ch in s.chars() {
+                    if !matches!(ch, ' ' | '\t' | '\r' | '\n') {
+                        buf.push(ch);
+                    } else if !buf.is_empty() && !buf.ends_with([' ', '\n']) {
+                        buf.push(' ');
+                    }
+                }
+            } else {
+                buf.push_str(s);
+            }
             return;
         }
         let mut prev_space = self.last_is_space();

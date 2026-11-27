@@ -57,31 +57,6 @@ fn read_entry(a: &mut Archive<'_>, path: &str) -> Result<Option<Vec<u8>>, Import
     }
 }
 
-/// Monospace classes of the stylesheets a chapter links (each file read once).
-fn mono_for(
-    a: &mut Archive<'_>,
-    cache: &mut HashMap<String, HashSet<String>>,
-    chapter: &str,
-    xml: &str,
-) -> Result<HashSet<String>, ImportError> {
-    let mut all = HashSet::new();
-    for href in css::stylesheet_hrefs(xml) {
-        let Some(path) =
-            path::resolve(chapter, &href).and_then(|t| a.canonical(&t.path).map(str::to_owned))
-        else {
-            continue;
-        };
-        if !cache.contains_key(&path) {
-            let classes = read_entry(a, &path)?
-                .map(|b| css::mono_classes(&xml::decode_bytes(&b)))
-                .unwrap_or_default();
-            cache.insert(path.clone(), classes);
-        }
-        all.extend(cache[&path].iter().cloned());
-    }
-    Ok(all)
-}
-
 fn hash_source(src: &mut dyn ReadSeek) -> Result<String, ImportError> {
     let io = |e: std::io::Error| corrupted(format!("epub: cannot read source: {e}"));
     src.seek(SeekFrom::Start(0)).map_err(io)?;
@@ -159,8 +134,7 @@ impl Loader<'_, '_> {
 
 impl draft::Images for Loader<'_, '_> {
     fn load(&mut self, chapter: &str, src: &str) -> Option<ResourceId> {
-        let target = path::resolve(chapter, src)?;
-        let name = self.archive.canonical(&target.path)?.to_owned();
+        let name = self.archive.locate(chapter, src)?;
         self.load_entry(&name)
     }
 }
@@ -317,7 +291,7 @@ impl EpubConverter {
 
         let total = u32::try_from(spine.len()).unwrap_or(u32::MAX);
         let mut chapters: Vec<(String, Vec<draft::Top>)> = Vec::new();
-        let mut css_cache: HashMap<String, HashSet<String>> = HashMap::new();
+        let mut stylesheets = css::Stylesheets::default();
         for (i, item) in spine.iter().enumerate() {
             if cancel.is_cancelled() {
                 return Err(ImportError::Cancelled);
@@ -329,7 +303,9 @@ impl EpubConverter {
             if let Some(name) = name {
                 if let Some(bytes) = read_entry(loader.archive, &name)? {
                     let text = xml::decode_bytes(&bytes);
-                    let mono = mono_for(loader.archive, &mut css_cache, &name, &text)?;
+                    let mono = stylesheets
+                        .for_chapter(loader.archive, &name, &text)
+                        .map_err(archive_error)?;
                     let tops = xhtml::parse_chapter(&text, &name, &mono, &mut loader);
                     chapters.push((name, tops));
                 }
