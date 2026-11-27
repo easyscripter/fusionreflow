@@ -41,7 +41,7 @@ class EngineLineBreaker implements LineBreaker {
   List<FlowLine> breakLines(FlowText block, double width, FlowStyle style) {
     final length = block.length;
     if (length == 0) return const [];
-    final built = buildText(block, style);
+    final built = buildText(block, style, maxWidth: width);
     final painter = layoutPainter(built, roleAlign(block, style), width);
     final metrics = painter.computeLineMetrics();
     final boxes = painter.inlinePlaceholderBoxes ?? const [];

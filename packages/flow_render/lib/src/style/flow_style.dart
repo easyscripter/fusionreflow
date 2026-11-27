@@ -30,19 +30,6 @@ class FlowStyle {
   final Color mutedColor;
   final Color accentColor;
 
-  /// A copy with the given fields replaced.
-  FlowStyle copyWith({double? fontSize, Color? textColor}) => FlowStyle(
-    fontFamily: fontFamily,
-    codeFontFamily: codeFontFamily,
-    fontSize: fontSize ?? this.fontSize,
-    lineHeight: lineHeight,
-    padding: padding,
-    justify: justify,
-    textColor: textColor ?? this.textColor,
-    mutedColor: mutedColor,
-    accentColor: accentColor,
-  );
-
   /// Height of one body line.
   double get line => fontSize * lineHeight;
 

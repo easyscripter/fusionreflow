@@ -15,9 +15,10 @@ import 'package:flutter/painting.dart';
 const double _levelEm = 1.5;
 const int _maxLevels = 4;
 const double _tableTextScale = 0.9;
-const double _cellPadX = 6;
+const double _cellPadX = 8;
 const double _cellPadY = 4;
 const double _brokenImageLines = 3;
+const double _captionGap = 8;
 
 /// Longest stretch of layout work without giving the event loop a turn.
 const int _sliceMs = 8;
@@ -44,7 +45,13 @@ class _Laid {
     this.keepTogether = false,
     this.keepWithNext = false,
     this.lineRules = false,
+    this.picture = false,
+    this.caption = false,
   });
+
+  /// A caption sits close under its picture.
+  final bool picture;
+  final bool caption;
 
   final List<_Row> rows;
 
@@ -63,11 +70,21 @@ class _Laid {
   final bool lineRules;
 }
 
+/// Gives the event loop a turn (timers, input, frames).
+Future<void> yieldToEventLoop() => Future<void>.delayed(Duration.zero);
+
 /// Splits a chapter into pages with a [LineBreaker].
 class FlowPaginator {
-  const new({this.lineBreaker = const EngineLineBreaker()});
+  const new({
+    this.lineBreaker = const EngineLineBreaker(),
+    this.pause = yieldToEventLoop,
+  });
 
   final LineBreaker lineBreaker;
+
+  /// Called between the pieces of a long layout so the UI can draw. Tests
+  /// with a fake clock pass one that completes at once.
+  final Future<void> Function() pause;
 
   /// Pages of [section] for a page of [size]. Never empty: an empty section
   /// gives one empty page.
@@ -75,15 +92,16 @@ class FlowPaginator {
     FlowSection section,
     ui.Size size,
     FlowStyle style,
-  ) => _Run(lineBreaker, section, size, style).paginate();
+  ) => _Run(lineBreaker, pause, section, size, style).paginate();
 }
 
 class _Run {
-  new(this.breaker, this.section, this.size, this.style)
+  new(this.breaker, this.pause, this.section, this.size, this.style)
     : width = math.max(1, size.width - style.padding.horizontal),
       height = math.max(1, size.height - style.padding.vertical);
 
   final LineBreaker breaker;
+  final Future<void> Function() pause;
   final FlowSection section;
   final ui.Size size;
   final FlowStyle style;
@@ -99,18 +117,46 @@ class _Run {
 
   double get _line => style.line;
 
+  final _slice = Stopwatch()..start();
+
+  /// Lets the UI draw frames during a long layout.
+  Future<void> _breathe() async {
+    if (_slice.elapsedMilliseconds < _sliceMs) return;
+    await pause();
+    _slice.reset();
+  }
+
   Future<_Laid> _layout(int index) async =>
       _laid[index] ??= await _layoutBlock(index);
 
   Future<_Laid> _layoutBlock(int index) async {
     final block = section.blocks[index];
     final start = _starts[index];
-    return switch (block) {
-      FlowText() => _layoutText(block, start),
-      FlowImage() => await _layoutImage(block, start),
-      FlowRule() => _layoutRule(start),
-      FlowTable() => _layoutTable(block, start),
-    };
+    switch (block) {
+      case FlowText():
+        await _readRatios(block.spans);
+        return _layoutText(block, start);
+      case FlowImage():
+        return await _layoutImage(block, start);
+      case FlowRule():
+        return _layoutRule(start);
+      case FlowTable():
+        for (final row in block.rows) {
+          for (final cell in row) {
+            await _readRatios(cell);
+          }
+        }
+        return await _layoutTable(block, start);
+    }
+  }
+
+  /// Reads the size of the inline pictures of [spans] once.
+  Future<void> _readRatios(List<FlowSpan> spans) async {
+    for (final span in spans.whereType<FlowImageSpan>()) {
+      if (imageRatios[span.bytes] != null) continue;
+      final size = await readImageSize(span.bytes);
+      if (size != null) imageRatios[span.bytes] = size.width / size.height;
+    }
   }
 
   // ---- text -------------------------------------------------------------
@@ -141,6 +187,7 @@ class _Run {
       );
     }
     final isHeading = block.role == FlowTextRole.heading;
+    final plain = plainText(block.spans);
     final rows = <_Row>[
       for (var i = 0; i < lines.length; i++)
         _Row(
@@ -158,6 +205,7 @@ class _Run {
               paragraphLines: lines.length,
               isHeading: isHeading,
               inlineImages: lines[i].inlineImages,
+              text: spoken(plain.substring(lines[i].start, lines[i].end)),
             ),
             if (i == 0 && markerPainter != null)
               FlowLabelItem(
@@ -181,7 +229,10 @@ class _Run {
           ? 'list'
           : block.role == FlowTextRole.code
           ? 'code'
+          : block.indent > 0
+          ? 'quote'
           : null,
+      caption: block.role == FlowTextRole.caption,
       keepTogether: isHeading,
       keepWithNext: isHeading,
       lineRules: !isHeading,
@@ -191,7 +242,10 @@ class _Run {
   /// Space before and after a text block, in lines.
   (double, double) _spacing(FlowText block) => switch (block.role) {
     FlowTextRole.heading => _pair(1, 0.8),
-    FlowTextRole.body when block.marker == null => _pair(0, 0),
+    FlowTextRole.body when block.marker == null && block.indent == 0 => _pair(
+      0,
+      0,
+    ),
     _ => _pair(0.5, 0.5),
   };
 
@@ -233,6 +287,7 @@ class _Run {
       before: 0.5 * _line,
       after: 0.5 * _line,
       keepTogether: true,
+      picture: true,
     );
   }
 
@@ -266,41 +321,56 @@ class _Run {
     color: style.textColor,
   );
 
-  FlowText _cellText(List<FlowSpan> cell) =>
-      FlowText(cell, role: FlowTextRole.footnote);
-
-  TextPainter? _cellPainter(List<FlowSpan> cell, double width) {
-    if (spansLength(cell) == 0) return null;
-    final built = buildText(_cellText(cell), style);
-    // Same styling as the table text size.
-    final scaled = BuiltText(
+  /// A cell ready for a `TextPainter`: the table text size and color.
+  BuiltText _cell(List<FlowSpan> cell, double maxWidth) {
+    final built = buildText(
+      FlowText(cell, role: FlowTextRole.footnote),
+      style,
+      maxWidth: maxWidth,
+      fontSize: style.fontSize * _tableTextScale,
+    );
+    return BuiltText(
       TextSpan(
-        style: built.span.style?.copyWith(
-          fontSize: style.fontSize * _tableTextScale,
-          color: style.textColor,
-        ),
+        style: built.span.style?.merge(_cellStyle),
         children: built.span.children,
       ),
       built.placeholders,
       built.images,
       built.prefix,
     );
-    return layoutPainter(scaled, TextAlign.left, width);
   }
 
-  _Laid _layoutTable(FlowTable table, int start) {
+  TextPainter? _cellPainter(List<FlowSpan> cell, double width) {
+    if (spansLength(cell) == 0) return null;
+    return layoutPainter(_cell(cell, width), TextAlign.left, width);
+  }
+
+  /// Widest one-line content and longest word of [cell], as drawn (bold,
+  /// italic, pictures).
+  (double, double) _measure(List<FlowSpan> cell) {
+    if (spansLength(cell) == 0) return (0.0, 0.0);
+    final built = _cell(cell, width);
+    final painter =
+        TextPainter(text: built.span, textDirection: TextDirection.ltr)
+          ..setPlaceholderDimensions(built.placeholders)
+          ..layout();
+    return (
+      painter.maxIntrinsicWidth.ceilToDouble(),
+      painter.minIntrinsicWidth.ceilToDouble(),
+    );
+  }
+
+  Future<_Laid> _layoutTable(FlowTable table, int start) async {
     if (table.rows.isEmpty) return const _Laid([]);
     final columns = table.rows.fold(0, (m, r) => math.max(m, r.length));
     final content = List<double>.filled(columns, 0);
     final minimum = List<double>.filled(columns, 0);
     for (final row in table.rows) {
+      await _breathe();
       for (var c = 0; c < row.length; c++) {
-        final text = row[c].whereType<FlowTextSpan>().map((s) => s.text).join();
-        if (text.trim().isEmpty) continue;
-        content[c] = math.max(content[c], _oneLine(text));
-        for (final word in text.split(RegExp(r'\s+'))) {
-          minimum[c] = math.max(minimum[c], _oneLine(word));
-        }
+        final (widest, word) = _measure(row[c]);
+        content[c] = math.max(content[c], widest);
+        minimum[c] = math.max(minimum[c], word);
       }
     }
     final inner = [for (var c = 0; c < columns; c++) _cellPadX * 2];
@@ -317,6 +387,7 @@ class _Run {
     final rows = <_Row>[];
     var offset = start;
     for (var r = 0; r < table.rows.length; r++) {
+      await _breathe();
       final rowStart = offset;
       offset += table.rowLength(r);
       final cells = table.rows[r];
@@ -349,15 +420,7 @@ class _Run {
               cells: [
                 for (var c = 0; c < painters.length; c++)
                   if (painters[c] case final painter?)
-                    FlowLabelItem(
-                      Rect.fromLTWH(
-                        xs[c] + _cellPadX,
-                        top + _cellPadY,
-                        painter.width,
-                        painter.height,
-                      ),
-                      painter,
-                    ),
+                    _cellItem(cells[c], painter, xs[c], top),
               ],
             ),
           ],
@@ -373,12 +436,28 @@ class _Run {
     );
   }
 
-  double _oneLine(String text) {
-    final painter = TextPainter(
-      text: TextSpan(text: text, style: _cellStyle),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    return painter.width;
+  FlowLabelItem _cellItem(
+    List<FlowSpan> cell,
+    TextPainter painter,
+    double x,
+    double top,
+  ) {
+    final boxes = painter.inlinePlaceholderBoxes ?? const [];
+    final pictures = cell.whereType<FlowImageSpan>().toList();
+    return FlowLabelItem(
+      Rect.fromLTWH(
+        x + _cellPadX,
+        top + _cellPadY,
+        painter.width,
+        painter.height,
+      ),
+      painter,
+      inlineImages: [
+        for (var i = 0; i < boxes.length && i < pictures.length; i++)
+          FlowInlineImage(boxes[i].toRect(), pictures[i].bytes),
+      ],
+      text: spoken(plainText(cell)),
+    );
   }
 
   /// A row taller than a page: its cells one under another, as paragraphs.
@@ -418,6 +497,7 @@ class _Run {
   double _gap(_Laid? previous, _Laid next) {
     if (previous == null || _atTop) return 0;
     if (previous.group != null && previous.group == next.group) return 0;
+    if (previous.picture && next.caption) return _captionGap;
     return math.max(previous.after, next.before);
   }
 
@@ -428,13 +508,8 @@ class _Run {
       offset += block.length;
     }
     _Laid? previous;
-    final slice = Stopwatch()..start();
     for (var i = 0; i < section.blocks.length; i++) {
-      // Let the UI draw frames between the blocks of a long chapter.
-      if (slice.elapsedMilliseconds >= _sliceMs) {
-        await Future<void>.delayed(Duration.zero);
-        slice.reset();
-      }
+      await _breathe();
       final laid = await _layout(i);
       if (laid.rows.isEmpty) continue;
       await _flow(i, laid, previous);
@@ -494,18 +569,31 @@ class _Run {
     }
   }
 
-  /// Room a heading needs after itself: spacing and the first row of the next
-  /// block.
+  /// Room a heading needs after itself: spacing and what of the next block
+  /// has to stay with it.
   Future<double> _nextNeed(int index, _Laid laid) async {
     for (var next = index + 1; next < section.blocks.length; next++) {
       final nextLaid = await _layout(next);
       if (nextLaid.rows.isEmpty) continue;
-      // A paragraph is not started with one line: two rows must fit.
-      final rows = nextLaid.lineRules ? math.min(2, nextLaid.rows.length) : 1;
+      final gap = math.max(laid.after, nextLaid.before);
+      final rows = nextLaid.rows.length;
+      // Another heading moves with what follows it. A paragraph of up to
+      // three lines cannot be split (widows, orphans), a longer one starts
+      // with two lines.
+      final count = nextLaid.keepWithNext
+          ? rows
+          : !nextLaid.lineRules
+          ? 1
+          : rows <= 3
+          ? rows
+          : 2;
       final first = nextLaid.rows
-          .take(rows)
-          .fold<double>(0, (s, r) => s + r.height);
-      return math.max(laid.after, nextLaid.before) + first;
+          .take(count)
+          .fold<double>(0, (sum, r) => sum + r.height);
+      final more = nextLaid.keepWithNext
+          ? await _nextNeed(next, nextLaid)
+          : 0.0;
+      return gap + first + more;
     }
     return 0;
   }

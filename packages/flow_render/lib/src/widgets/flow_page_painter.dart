@@ -1,24 +1,19 @@
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flow_render/src/layout/flow_page.dart';
 import 'package:flow_render/src/style/flow_style.dart';
+import 'package:flow_render/src/widgets/flow_images.dart';
 import 'package:flutter/rendering.dart';
 
-/// Paints one [FlowPage]; [image] finds the decoded picture of some bytes and
-/// [revision] changes when pictures became ready.
+/// Paints one [FlowPage] with the pictures of [images]; repaints when more of
+/// them become ready.
 class FlowPagePainter extends CustomPainter {
-  const new({
-    required this.page,
-    required this.style,
-    required this.image,
-    required this.revision,
-  });
+  const new({required this.page, required this.style, required this.images})
+    : super(repaint: images);
 
   final FlowPage page;
   final FlowStyle style;
-  final ui.Image? Function(Uint8List bytes) image;
-  final int revision;
+  final FlowImages images;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -47,7 +42,7 @@ class FlowPagePainter extends CustomPainter {
       ..translate(shift.dx, shift.dy);
     item.painter.paint(canvas, Offset.zero);
     for (final inline in item.inlineImages) {
-      final decoded = image(inline.bytes);
+      final decoded = images[inline.bytes];
       if (decoded == null) continue;
       _drawImage(canvas, decoded, inline.box);
     }
@@ -55,7 +50,7 @@ class FlowPagePainter extends CustomPainter {
   }
 
   void _paintPicture(Canvas canvas, FlowPictureItem item) {
-    final decoded = image(item.bytes);
+    final decoded = images[item.bytes];
     if (item.broken || decoded == null) {
       if (item.broken) {
         canvas.drawRect(
@@ -71,7 +66,13 @@ class FlowPagePainter extends CustomPainter {
   }
 
   void _drawImage(Canvas canvas, ui.Image image, Rect target) =>
-      paintImage(canvas: canvas, rect: target, image: image);
+      // contain: a small picture grows to its place too.
+      paintImage(
+        canvas: canvas,
+        rect: target,
+        image: image,
+        fit: BoxFit.contain,
+      );
 
   void _paintRow(Canvas canvas, FlowRowItem item, Paint line) {
     final rect = item.rect;
@@ -89,6 +90,11 @@ class FlowPagePainter extends CustomPainter {
     }
     for (final cell in item.cells) {
       cell.painter.paint(canvas, cell.rect.topLeft);
+      for (final inline in cell.inlineImages) {
+        final decoded = images[inline.bytes];
+        if (decoded == null) continue;
+        _drawImage(canvas, decoded, inline.box.shift(cell.rect.topLeft));
+      }
     }
   }
 
@@ -96,5 +102,5 @@ class FlowPagePainter extends CustomPainter {
   bool shouldRepaint(FlowPagePainter oldDelegate) =>
       oldDelegate.page != page ||
       oldDelegate.style != style ||
-      oldDelegate.revision != revision;
+      oldDelegate.images != images;
 }

@@ -46,22 +46,33 @@ class _ReaderPageTurnerState extends State<ReaderPageTurner>
     duration: _turnDuration,
   );
 
+  final FlowImages _images = FlowImages();
+
   /// Slide of the current page in dp: negative towards the next page.
   double _offset = 0;
   double _from = 0;
   double _to = 0;
   int _turning = 0;
 
-  void _precache() {
-    for (final page in [widget.previous, widget.next]) {
-      if (page != null) unawaited(FlowPageView.precache(page));
-    }
+  /// Pictures of the shown page and its neighbours, so a turn does not wait.
+  void _loadImages() {
+    unawaited(
+      _images.show(
+        [widget.previous, widget.current, widget.next].nonNulls,
+        MediaQuery.maybeDevicePixelRatioOf(context) ?? 1,
+      ),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadImages();
   }
 
   @override
   void initState() {
     super.initState();
-    _precache();
     _controller.addListener(() {
       final t = Curves.easeOut.transform(_controller.value);
       setState(() => _offset = _from + (_to - _from) * t);
@@ -76,9 +87,10 @@ class _ReaderPageTurnerState extends State<ReaderPageTurner>
   @override
   void didUpdateWidget(ReaderPageTurner oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.next != widget.next ||
+    if (oldWidget.current != widget.current ||
+        oldWidget.next != widget.next ||
         oldWidget.previous != widget.previous) {
-      _precache();
+      _loadImages();
     }
     if (oldWidget.current != widget.current) {
       _controller.stop();
@@ -90,6 +102,7 @@ class _ReaderPageTurnerState extends State<ReaderPageTurner>
   @override
   void dispose() {
     _controller.dispose();
+    _images.dispose();
     super.dispose();
   }
 
@@ -149,29 +162,37 @@ class _ReaderPageTurnerState extends State<ReaderPageTurner>
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       final width = constraints.maxWidth;
+      // The key sits on the child of the Stack, so a page keeps its state
+      // when a neighbour appears next to it. The boundary lets the slide move
+      // a ready picture of the page instead of painting it every frame.
       Widget place(FlowPage page, double dx) => Transform.translate(
+        key: ObjectKey(page),
         offset: Offset(dx, 0),
-        child: FlowPageView(
-          key: ObjectKey(page),
-          page: page,
-          style: widget.style,
+        child: RepaintBoundary(
+          child: FlowPageView(page: page, style: widget.style, images: _images),
         ),
       );
-      return GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapUp: (details) => _tap(details, width),
-        onHorizontalDragUpdate: (details) => _dragUpdate(details, width),
-        onHorizontalDragEnd: (details) => _dragEnd(details, width),
-        child: ClipRect(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (_offset > 0 && widget.previous != null)
-                place(widget.previous!, _offset - width),
-              if (_offset < 0 && widget.next != null)
-                place(widget.next!, _offset + width),
-              place(widget.current, _offset),
-            ],
+      return Semantics(
+        // Screen readers turn pages by scrolling.
+        onScrollLeft: _can(1) ? () => _turn(1, width) : null,
+        onScrollRight: _can(-1) ? () => _turn(-1, width) : null,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          excludeFromSemantics: true,
+          onTapUp: (details) => _tap(details, width),
+          onHorizontalDragUpdate: (details) => _dragUpdate(details, width),
+          onHorizontalDragEnd: (details) => _dragEnd(details, width),
+          child: ClipRect(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (_offset > 0 && widget.previous != null)
+                  place(widget.previous!, _offset - width),
+                if (_offset < 0 && widget.next != null)
+                  place(widget.next!, _offset + width),
+                place(widget.current, _offset),
+              ],
+            ),
           ),
         ),
       );

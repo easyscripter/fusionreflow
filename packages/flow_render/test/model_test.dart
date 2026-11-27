@@ -25,9 +25,20 @@ void main() {
   });
 
   test('style value equality', () {
-    expect(testStyle, testStyle.copyWith());
-    expect(testStyle.hashCode, testStyle.copyWith().hashCode);
-    expect(testStyle == testStyle.copyWith(fontSize: 20), isFalse);
+    FlowStyle copy(double fontSize) => FlowStyle(
+      fontFamily: testStyle.fontFamily,
+      codeFontFamily: testStyle.codeFontFamily,
+      fontSize: fontSize,
+      lineHeight: testStyle.lineHeight,
+      padding: testStyle.padding,
+      justify: testStyle.justify,
+      textColor: testStyle.textColor,
+      mutedColor: testStyle.mutedColor,
+      accentColor: testStyle.accentColor,
+    );
+    expect(testStyle, copy(18));
+    expect(testStyle.hashCode, copy(18).hashCode);
+    expect(testStyle == copy(20), isFalse);
     expect(testStyle.line, 27);
   });
 

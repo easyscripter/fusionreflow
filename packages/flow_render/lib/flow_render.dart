@@ -3,7 +3,7 @@
 library;
 
 export 'src/layout/flow_page.dart';
-export 'src/layout/flow_paginator.dart' show FlowPaginator;
+export 'src/layout/flow_paginator.dart' show FlowPaginator, yieldToEventLoop;
 export 'src/layout/line_breaker.dart';
 export 'src/model/flow_block.dart';
 export 'src/model/flow_book.dart';

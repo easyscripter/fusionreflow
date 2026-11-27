@@ -1,6 +1,7 @@
 import 'dart:ui' show Size;
 
 import 'package:flow_render/flow_render.dart';
+import 'package:fusionreflow/config/flow_paginator_provider.dart';
 import 'package:fusionreflow/config/no_retry.dart';
 import 'package:fusionreflow/data/repositories/book_exceptions.dart';
 import 'package:fusionreflow/data/repositories/book_repository.dart';
@@ -14,8 +15,6 @@ part 'reader_view_model.g.dart';
 /// current chapter and its neighbours, turns pages and saves the place.
 @Riverpod(retry: noRetry)
 class ReaderViewModel extends _$ReaderViewModel {
-  static const _paginator = FlowPaginator();
-
   /// Bumped by every new layout request and on dispose; an older request
   /// that finishes later is dropped.
   int _generation = 0;
@@ -50,23 +49,28 @@ class ReaderViewModel extends _$ReaderViewModel {
     final token = ++_generation;
     _inFlight.clear();
     state = AsyncData(current.copyWith(viewport: size, style: style));
+    try {
+      await _relayout(token, size, style);
+    } on Object catch (error, stack) {
+      // The call is not awaited by the screen: show the error on it.
+      if (_current(token)) state = AsyncError(error, stack);
+    }
+  }
+
+  Future<void> _relayout(int token, Size size, FlowStyle style) async {
     while (true) {
       final chapter = state.requireValue.chapterIndex;
       final laidOut = await _layout(chapter, size, style);
       if (!_current(token)) return;
       final latest = state.requireValue;
       if (latest.chapterIndex != chapter) continue; // the user turned a page
-      // The page that holds the old position stays open; the position
-      // becomes its first character, so the next layout starts there.
-      final index = pageIndexOf(laidOut, latest.position.offset);
+      // Only the page index follows the new layout. The position stays the
+      // same: replacing it with the start of the new page would walk the
+      // book back with every turn of the phone.
       state = AsyncData(
         latest.copyWith(
           pages: {chapter: laidOut},
-          pageIndex: index,
-          position: ReadingPosition(
-            chapter: chapter,
-            offset: laidOut[index].start,
-          ),
+          pageIndex: pageIndexOf(laidOut, latest.position.offset),
         ),
       );
       break;
@@ -105,7 +109,12 @@ class ReaderViewModel extends _$ReaderViewModel {
     );
     state = AsyncData(shown);
     await _save(shown);
-    await _layoutNeighbours(_generation);
+    final token = _generation;
+    try {
+      await _layoutNeighbours(token);
+    } on Object catch (error, stack) {
+      if (_current(token)) state = AsyncError(error, stack);
+    }
   }
 
   Future<void> _save(ReaderState shown) async {
@@ -124,12 +133,9 @@ class ReaderViewModel extends _$ReaderViewModel {
 
   bool _current(int token) => ref.mounted && token == _generation;
 
-  Future<List<FlowPage>> _layout(int chapter, Size size, FlowStyle style) =>
-      _paginator.paginate(
-        state.requireValue.book.sections[chapter],
-        size,
-        style,
-      );
+  Future<List<FlowPage>> _layout(int chapter, Size size, FlowStyle style) => ref
+      .read(flowPaginatorProvider)
+      .paginate(state.requireValue.book.sections[chapter], size, style);
 
   /// Lays out the chapters next to the current one that are not ready.
   Future<void> _layoutNeighbours(int token) async {

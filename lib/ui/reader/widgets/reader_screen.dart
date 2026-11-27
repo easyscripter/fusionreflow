@@ -137,6 +137,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         final page = state.currentPage;
         if (page == null) return ReaderLoadingView(palette: palette);
         final title = state.chapterTitle;
+        final chunk = state.book.sections[state.chapterIndex].chunk;
         return Column(
           children: [
             ReaderHeader(
@@ -158,7 +159,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
               ),
             ),
             ReaderFooter(
-              chapter: title == null
+              chapter: chunk
                   ? null
                   : l10n.readerChapterOf(
                       state.chapterIndex + 1,

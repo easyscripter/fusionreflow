@@ -30,7 +30,11 @@ class FlowLineItem extends FlowPageItem {
     required this.paragraphLines,
     required this.isHeading,
     required this.inlineImages,
+    this.text = '',
   });
+
+  /// Text of the line as read aloud (no soft hyphens, no pictures).
+  final String text;
 
   final TextPainter painter;
   final double top;
@@ -50,9 +54,18 @@ class FlowLineItem extends FlowPageItem {
 
 /// A small text (list marker, table cell) drawn whole at the corner of [rect].
 class FlowLabelItem extends FlowPageItem {
-  const new(super.rect, this.painter);
+  const new(
+    super.rect,
+    this.painter, {
+    this.inlineImages = const [],
+    this.text = '',
+  });
 
   final TextPainter painter;
+
+  /// Pictures inside the text; boxes in the painter's coordinates.
+  final List<FlowInlineImage> inlineImages;
+  final String text;
 }
 
 /// A picture fitted into [rect], or a frame when [broken].
@@ -93,6 +106,30 @@ class FlowPage {
 
   /// The last page of the chapter also contains offset [end].
   final bool last;
+
+  /// Text of the page for screen readers: a line per paragraph and table row.
+  String get text {
+    final buffer = StringBuffer();
+    int? paragraph;
+    for (final item in items) {
+      switch (item) {
+        case FlowLineItem():
+          if (buffer.isNotEmpty && item.paragraphStart != paragraph) {
+            buffer.write('\n');
+          }
+          paragraph = item.paragraphStart;
+          buffer.write(item.text);
+        case FlowRowItem():
+          if (buffer.isNotEmpty) buffer.write('\n');
+          paragraph = null;
+          buffer.write(
+            item.cells.map((c) => c.text).where((t) => t.isNotEmpty).join(' '),
+          );
+        case FlowLabelItem() || FlowPictureItem() || FlowRuleItem():
+      }
+    }
+    return buffer.toString();
+  }
 
   bool contains(int offset) =>
       start <= offset && (offset < end || (last && offset == end));

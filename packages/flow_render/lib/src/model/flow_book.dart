@@ -4,9 +4,13 @@ import 'package:flutter/foundation.dart';
 /// A chapter: [blocks] with an optional [title].
 @immutable
 class FlowSection {
-  const new(this.blocks, {this.title});
+  const new(this.blocks, {this.title, this.chunk = false});
 
   final String? title;
+
+  /// A piece cut by size because the book has no chapters: it is not numbered
+  /// for the reader.
+  final bool chunk;
   final List<FlowBlock> blocks;
 
   /// Sum of the block lengths: the size of the chapter text.
@@ -16,10 +20,11 @@ class FlowSection {
   bool operator ==(Object other) =>
       other is FlowSection &&
       title == other.title &&
+      chunk == other.chunk &&
       listEquals(blocks, other.blocks);
 
   @override
-  int get hashCode => Object.hash(title, Object.hashAll(blocks));
+  int get hashCode => Object.hash(title, chunk, Object.hashAll(blocks));
 }
 
 /// A book split into [sections] (never empty).

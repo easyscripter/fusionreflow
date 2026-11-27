@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'dart:ui' show DisplayFeature, DisplayFeatureState, DisplayFeatureType;
 
+import 'package:flow_render/flow_render.dart';
+import 'package:flow_render/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -225,19 +228,61 @@ void main() {
     expect(scaffold.backgroundColor, ReaderPalette.dark.pageBackground);
   });
 
-  testWidgets('a chapter without a title hides the chapter label', (
-    tester,
-  ) async {
-    final untitled = FakeBookRepository([
+  testWidgets('a chunk of 200 blocks hides the chapter label', (tester) async {
+    final chunks = FakeBookRepository([bookEntry(id: _id)])
+      ..opened[_id] = FlowBook('B', [
+        FlowSection([para(5)], chunk: true),
+        FlowSection([para(5)], chunk: true),
+      ]);
+    await _open(tester, chunks);
+
+    expect(find.textContaining('Глава '), findsNothing);
+    expect(_footerPage(), findsOneWidget);
+  });
+
+  testWidgets('an untitled preface keeps the chapter label', (tester) async {
+    final repository = FakeBookRepository([
       bookEntry(
         id: _id,
         position: const ReadingPosition(chapter: 2, offset: 0),
       ),
     ])..opened[_id] = threeChapters();
-    await _open(tester, untitled);
+    await _open(tester, repository);
 
-    expect(find.textContaining('Глава '), findsNothing);
-    expect(_footerPage(), findsOneWidget);
+    expect(find.text('Глава 3 из 3'), findsOneWidget);
+  });
+
+  testWidgets('screen readers turn pages by scrolling', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await _open(tester, _repo());
+
+    tester.semantics.scrollLeft(
+      scrollable: find.semantics.byAction(SemanticsAction.scrollLeft),
+    );
+    await tester.pumpAndSettle();
+    expect(_pageLabel(tester), startsWith('2 из '));
+    tester.semantics.scrollRight(
+      scrollable: find.semantics.byAction(SemanticsAction.scrollRight),
+    );
+    await tester.pumpAndSettle();
+    expect(_pageLabel(tester), startsWith('1 из '));
+    semantics.dispose();
+  });
+
+  testWidgets('a drag does not rebuild the shown page', (tester) async {
+    await _open(tester, _repo());
+    final state = tester.state(find.byType(FlowPageView));
+
+    final gesture = await tester.startGesture(const Offset(300, 400));
+    await gesture.moveBy(const Offset(-60, 0));
+    await tester.pump();
+    await gesture.moveBy(const Offset(-60, 0));
+    await tester.pump();
+
+    expect(find.byType(FlowPageView), findsNWidgets(2));
+    expect(tester.stateList(find.byType(FlowPageView)), contains(state));
+    await gesture.up();
+    await tester.pumpAndSettle();
   });
 
   testWidgets('last page shows 100 percent', (tester) async {
@@ -250,7 +295,6 @@ void main() {
     await _open(tester, repository);
 
     expect(find.text('100%'), findsOneWidget);
-    expect(find.text('Глава 3 из 3'), findsNothing);
   });
 
   testWidgets('rotation after tap paging keeps the first line of the page', (
@@ -271,13 +315,14 @@ void main() {
 
     final after = _container(tester).read(model).requireValue;
     expect(after.currentPage!.contains(start), isTrue);
-    expect(after.position.offset, after.currentPage!.start);
+    expect(after.position.offset, start);
 
     tester.view.physicalSize = const Size(390, 844);
     await tester.pumpAndSettle();
 
     final back = _container(tester).read(model).requireValue;
-    expect(back.currentPage!.contains(after.currentPage!.start), isTrue);
+    expect(back.currentPage!.start, start);
+    expect(back.position.offset, start);
   });
 
   testWidgets('header stays below a display cutout', (tester) async {

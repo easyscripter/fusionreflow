@@ -71,6 +71,8 @@ void main() {
     );
     expect(_lengths(book), [3, 3]);
     expect(book.sections.map((s) => s.title), [null, 'Глава']);
+    // A preface before the first entry is a chapter, not a chunk.
+    expect(book.sections.any((s) => s.chunk), isFalse);
   });
 
   test('unsorted_and_out_of_range_toc', () {
@@ -116,6 +118,7 @@ void main() {
     final book = flowBookOf(_book([for (var i = 0; i < 450; i++) _p('p')]));
     expect(_lengths(book), [200, 200, 50]);
     expect(book.sections.every((s) => s.title == null), isTrue);
+    expect(book.sections.every((s) => s.chunk), isTrue);
   });
 
   test('empty_book', () {

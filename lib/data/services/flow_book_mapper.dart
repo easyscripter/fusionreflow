@@ -15,7 +15,7 @@ const _softHyphen = '­';
 /// Converts the bridge book into the render model: chapters of blocks.
 FlowBook flowBookOf(rb.Book book) {
   final resources = {for (final r in book.resources) r.id.field0: r.data};
-  final starts = _chapterStarts(book);
+  final (:starts, :chunks) = _chapterStarts(book);
   final titles = _chapterTitles(book, starts);
   final mapper = _BlockMapper(resources);
   final sections = <FlowSection>[];
@@ -25,14 +25,16 @@ FlowBook flowBookOf(rb.Book book) {
       FlowSection(
         mapper.blocks(book.blocks.sublist(starts[i], end)),
         title: titles[starts[i]],
+        chunk: chunks,
       ),
     );
   }
   return FlowBook(book.meta.title, sections);
 }
 
-/// Sorted block indices where chapters start; always begins with 0.
-List<int> _chapterStarts(rb.Book book) {
+/// Sorted block indices where chapters start; always begins with 0. `chunks`
+/// says they are pieces cut by size.
+({List<int> starts, bool chunks}) _chapterStarts(rb.Book book) {
   final count = book.blocks.length;
   final fromToc = {
     for (final entry in book.toc)
@@ -46,9 +48,13 @@ List<int> _chapterStarts(rb.Book book) {
             if (_headingLevel(book.blocks[i]) <= _chapterHeadingLevel) i,
         };
   if (starts.isEmpty) {
-    return [for (var i = 0; i < math.max(count, 1); i += _chunkBlocks) i];
+    return (
+      starts: [for (var i = 0; i < math.max(count, 1); i += _chunkBlocks) i],
+      // An empty or short book is one chapter, not a piece of one.
+      chunks: count > _chunkBlocks,
+    );
   }
-  return ({0, ...starts}.toList())..sort();
+  return (starts: ({0, ...starts}.toList())..sort(), chunks: false);
 }
 
 /// Heading level of [node], or a huge number for other blocks.

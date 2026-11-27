@@ -14,6 +14,24 @@ const _wordJoiner = '⁠';
 /// First-line indent of a body paragraph, in em.
 const double firstLineIndentEm = 1.3;
 
+/// Width / height of inline pictures by their bytes; the paginator reads
+/// them before the layout (an unknown picture is square).
+final Expando<double> imageRatios = Expando<double>();
+
+/// Text of [spans] as read aloud: no soft hyphens, a picture takes one unit.
+String plainText(List<FlowSpan> spans) => spans
+    .map(
+      (s) => switch (s) {
+        FlowTextSpan(:final text) => text,
+        FlowImageSpan() => '\uFFFC',
+      },
+    )
+    .join();
+
+/// [text] without the marks that are not read aloud.
+String spoken(String text) =>
+    text.replaceAll(_softHyphen, '').replaceAll('\uFFFC', '');
+
 /// Font size of [block] in pixels.
 double roleFontSize(FlowText block, FlowStyle style) => switch (block.role) {
   FlowTextRole.body => style.fontSize,
@@ -95,8 +113,15 @@ TextStyle _spanStyle(
 }
 
 /// Builds the inline tree of [block] (the indent placeholder first, if any).
-BuiltText buildText(FlowText block, FlowStyle style) {
-  final size = roleFontSize(block, style);
+/// Inline pictures are never wider than [maxWidth]; [fontSize] overrides the
+/// size of the role (table cells).
+BuiltText buildText(
+  FlowText block,
+  FlowStyle style, {
+  double maxWidth = double.infinity,
+  double? fontSize,
+}) {
+  final size = fontSize ?? roleFontSize(block, style);
   final placeholders = <PlaceholderDimensions>[];
   final images = <Uint8List?>[];
   final children = <InlineSpan>[];
@@ -128,10 +153,15 @@ BuiltText buildText(FlowText block, FlowStyle style) {
             alignment: ui.PlaceholderAlignment.middle,
           ),
         );
-        final side = span.heightEm * size;
+        var height = span.heightEm * size;
+        var width = height * (imageRatios[span.bytes] ?? 1);
+        if (width > maxWidth) {
+          height *= maxWidth / width;
+          width = maxWidth;
+        }
         placeholders.add(
           PlaceholderDimensions(
-            size: Size(side, side),
+            size: Size(width, height),
             alignment: ui.PlaceholderAlignment.middle,
           ),
         );

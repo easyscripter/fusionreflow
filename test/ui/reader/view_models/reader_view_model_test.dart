@@ -3,6 +3,7 @@ import 'dart:ui' show Size;
 import 'package:flow_render/flow_render.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fusionreflow/config/flow_paginator_provider.dart';
 import 'package:fusionreflow/data/repositories/book_exceptions.dart';
 import 'package:fusionreflow/data/repositories/book_repository.dart';
 import 'package:fusionreflow/domain/models/reading_position.dart';
@@ -11,6 +12,7 @@ import 'package:fusionreflow/ui/reader/view_models/reader_view_model.dart';
 
 import '../../../helpers/book_entry.dart';
 import '../../../helpers/fake_book_repository.dart';
+import '../../../helpers/fake_paginators.dart';
 import '../../../helpers/reader_fixtures.dart';
 
 const _id = 'b1';
@@ -29,11 +31,16 @@ void main() {
     ReadingPosition position = ReadingPosition.start,
     FlowBook? book,
     Size? size = portrait,
+    FlowPaginator? paginator,
   }) async {
     repo = FakeBookRepository([bookEntry(id: _id, position: position)])
       ..opened[_id] = book ?? threeChapters();
     container = ProviderContainer(
-      overrides: [bookRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        bookRepositoryProvider.overrideWithValue(repo),
+        if (paginator != null)
+          flowPaginatorProvider.overrideWithValue(paginator),
+      ],
     );
     addTearDown(container.dispose);
     container.listen(readerViewModelProvider(_id), (_, _) {});
@@ -184,28 +191,63 @@ void main() {
 
   test('resize_keeps_fragment', () async {
     await start(position: const ReadingPosition(chapter: 1, offset: 2500));
+    final page = state().currentPage;
 
-    await vm().setViewport(landscape, testFlowStyle);
+    // Several turns of the phone without paging: nothing drifts.
+    for (var i = 0; i < 6; i++) {
+      await vm().setViewport(landscape, testFlowStyle);
+      expect(state().currentPage?.contains(2500), isTrue);
+      await vm().setViewport(portrait, testFlowStyle);
+      expect(state().position.offset, 2500);
+    }
 
-    expect(state().viewport, landscape);
-    expect(state().currentPage?.contains(2500), isTrue);
-    final landscapeStart = state().currentPage!.start;
-    await vm().setViewport(portrait, testFlowStyle);
-    expect(state().currentPage?.contains(landscapeStart), isTrue);
+    expect(state().currentPage?.start, page?.start);
     expect(repo.saved, isEmpty);
   });
 
+  test('rotation_after_paging_keeps_first_char_of_page', () async {
+    await start(position: const ReadingPosition(chapter: 1, offset: 0));
+    for (var i = 0; i < 3; i++) {
+      await vm().showPage(1);
+    }
+    final shown = state().currentPage!.start;
+
+    for (var i = 0; i < 6; i++) {
+      await vm().setViewport(landscape, testFlowStyle);
+      expect(state().currentPage!.contains(shown), isTrue);
+      await vm().setViewport(portrait, testFlowStyle);
+      expect(state().currentPage!.start, shown);
+    }
+    expect(state().position.offset, shown);
+  });
+
   test('stale_relayout_is_dropped', () async {
-    await start(size: null);
+    final paginator = GatedPaginator();
+    await start(size: null, paginator: paginator);
 
     final first = vm().setViewport(portrait, testFlowStyle);
     final second = vm().setViewport(landscape, testFlowStyle);
+    // The new layout finishes first, the old one after it.
+    await paginator.release(landscape);
+    await paginator.release(portrait);
     await Future.wait([first, second]);
 
     expect(state().viewport, landscape);
-    final pages = state().currentPages!;
-    expect(pages.first.items.first.rect.right, lessThanOrEqualTo(500.01));
-    expect(pages.length, lessThan(40));
+    expect(
+      state().currentPages!.single.items,
+      isEmpty,
+      reason: 'a gated page has no items',
+    );
+    expect(state().currentPages!.single.end, landscape.width);
+  });
+
+  test('a failed layout is shown as an error', () async {
+    await start(size: null, paginator: FailingPaginator());
+
+    await vm().setViewport(portrait, testFlowStyle);
+
+    final value = container.read(readerViewModelProvider(_id));
+    expect(value.hasError, isTrue);
   });
 
   test('showPage before the viewport is known does nothing', () async {
@@ -249,28 +291,6 @@ void main() {
     container.dispose();
 
     await pending;
-  });
-
-  test('rotation_after_paging_keeps_first_char_of_page', () async {
-    await start(position: const ReadingPosition(chapter: 1, offset: 0));
-    for (var i = 0; i < 3; i++) {
-      await vm().showPage(1);
-    }
-    final shownStart = state().currentPage!.start;
-    expect(state().position.offset, shownStart);
-
-    await vm().setViewport(landscape, testFlowStyle);
-
-    // The page on screen holds the first character of the old page, and
-    // the position is now the start of that page.
-    expect(state().currentPage!.contains(shownStart), isTrue);
-    expect(state().position.offset, state().currentPage!.start);
-    final landscapeStart = state().currentPage!.start;
-
-    await vm().setViewport(portrait, testFlowStyle);
-
-    expect(state().currentPage!.contains(landscapeStart), isTrue);
-    expect(state().position.offset, state().currentPage!.start);
   });
 
   test('progress is weighted by the text of the chapters', () {

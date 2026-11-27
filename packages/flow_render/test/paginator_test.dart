@@ -345,4 +345,184 @@ void main() {
       }
     }
   });
+
+  const heading = FlowText([FlowTextSpan('Глава')], role: FlowTextRole.heading);
+
+  /// Fails if a page of [pages] ends with a heading line.
+  void expectNoHeadingAtBottom(List<FlowPage> pages, String reason) {
+    for (final page in pages.take(pages.length - 1)) {
+      final last = page.items.last;
+      expect(last is FlowLineItem && last.isHeading, isFalse, reason: reason);
+    }
+  }
+
+  test('two_headings_are_not_left_at_page_bottom', () async {
+    for (var n = 1; n <= 40; n++) {
+      final pages = await _paginator.paginate(
+        section([
+          for (var i = 0; i < n; i++) para(2),
+          heading,
+          heading,
+          para(40),
+        ]),
+        _phone,
+        testStyle,
+      );
+      expectNoHeadingAtBottom(pages, 'n=$n');
+    }
+  });
+
+  test('heading_before_short_paragraph_moves_with_it', () async {
+    for (var words = 5; words <= 12; words++) {
+      for (var n = 1; n <= 40; n++) {
+        final pages = await _paginator.paginate(
+          section([
+            for (var i = 0; i < n; i++) para(2),
+            heading,
+            para(words),
+            para(40),
+          ]),
+          _phone,
+          testStyle,
+        );
+        expectNoHeadingAtBottom(pages, 'words=$words n=$n');
+      }
+    }
+  });
+
+  test('quote_has_space_around_but_not_inside', () async {
+    const quote = FlowText([FlowTextSpan('цитата')], indent: 1);
+    final pages = await _paginator.paginate(
+      section([para(2), quote, quote, para(2)]),
+      _phone,
+      testStyle,
+    );
+    final lines = _lines(pages.single);
+    expect(lines, hasLength(4));
+    final half = testStyle.line / 2;
+    expect(lines[1].rect.top - lines[0].rect.bottom, closeTo(half, 0.01));
+    expect(lines[2].rect.top - lines[1].rect.bottom, closeTo(0, 0.01));
+    expect(lines[3].rect.top - lines[2].rect.bottom, closeTo(half, 0.01));
+  });
+
+  test('image_in_table_cell_is_placed', () async {
+    final png = await makePng(40, 20);
+    final table = FlowTable([
+      [
+        [const FlowTextSpan('a '), FlowImageSpan(png, 1)],
+        [FlowImageSpan(png, 1)],
+      ],
+    ]);
+    final pages = await _paginator.paginate(
+      section([table]),
+      _phone,
+      testStyle,
+    );
+    final row = pages.single.items.single as FlowRowItem;
+    final images = row.cells.expand((c) => c.inlineImages).toList();
+    expect(images, hasLength(2));
+    for (final image in images) {
+      expect(image.bytes, png);
+      expect(image.box.width / image.box.height, closeTo(2, 0.01));
+    }
+  });
+
+  test('inline_image_keeps_its_ratio_and_height', () async {
+    final wide = await makePng(80, 20);
+    final pages = await _paginator.paginate(
+      section([
+        FlowText([const FlowTextSpan('x '), FlowImageSpan(wide, 2)]),
+      ]),
+      _phone,
+      testStyle,
+    );
+    final image = _lines(pages.single).expand((l) => l.inlineImages).single;
+    expect(image.box.height, closeTo(2 * 18, 0.01));
+    expect(image.box.width, closeTo(4 * 2 * 18, 0.01));
+  });
+
+  // Columns are measured as drawn (the built spans: weight, italic,
+  // pictures). The test font has one width for every weight, so a picture
+  // stands for what a plain-text measure would miss.
+  test('column_width_includes_what_is_drawn', () async {
+    final wide = await makePng(80, 20);
+    final table = FlowTable([
+      [
+        [FlowImageSpan(wide, 3)],
+        const [FlowTextSpan('много слов тут и там и ещё раз тут и там')],
+      ],
+    ]);
+    final pages = await _paginator.paginate(
+      section([table]),
+      _phone,
+      testStyle,
+    );
+    final row = pages.single.items.single as FlowRowItem;
+    final image = row.cells.first.inlineImages.single;
+    expect(image.box.width, closeTo(4 * 3 * 18 * 0.9, 1));
+  });
+
+  test('cell_padding_and_caption_gap_follow_the_design', () async {
+    final png = await makePng(40, 20);
+    const table = FlowTable([
+      [
+        [FlowTextSpan('a')],
+      ],
+    ]);
+    final pages = await _paginator.paginate(
+      section([
+        FlowImage(png),
+        const FlowText([FlowTextSpan('c')], role: FlowTextRole.caption),
+        table,
+      ]),
+      _phone,
+      testStyle,
+    );
+    final picture = pages.single.items.whereType<FlowPictureItem>().single;
+    final caption = _lines(pages.single).single;
+    expect(caption.rect.top - picture.rect.bottom, closeTo(8, 0.01));
+    final row = pages.single.items.whereType<FlowRowItem>().single;
+    expect(row.cells.single.rect.left - row.columnXs.first, closeTo(8, 0.01));
+  });
+
+  test('lines_carry_their_text_for_semantics', () async {
+    final pages = await _paginator.paginate(
+      section([
+        const FlowText([FlowTextSpan('пре\u00ADдо')]),
+        const FlowTable([
+          [
+            [FlowTextSpan('яч\u00ADейка')],
+          ],
+        ]),
+      ]),
+      _phone,
+      testStyle,
+    );
+    expect(pages.single.text, 'предо\nячейка');
+  });
+
+  test('a_long_table_lets_other_events_run', () async {
+    const row = [
+      [FlowTextSpan('один два три')],
+      [FlowTextSpan('четыре пять')],
+    ];
+    var ticks = 0;
+    var done = false;
+    void tick() {
+      if (done) return;
+      ticks++;
+      Future<void>.delayed(Duration.zero, tick);
+    }
+
+    Future<void>.delayed(Duration.zero, tick);
+    await _paginator.paginate(
+      section([
+        FlowTable([for (var i = 0; i < 3000; i++) row]),
+      ]),
+      _phone,
+      testStyle,
+    );
+    done = true;
+    expect(ticks, greaterThan(0));
+  });
 }
