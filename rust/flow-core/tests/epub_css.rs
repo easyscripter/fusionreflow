@@ -9,7 +9,7 @@
 mod common;
 
 use common::epub::*;
-use flow_core::model::{Block, Book, Inline, ListMarker};
+use flow_core::model::{Block, Book, Inline, LinkTarget, ListMarker, Script, Style};
 use zip::CompressionMethod;
 
 const CSS_PATH: &str = "OEBPS/s/a.css";
@@ -22,7 +22,8 @@ fn styled_epub(css: &[u8], body: &str, method: CompressionMethod) -> Vec<u8> {
     let chapter = format!(
         r#"<?xml version="1.0"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><link rel="Stylesheet" type="text/css" href="s/a.css"/></head><body>{body}</body></html>"#
     );
-    epub_raw("xx", &[chapter.into_bytes()], &[(CSS_PATH, css)], method)
+    let extra = [(CSS_PATH, css), ("OEBPS/p.png", PIXEL_PNG)];
+    epub_raw("xx", &[chapter.into_bytes()], &extra, method)
 }
 
 fn styled_book(css: &str, body: &str) -> Book {
@@ -214,6 +215,7 @@ fn monospace_paragraph_with_link_or_image_stays_a_paragraph() {
         "<p class=\"m\">x<a epub:type=\"noteref\" href=\"#n\">1</a> y</p>\
          <p class=\"m\">see <a href=\"http://e.test/\">site</a></p>\
          <p class=\"m\"><a id=\"anchor\"></a>code</p>\
+         <p class=\"m\">pic <img src=\"p.png\"/></p>\
          <aside epub:type=\"footnote\" id=\"n\"><p>note</p></aside>",
     );
     match &b.blocks[0].block {
@@ -230,4 +232,67 @@ fn monospace_paragraph_with_link_or_image_stays_a_paragraph() {
         other => panic!("{other:?}"),
     }
     assert_eq!(code(&b.blocks[2].block), ["code"]);
+    match &b.blocks[3].block {
+        Block::Paragraph { inlines } => {
+            assert!(inlines.iter().any(|i| matches!(i, Inline::Image { .. })));
+        }
+        other => panic!("{other:?}"),
+    }
+}
+
+/// The first run of the first block, which a demoted paragraph had buffered.
+fn first_run(body: &str) -> (String, Style) {
+    let b = styled_book(MONO_CSS, body);
+    match &b.blocks[0].block {
+        Block::Paragraph { inlines } => match &inlines[0] {
+            Inline::Text { text, style } => (text.clone(), style.clone()),
+            other => panic!("{other:?}"),
+        },
+        other => panic!("{other:?}"),
+    }
+}
+
+#[test]
+fn demoted_paragraph_does_not_take_the_style_around_the_link_or_image() {
+    let plain_code = Style {
+        code: true,
+        bold: false,
+        italic: false,
+        script: Script::Normal,
+    };
+    for tail in [
+        "<sup><a href=\"http://e.test/\">1</a></sup>",
+        "<sub><a href=\"http://e.test/\">1</a></sub>",
+        "<em><a href=\"http://e.test/\">x</a></em>",
+        "<strong><img src=\"p.png\"/></strong>",
+    ] {
+        let (text, style) = first_run(&format!("<p class=\"m\">int x = 1;{tail}</p>"));
+        assert_eq!(
+            (text.as_str(), style),
+            ("int x = 1;", plain_code.clone()),
+            "{tail}"
+        );
+    }
+}
+
+#[test]
+fn link_to_a_merged_listing_line_points_at_the_code_block() {
+    let b = styled_book(
+        MONO_CSS,
+        "<p><a href=\"#second\">go</a></p><p class=\"m\">a</p>\
+         <p class=\"m\" id=\"second\">b</p><p>after</p>",
+    );
+    match &b.blocks[0].block {
+        Block::Paragraph { inlines } => assert!(
+            matches!(
+                &inlines[0],
+                Inline::Link {
+                    target: LinkTarget::Internal(1),
+                    ..
+                }
+            ),
+            "{inlines:?}"
+        ),
+        other => panic!("{other:?}"),
+    }
 }

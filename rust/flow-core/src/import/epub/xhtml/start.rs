@@ -132,7 +132,14 @@ impl Builder<'_> {
         let text = text.trim_start_matches([' ', '\n']);
         if !text.is_empty() {
             self.open = Open::Para;
+            // the buffered text is plain code: styles around the link are not its own
+            let code_only = Counts {
+                code: self.counts.code,
+                ..Counts::default()
+            };
+            let around = std::mem::replace(&mut self.counts, code_only);
             self.push_text(text.to_owned());
+            self.counts = around;
         }
     }
 

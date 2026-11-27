@@ -191,19 +191,30 @@ mod tests {
         assert!(mono_classes("}}{{ ;; font-family").is_empty());
     }
 
-    #[test]
-    fn repeated_links_give_one_set_and_sheets_are_capped() {
-        use super::super::archive::Limits;
-        use std::io::{Cursor, Write};
+    use super::super::archive::Limits;
+    use std::io::{Cursor, Write};
+
+    const MONO_RULE: &[u8] = b".a{font-family:monospace}";
+
+    /// A zip of `count` monospace stylesheets named `0.css`, `1.css`, …
+    fn sheets_zip(count: usize) -> Cursor<Vec<u8>> {
         let mut z = zip::ZipWriter::new(Cursor::new(Vec::new()));
-        for i in 0..MAX_SHEETS_PER_CHAPTER + 4 {
+        for i in 0..count {
             z.start_file(format!("{i}.css"), zip::write::SimpleFileOptions::default())
                 .expect("start");
-            z.write_all(b".a{font-family:monospace}").expect("write");
+            z.write_all(MONO_RULE).expect("write");
         }
-        let mut src = Cursor::new(z.finish().expect("finish").into_inner());
+        Cursor::new(z.finish().expect("finish").into_inner())
+    }
+
+    fn link(href: &str) -> String {
+        format!(r#"<link rel="stylesheet" href="{href}"/>"#)
+    }
+
+    #[test]
+    fn repeated_links_give_one_set_and_sheets_are_capped() {
+        let mut src = sheets_zip(MAX_SHEETS_PER_CHAPTER + 4);
         let mut a = Archive::open(&mut src, Limits::DEFAULT).expect("zip");
-        let link = |h: &str| format!(r#"<link rel="stylesheet" href="{h}"/>"#);
         let mut sheets = Stylesheets::default();
 
         let same = link("0.css").repeat(100) + &link("./0.css");
@@ -215,5 +226,34 @@ mod tests {
             .collect();
         let got = sheets.for_chapter(&mut a, "c.xhtml", &many);
         assert_eq!(got.expect("sheets").len(), MAX_SHEETS_PER_CHAPTER);
+    }
+
+    #[test]
+    fn sheets_per_book_are_capped() {
+        let mut src = sheets_zip(MAX_SHEETS_PER_BOOK + 1);
+        let mut a = Archive::open(&mut src, Limits::DEFAULT).expect("zip");
+        let mut sheets = Stylesheets::default();
+        let mut found = |i: usize| {
+            let xml = link(&format!("{i}.css"));
+            let got = sheets.for_chapter(&mut a, "c.xhtml", &xml);
+            got.expect("sheets").len()
+        };
+        assert!((0..MAX_SHEETS_PER_BOOK).all(|i| found(i) == 1));
+        assert_eq!(found(MAX_SHEETS_PER_BOOK), 0);
+        assert_eq!(found(0), 1, "an already read sheet still counts");
+    }
+
+    #[test]
+    fn archive_size_limit_stays_fatal() {
+        let mut src = sheets_zip(1);
+        let limits = Limits {
+            total: MONO_RULE.len() as u64 - 1,
+            ..Limits::DEFAULT
+        };
+        let mut a = Archive::open(&mut src, limits).expect("zip");
+        let got = Stylesheets::default()
+            .for_chapter(&mut a, "c.xhtml", &link("0.css"))
+            .map(|s| s.len());
+        assert_eq!(got, Err(ArchiveError::TotalTooLarge));
     }
 }
