@@ -56,7 +56,7 @@ final class ReaderViewModelProvider
   }
 }
 
-String _$readerViewModelHash() => r'7e9c39ac5c607e48ebc77a304337a5f522615490';
+String _$readerViewModelHash() => r'0f5d4ee171ad6eba56e8e03ef088a97dcedc5e6e';
 
 /// Reading of book [bookId]: opens it at the saved position, lays out the
 /// current chapter and its neighbours, turns pages and saves the place.
