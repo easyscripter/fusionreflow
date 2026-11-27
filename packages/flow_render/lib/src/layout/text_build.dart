@@ -14,10 +14,6 @@ const _wordJoiner = '⁠';
 /// First-line indent of a body paragraph, in em.
 const double firstLineIndentEm = 1.3;
 
-/// Width / height of inline pictures by their bytes; the paginator reads
-/// them before the layout (an unknown picture is square).
-final Expando<double> imageRatios = Expando<double>();
-
 /// Text of [spans] as read aloud: no soft hyphens, a picture takes one unit.
 String plainText(List<FlowSpan> spans) => spans
     .map(
@@ -114,12 +110,14 @@ TextStyle _spanStyle(
 
 /// Builds the inline tree of [block] (the indent placeholder first, if any).
 /// Inline pictures are never wider than [maxWidth]; [fontSize] overrides the
-/// size of the role (table cells).
+/// size of the role (table cells). [imageRatios] gives width / height of the
+/// inline pictures by their bytes; an unknown one is square.
 BuiltText buildText(
   FlowText block,
   FlowStyle style, {
   double maxWidth = double.infinity,
   double? fontSize,
+  Map<Uint8List, double> imageRatios = const {},
 }) {
   final size = fontSize ?? roleFontSize(block, style);
   final placeholders = <PlaceholderDimensions>[];

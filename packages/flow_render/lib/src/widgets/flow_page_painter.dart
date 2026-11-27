@@ -18,6 +18,7 @@ class FlowPagePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final line = Paint()..color = style.mutedColor;
+    FlowPageItem? previous;
     for (final item in page.items) {
       switch (item) {
         case FlowLineItem():
@@ -29,8 +30,13 @@ class FlowPagePainter extends CustomPainter {
         case FlowRuleItem():
           canvas.drawRect(item.rect, line);
         case FlowRowItem():
-          _paintRow(canvas, item, line);
+          // Adjoining rows share their border.
+          final joined =
+              previous is FlowRowItem &&
+              (previous.rect.bottom - item.rect.top).abs() < 0.01;
+          _paintRow(canvas, item, line, topBorder: !joined);
       }
+      previous = item;
     }
   }
 
@@ -74,17 +80,23 @@ class FlowPagePainter extends CustomPainter {
         fit: BoxFit.contain,
       );
 
-  void _paintRow(Canvas canvas, FlowRowItem item, Paint line) {
+  void _paintRow(
+    Canvas canvas,
+    FlowRowItem item,
+    Paint line, {
+    required bool topBorder,
+  }) {
     final rect = item.rect;
-    canvas
-      ..drawRect(
+    if (topBorder) {
+      canvas.drawRect(
         Rect.fromLTRB(rect.left, rect.top, rect.right, rect.top + 1),
         line,
-      )
-      ..drawRect(
-        Rect.fromLTRB(rect.left, rect.bottom - 1, rect.right, rect.bottom),
-        line,
       );
+    }
+    canvas.drawRect(
+      Rect.fromLTRB(rect.left, rect.bottom - 1, rect.right, rect.bottom),
+      line,
+    );
     for (final x in item.columnXs) {
       canvas.drawRect(Rect.fromLTRB(x, rect.top, x + 1, rect.bottom), line);
     }

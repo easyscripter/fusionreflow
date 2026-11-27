@@ -76,6 +76,30 @@ void main() {
     });
   });
 
+  testWidgets('two requests at once decode a picture once', (tester) async {
+    await tester.runAsync(() async {
+      final png = await makePng(10, 10);
+      final page = _page([
+        FlowPictureItem(
+          const Rect.fromLTWH(0, 0, 10, 10),
+          bytes: png,
+          broken: false,
+        ),
+      ]);
+      final images = FlowImages();
+      var decoded = 0;
+      images.addListener(() => decoded++);
+
+      await Future.wait([
+        images.show([page], 1),
+        images.show([page], 1),
+      ]);
+
+      expect(decoded, 1);
+      images.dispose();
+    });
+  });
+
   testWidgets('the page is read aloud', (tester) async {
     final semantics = tester.ensureSemantics();
     final pages = (await tester.runAsync(

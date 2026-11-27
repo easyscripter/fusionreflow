@@ -32,14 +32,18 @@ class FlowImages extends ChangeNotifier {
     return Future.wait([for (final bytes in _wanted.keys) _ensure(bytes)]);
   }
 
-  Future<void> _ensure(Uint8List bytes) async {
-    // Another decode of these bytes may be running: wait, then look again.
-    await _loading[bytes];
-    final width = _wanted[bytes];
-    if (width == null || (_images[bytes]?.width ?? 0) >= width) return;
-    final loading = _decode(bytes, width);
-    _loading[bytes] = loading;
-    await loading;
+  /// Queues behind the decode of the same bytes, if any: the entry is made
+  /// before the first wait, so two requests decode once.
+  Future<void> _ensure(Uint8List bytes) {
+    final previous = _loading[bytes];
+    Future<void> run() async {
+      await previous;
+      final width = _wanted[bytes];
+      if (width == null || (_images[bytes]?.width ?? 0) >= width) return;
+      await _decode(bytes, width);
+    }
+
+    return _loading[bytes] = run();
   }
 
   Future<void> _decode(Uint8List bytes, int width) async {

@@ -250,6 +250,29 @@ void main() {
     expect(value.hasError, isTrue);
   });
 
+  test(
+    'a broken neighbour chapter does not hide the page being read',
+    () async {
+      final broken = threeChapters().sections[1];
+      await start(paginator: FailingSectionPaginator(broken));
+
+      var value = container.read(readerViewModelProvider(_id));
+      expect(value.hasError, isFalse);
+      expect(state().currentPage, isNotNull);
+      expect(state().chapterIndex, 0);
+
+      // Turning into it shows the error.
+      final last = state().pagesInChapter;
+      for (var i = 1; i < last; i++) {
+        await vm().showPage(1);
+      }
+      await vm().showPage(1);
+
+      value = container.read(readerViewModelProvider(_id));
+      expect(value.hasError, isTrue);
+    },
+  );
+
   test('showPage before the viewport is known does nothing', () async {
     await start(size: null);
 

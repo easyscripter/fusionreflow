@@ -20,6 +20,10 @@ class ReaderViewModel extends _$ReaderViewModel {
   int _generation = 0;
   final Set<int> _inFlight = {};
 
+  /// Neighbour chapters whose layout failed, with the error to show when the
+  /// reader turns into them.
+  final Map<int, (Object, StackTrace)> _failed = {};
+
   @override
   Future<ReaderState> build(String bookId) async {
     ref.onDispose(() => _generation++);
@@ -48,6 +52,7 @@ class ReaderViewModel extends _$ReaderViewModel {
     if (current == null) return;
     final token = ++_generation;
     _inFlight.clear();
+    _failed.clear();
     state = AsyncData(current.copyWith(viewport: size, style: style));
     try {
       await _relayout(token, size, style);
@@ -95,6 +100,10 @@ class ReaderViewModel extends _$ReaderViewModel {
     }
     final target = current.pages[chapter];
     if (target == null || index < 0) return; // edge of the book or not ready
+    if (_failed[chapter] case (final error, final stack)) {
+      state = AsyncError(error, stack);
+      return;
+    }
     final position = ReadingPosition(
       chapter: chapter,
       offset: target[index].start,
@@ -109,12 +118,7 @@ class ReaderViewModel extends _$ReaderViewModel {
     );
     state = AsyncData(shown);
     await _save(shown);
-    final token = _generation;
-    try {
-      await _layoutNeighbours(token);
-    } on Object catch (error, stack) {
-      if (_current(token)) state = AsyncError(error, stack);
-    }
+    await _layoutNeighbours(_generation);
   }
 
   Future<void> _save(ReaderState shown) async {
@@ -153,9 +157,22 @@ class ReaderViewModel extends _$ReaderViewModel {
           !_inFlight.add(chapter)) {
         continue;
       }
-      final List<FlowPage> laidOut;
+      List<FlowPage> laidOut;
       try {
         laidOut = await _layout(chapter, size, style);
+      } on Object catch (error, stack) {
+        // The page being read stays: the error is shown when the reader
+        // turns into the broken chapter (an empty page stands for it).
+        if (!_current(token)) return;
+        _failed[chapter] = (error, stack);
+        laidOut = [
+          FlowPage(
+            start: 0,
+            end: s.chapterLengths[chapter],
+            items: const [],
+            last: true,
+          ),
+        ];
       } finally {
         _inFlight.remove(chapter);
       }

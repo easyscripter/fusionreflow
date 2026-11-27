@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flow_render/src/layout/flow_page.dart';
 import 'package:flow_render/src/layout/text_build.dart';
@@ -30,7 +31,13 @@ class FlowLine {
 
 /// Splits a text block into lines. 5.B adds its own implementation.
 abstract interface class LineBreaker {
-  List<FlowLine> breakLines(FlowText block, double width, FlowStyle style);
+  /// [imageRatios]: width / height of the inline pictures by their bytes.
+  List<FlowLine> breakLines(
+    FlowText block,
+    double width,
+    FlowStyle style, {
+    Map<Uint8List, double> imageRatios,
+  });
 }
 
 /// Lines as the Flutter engine breaks them (`TextPainter`).
@@ -38,10 +45,20 @@ class EngineLineBreaker implements LineBreaker {
   const new();
 
   @override
-  List<FlowLine> breakLines(FlowText block, double width, FlowStyle style) {
+  List<FlowLine> breakLines(
+    FlowText block,
+    double width,
+    FlowStyle style, {
+    Map<Uint8List, double> imageRatios = const {},
+  }) {
     final length = block.length;
     if (length == 0) return const [];
-    final built = buildText(block, style, maxWidth: width);
+    final built = buildText(
+      block,
+      style,
+      maxWidth: width,
+      imageRatios: imageRatios,
+    );
     final painter = layoutPainter(built, roleAlign(block, style), width);
     final metrics = painter.computeLineMetrics();
     final boxes = painter.inlinePlaceholderBoxes ?? const [];

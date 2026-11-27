@@ -51,6 +51,29 @@ class FailingPaginator implements FlowPaginator {
   ) async => throw StateError('layout failed');
 }
 
+/// Fails only for [broken]; other chapters are laid out for real.
+class FailingSectionPaginator implements FlowPaginator {
+  new(this.broken);
+
+  final FlowSection broken;
+
+  @override
+  LineBreaker get lineBreaker => const EngineLineBreaker();
+
+  @override
+  Future<void> Function() get pause => yieldToEventLoop;
+
+  @override
+  Future<List<FlowPage>> paginate(
+    FlowSection section,
+    Size size,
+    FlowStyle style,
+  ) async {
+    if (section == broken) throw StateError('layout failed');
+    return await const FlowPaginator().paginate(section, size, style);
+  }
+}
+
 /// A real paginator that never waits for a timer: in widget tests the clock
 /// is fake, and a pause on a slow machine would hang the layout.
 const FlowPaginator testPaginator = FlowPaginator(pause: _noPause);

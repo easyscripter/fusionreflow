@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flow_render/src/layout/flow_page.dart';
@@ -137,7 +138,8 @@ class _Run {
         await _readRatios(block.spans);
         return _layoutText(block, start);
       case FlowImage():
-        return await _layoutImage(block, start);
+        final reserved = await _headingsAbove(index);
+        return await _layoutImage(block, start, height - reserved);
       case FlowRule():
         return _layoutRule(start);
       case FlowTable():
@@ -150,12 +152,34 @@ class _Run {
     }
   }
 
+  /// Height the headings right before block [index] take with their spacing:
+  /// a picture has to leave them room on its page.
+  Future<double> _headingsAbove(int index) async {
+    var taken = 0.0;
+    var spaceBelow = 0.5 * _line; // the picture's own space above
+    for (var i = index - 1; i >= 0; i--) {
+      final block = section.blocks[i];
+      if (block is! FlowText || block.role != FlowTextRole.heading) break;
+      final laid = await _layout(i);
+      if (laid.rows.isEmpty) continue;
+      taken +=
+          laid.rows.fold<double>(0, (sum, r) => sum + r.height) +
+          math.max(laid.after, spaceBelow);
+      spaceBelow = laid.before;
+    }
+    // Headings that fill half a page keep it to themselves.
+    return taken < height / 2 ? taken : 0;
+  }
+
+  /// Width / height of the inline pictures, by their bytes.
+  final _ratios = Map<Uint8List, double>.identity();
+
   /// Reads the size of the inline pictures of [spans] once.
   Future<void> _readRatios(List<FlowSpan> spans) async {
     for (final span in spans.whereType<FlowImageSpan>()) {
-      if (imageRatios[span.bytes] != null) continue;
+      if (_ratios.containsKey(span.bytes)) continue;
       final size = await readImageSize(span.bytes);
-      if (size != null) imageRatios[span.bytes] = size.width / size.height;
+      if (size != null) _ratios[span.bytes] = size.width / size.height;
     }
   }
 
@@ -171,7 +195,12 @@ class _Run {
       1,
       size.width - style.padding.right - textX,
     );
-    final lines = breaker.breakLines(block, textWidth, style);
+    final lines = breaker.breakLines(
+      block,
+      textWidth,
+      style,
+      imageRatios: _ratios,
+    );
     if (lines.isEmpty) return const _Laid([]);
 
     TextPainter? markerPainter;
@@ -253,7 +282,11 @@ class _Run {
 
   // ---- image and rule ---------------------------------------------------
 
-  Future<_Laid> _layoutImage(FlowImage block, int start) async {
+  Future<_Laid> _layoutImage(
+    FlowImage block,
+    int start,
+    double maxHeight,
+  ) async {
     final natural = await readImageSize(block.bytes);
     final double w;
     final double h;
@@ -263,7 +296,7 @@ class _Run {
     } else {
       final scale = math.min(
         1,
-        math.min(width / natural.width, height / natural.height),
+        math.min(width / natural.width, maxHeight / natural.height),
       );
       w = natural.width * scale;
       h = natural.height * scale;
@@ -328,6 +361,7 @@ class _Run {
       style,
       maxWidth: maxWidth,
       fontSize: style.fontSize * _tableTextScale,
+      imageRatios: _ratios,
     );
     return BuiltText(
       TextSpan(
@@ -525,7 +559,7 @@ class _Run {
     if (laid.keepTogether && total <= height) {
       var need = total;
       if (laid.keepWithNext) need += await _nextNeed(index, laid);
-      if (!_atTop && gap + need > height - _y) {
+      if (!_atTop && gap + need > height - _y + 0.01) {
         _newPage();
         gap = 0;
       }

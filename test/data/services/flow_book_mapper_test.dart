@@ -121,6 +121,11 @@ void main() {
     expect(book.sections.every((s) => s.chunk), isTrue);
   });
 
+  test('short_book_without_headings_is_a_chunk', () {
+    final book = flowBookOf(_book([_p('a'), _p('b')]));
+    expect(book.sections.single.chunk, isTrue);
+  });
+
   test('empty_book', () {
     final book = flowBookOf(_book([]));
     expect(book.sections, hasLength(1));

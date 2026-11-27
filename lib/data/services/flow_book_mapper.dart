@@ -50,8 +50,7 @@ FlowBook flowBookOf(rb.Book book) {
   if (starts.isEmpty) {
     return (
       starts: [for (var i = 0; i < math.max(count, 1); i += _chunkBlocks) i],
-      // An empty or short book is one chapter, not a piece of one.
-      chunks: count > _chunkBlocks,
+      chunks: true,
     );
   }
   return (starts: ({0, ...starts}.toList())..sort(), chunks: false);

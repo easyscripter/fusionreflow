@@ -525,4 +525,17 @@ void main() {
     done = true;
     expect(ticks, greaterThan(0));
   });
+
+  test('heading_shares_the_page_with_a_full_height_picture', () async {
+    final png = await makePng(100, 1200);
+    final pages = await _paginator.paginate(
+      section([heading, heading, FlowImage(png)]),
+      _phone,
+      testStyle,
+    );
+    expect(pages, hasLength(1));
+    final picture = pages.single.items.whereType<FlowPictureItem>().single;
+    expect(picture.rect.bottom, lessThanOrEqualTo(_phone.height + 0.01));
+    expect(picture.rect.width / picture.rect.height, closeTo(1 / 12, 0.001));
+  });
 }
