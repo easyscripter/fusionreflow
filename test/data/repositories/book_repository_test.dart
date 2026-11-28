@@ -359,6 +359,33 @@ void main() {
     expect((await repo.watchAll().first).map((e) => e.id), [b.id]);
   });
 
+  test('open_returns_book', () async {
+    final entry = await repo.add(_b(1), BookFormat.epub);
+
+    final book = await repo.open(entry.id);
+
+    expect(book.title, 'T1');
+    expect(book.sections, isNotEmpty);
+  });
+
+  test('open_missing_book', () async {
+    await expectLater(
+      repo.open('missing'),
+      throwsA(isA<BookNotFoundException>()),
+    );
+    final a = await repo.add(_b(1), BookFormat.epub);
+    await repo.delete(a.id);
+    await expectLater(repo.open(a.id), throwsA(isA<BookNotFoundException>()));
+  });
+
+  test('open_corrupt_book', () async {
+    // The bytes were accepted by add; the reader's decoder rejects them.
+    final entry = await repo.add(_b(1), BookFormat.epub);
+    rust.badContent.add(1);
+
+    await expectLater(repo.open(entry.id), throwsA(isA<BookFormatException>()));
+  });
+
   test('load unknown or deleted throws', () async {
     await expectLater(
       repo.load('missing'),

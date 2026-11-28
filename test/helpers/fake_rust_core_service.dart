@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flow_render/flow_render.dart';
 import 'package:fusionreflow/data/services/bridge_import_event.dart';
 import 'package:fusionreflow/data/services/rust_core_service.dart';
 import 'package:fusionreflow/domain/models/book_format.dart';
@@ -55,6 +56,26 @@ class FakeRustCoreService implements RustCoreService {
       converterVersion: 'test',
       description: descriptions[n],
     );
+  }
+
+  /// First bytes of books that [bookContent] rejects as corrupt.
+  final Set<int> badContent = {};
+
+  /// Books [bookContent] returns by the first byte; others get one chapter.
+  final Map<int, FlowBook> contents = {};
+
+  @override
+  Future<FlowBook> bookContent(Uint8List bytes) async {
+    final n = bytes.first;
+    if (n == 0xFF || badContent.contains(n)) {
+      throw const FormatError.corrupt('bad bytes');
+    }
+    return contents[n] ??
+        FlowBook('T$n', const [
+          FlowSection([
+            FlowText([FlowTextSpan('text')]),
+          ]),
+        ]);
   }
 
   /// Events [importBook] emits; a test feeds and closes it.

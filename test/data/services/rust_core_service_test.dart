@@ -22,6 +22,7 @@ const _meta = BookMeta(
 class _FakeRustLibApi implements RustLibApi {
   final List<String> hyphenated = [];
   final List<List<int>> metaCalls = [];
+  final List<List<int>> contentCalls = [];
   final List<(int, SourceKind)> importCalls = [];
   final List<int> cancelCalls = [];
   List<ImportEvent> importEvents = const [];
@@ -47,6 +48,12 @@ class _FakeRustLibApi implements RustLibApi {
   }
 
   @override
+  Future<Book> crateApiBookBookContent({required List<int> bytes}) async {
+    contentCalls.add(bytes);
+    return _book;
+  }
+
+  @override
   String crateApiTextHyphenate({required String text}) {
     hyphenated.add(text);
     return 'bridge:$text';
@@ -56,6 +63,16 @@ class _FakeRustLibApi implements RustLibApi {
   dynamic noSuchMethod(Invocation invocation) =>
       throw UnimplementedError('${invocation.memberName} is not faked');
 }
+
+const _book = Book(
+  formatVersion: 1,
+  converterVersion: 'c',
+  sourceHash: 'h',
+  meta: Meta(title: 'Название', authors: []),
+  toc: [],
+  blocks: [BlockNode(block: Block.paragraph(inlines: []))],
+  resources: [],
+);
 
 void main() {
   late _FakeRustLibApi api;
@@ -130,6 +147,17 @@ void main() {
       expect(calls, 1);
       hang.complete();
     });
+  });
+
+  test('bookContent maps the bridge book to the render model', () async {
+    final service = RustCoreService(decode: decodeBook);
+    final bytes = Uint8List.fromList([3]);
+
+    final book = await service.bookContent(bytes);
+
+    expect(book.title, 'Название');
+    expect(book.sections.single.blocks, hasLength(1));
+    expect(api.contentCalls, [bytes]);
   });
 
   test('bookMeta delegates to bridge', () async {

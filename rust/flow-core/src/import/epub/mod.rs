@@ -5,6 +5,7 @@
 //! (progress + cancel between chapters), then resolve links, contents and
 //! hyphenation in a second pass.
 mod archive;
+mod css;
 mod description;
 mod draft;
 mod entities;
@@ -133,8 +134,7 @@ impl Loader<'_, '_> {
 
 impl draft::Images for Loader<'_, '_> {
     fn load(&mut self, chapter: &str, src: &str) -> Option<ResourceId> {
-        let target = path::resolve(chapter, src)?;
-        let name = self.archive.canonical(&target.path)?.to_owned();
+        let name = self.archive.locate(chapter, src)?;
         self.load_entry(&name)
     }
 }
@@ -291,6 +291,7 @@ impl EpubConverter {
 
         let total = u32::try_from(spine.len()).unwrap_or(u32::MAX);
         let mut chapters: Vec<(String, Vec<draft::Top>)> = Vec::new();
+        let mut stylesheets = css::Stylesheets::default();
         for (i, item) in spine.iter().enumerate() {
             if cancel.is_cancelled() {
                 return Err(ImportError::Cancelled);
@@ -301,7 +302,11 @@ impl EpubConverter {
                 .map(str::to_owned);
             if let Some(name) = name {
                 if let Some(bytes) = read_entry(loader.archive, &name)? {
-                    let tops = xhtml::parse_chapter(&xml::decode_bytes(&bytes), &name, &mut loader);
+                    let text = xml::decode_bytes(&bytes);
+                    let mono = stylesheets
+                        .for_chapter(loader.archive, &name, &text)
+                        .map_err(archive_error)?;
+                    let tops = xhtml::parse_chapter(&text, &name, &mono, &mut loader);
                     chapters.push((name, tops));
                 }
             }

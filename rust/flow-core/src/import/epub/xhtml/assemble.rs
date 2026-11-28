@@ -91,6 +91,10 @@ impl Builder<'_> {
                 }
             }
             Kind::Pre => self.finish_pre(),
+            Kind::CodeParagraph => {
+                self.counts.code = self.counts.code.saturating_sub(1);
+                self.boundary();
+            }
             Kind::NestedTable => {
                 self.table_nest = self.table_nest.saturating_sub(1);
                 self.space();
@@ -140,6 +144,7 @@ impl Builder<'_> {
 
     /// Between blocks: flush, or just separate with a space inside list items, cells and captions.
     pub(super) fn boundary(&mut self) {
+        self.code_join = None;
         if self.joined() {
             self.space();
         } else {
@@ -149,6 +154,7 @@ impl Builder<'_> {
 
     /// Lists end the current item, but inside a cell or caption they only add a space.
     pub(super) fn list_boundary(&mut self) {
+        self.code_join = None;
         if matches!(self.open, Open::Cell | Open::Caption) {
             self.space();
         } else {
@@ -174,6 +180,13 @@ impl Builder<'_> {
 
     pub(super) fn finish_pre(&mut self) {
         let Some(buf) = self.pre.take() else { return };
+        if std::mem::take(&mut self.pre_merge) {
+            // a `<br>` closing the paragraph does not make an extra line
+            for line in buf.strip_suffix('\n').unwrap_or(&buf).split('\n') {
+                self.push_code_line(line.trim_matches(' '));
+            }
+            return;
+        }
         let buf = buf.replace("\r\n", "\n");
         let mut lines: Vec<String> = buf
             .strip_prefix('\n')
@@ -187,6 +200,35 @@ impl Builder<'_> {
         if !lines.is_empty() {
             self.push_block(DBlock::Code(lines));
         }
+    }
+
+    /// Adds a line of a monospace paragraph to the code block that is still
+    /// open for joining, or starts one. Blank lines wait for the next text line.
+    fn push_code_line(&mut self, line: &str) {
+        if line.is_empty() {
+            if let Some(blank) = self.code_join.as_mut() {
+                *blank += 1;
+            }
+            return;
+        }
+        let last = match self.containers.last_mut() {
+            Some(c) => c.blocks.last_mut(),
+            None => self.tops.last_mut().map(|t| &mut t.block),
+        };
+        match (self.code_join, last) {
+            (Some(blank), Some(DBlock::Code(lines))) => {
+                lines.extend(std::iter::repeat_with(String::new).take(blank));
+                lines.push(line.to_owned());
+                if self.containers.is_empty() {
+                    let ids = std::mem::take(&mut self.ids);
+                    if let Some(t) = self.tops.last_mut() {
+                        t.anchors.extend(ids);
+                    }
+                }
+            }
+            _ => self.push_block(DBlock::Code(vec![line.to_owned()])),
+        }
+        self.code_join = Some(0);
     }
 
     pub(super) fn flush(&mut self) {
@@ -229,6 +271,7 @@ impl Builder<'_> {
     }
 
     pub(super) fn push_block(&mut self, block: DBlock) {
+        self.code_join = None;
         match self.containers.last_mut() {
             Some(c) => c.blocks.push(block),
             None => {

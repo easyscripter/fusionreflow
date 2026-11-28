@@ -56,7 +56,7 @@ jobs:
           cache: true
       - run: flutter pub get
       - name: Format
-        run: dart format --output=none --set-exit-if-changed lib test integration_test test_driver tool
+        run: dart format --output=none --set-exit-if-changed lib test integration_test test_driver tool packages
       # dart analyze, not flutter analyze: only it runs analyzer plugins (riverpod_lint).
       - name: Analyze
         run: dart analyze --fatal-infos
@@ -69,7 +69,10 @@ jobs:
           dart run tool/check_coverage.dart prepare
           echo "SKIPPED: golden tests (tag 'golden') - pixel output differs between Windows and Linux; run locally and in QA"
           flutter test --coverage --exclude-tags golden
-      - name: Coverage threshold (lib/domain, data, utils, view_models)
+          for package in packages/*/; do
+            (cd "$package" && flutter test --coverage --exclude-tags golden)
+          done
+      - name: Coverage threshold (lib/domain, data, utils, view_models, packages)
         run: dart run tool/check_coverage.dart check --threshold="$COVERAGE_THRESHOLD"
 
   duplicates:
@@ -83,7 +86,7 @@ jobs:
       # jscpd (MIT) via npx: blocks of 10+ lines; generated code is excluded.
       - name: jscpd
         run: >
-          npx --yes jscpd@4 lib rust/flow-core/src rust/bridge/src
+          npx --yes jscpd@4 lib packages/flow_render/lib rust/flow-core/src rust/bridge/src
           --min-lines 10 --threshold 0 --exitCode 1
           --ignore "**/*.g.dart,**/*.freezed.dart,lib/src/rust/**,lib/l10n/app_localizations*.dart,**/frb_generated.rs"
           --reporters console

@@ -440,17 +440,41 @@ abstract class AppLocalizations {
   /// **'{size} MB'**
   String fileSizeMb(double size);
 
-  /// No description provided for @readerPlaceholderTitle.
+  /// No description provided for @readerOpenFailed.
   ///
   /// In en, this message translates to:
-  /// **'The reader is coming later'**
-  String get readerPlaceholderTitle;
+  /// **'Couldn\'t open the book'**
+  String get readerOpenFailed;
 
-  /// No description provided for @readerPlaceholderPosition.
+  /// No description provided for @readerBack.
   ///
   /// In en, this message translates to:
-  /// **'Opens at {percent}%'**
-  String readerPlaceholderPosition(int percent);
+  /// **'Back'**
+  String get readerBack;
+
+  /// No description provided for @readerChapterOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {index} of {count}'**
+  String readerChapterOf(int index, int count);
+
+  /// No description provided for @readerPageOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{index} of {count}'**
+  String readerPageOf(int index, int count);
+
+  /// No description provided for @readerPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String readerPercent(int percent);
+
+  /// No description provided for @readerSavePositionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save your reading position'**
+  String get readerSavePositionFailed;
 
   /// No description provided for @readerBookNotFound.
   ///

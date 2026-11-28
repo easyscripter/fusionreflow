@@ -49,6 +49,12 @@ pub(super) struct Archive<'a> {
 }
 
 impl<'a> Archive<'a> {
+    /// Entry name that `href`, written in document `base`, points at.
+    pub fn locate(&self, base: &str, href: &str) -> Option<String> {
+        let target = super::path::resolve(base, href)?;
+        self.canonical(&target.path).map(str::to_owned)
+    }
+
     pub fn open(src: &'a mut dyn ReadSeek, limits: Limits) -> Result<Self, ArchiveError> {
         let mut zip = ZipArchive::new(src).map_err(|e| ArchiveError::NotZip(e.to_string()))?;
         if zip.len() > limits.entries {

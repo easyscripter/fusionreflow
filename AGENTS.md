@@ -57,7 +57,7 @@ FusionReflow — читалка для Android на Flutter: PDF (через з�
 - push — только в ветку своей задачи.
 - Хук перед коммитом подключается один раз: `git config core.hooksPath .githooks`. Обходить его (`--no-verify`) запрещено.
   Он проверяет только затронутую коммитом часть: `rust/**` — команды Rust из раздела 9; `lib/`, `test/`,
-  `integration_test/`, `test_driver/`, `tool/`, `pubspec.*`, `analysis_options.yaml`, `l10n.yaml` — команды Dart.
+  `integration_test/`, `test_driver/`, `tool/`, `packages/`, `pubspec.*`, `analysis_options.yaml`, `l10n.yaml` — команды Dart.
   Файлы, добавленные в коммит частично (есть ещё неиндексированные правки), блокируют коммит.
 
 ---
@@ -69,6 +69,7 @@ FusionReflow — читалка для Android на Flutter: PDF (через з�
 lib/                 Flutter-приложение (MVVM, см. 2.2)
 rust/flow-core/      открытое ядро: формат блоков, кодек, переносы, импорт EPUB/FB2
 rust/bridge/         мост flutter_rust_bridge (Cargo-пакет `rust_lib_fusionreflow`); заглушка конвертера PDF
+packages/flow_render/ пакет рендера (раскладка, страницы, отрисовка), без Riverpod
 rust_builder/        cargokit (сборка Rust для Flutter), не править без причины
 docs/                спеки, решения, отчёты проверок
 ```
@@ -187,7 +188,7 @@ rust/flow-core/dictionaries/   данные переносов + NOTICE.md
 - Юнит-тесты на каждый Service, Repository, ViewModel, use-case и модуль Rust; виджет-тесты на экраны
   (включая навигацию и подстановку зависимостей). Фейки вместо моков (провайдеры Riverpod / трейты в Rust).
 - **Покрытие ≥ 85% строк** для слоёв с логикой: `rust/flow-core`, `rust/bridge`, `lib/domain`, `lib/data`,
-  `lib/ui/**/view_models`, `lib/utils`. Новый код в PR — тоже ≥ 85%. Виджеты и сгенерированный код не считаются.
+  `lib/ui/**/view_models`, `lib/utils`, `packages/*/lib/src` (кроме `widgets/`). Новый код в PR — тоже ≥ 85%. Виджеты и сгенерированный код не считаются.
 - Тесты быстрые и детерминированные: без сети, без реального времени, без зависимости от порядка.
   Тесты, требующие устройство/внешние файлы, помечены и пропускаются с громкой строкой `SKIPPED: …`, но
   обязательны в QA-прогоне.
@@ -223,8 +224,8 @@ rust/flow-core/dictionaries/   данные переносов + NOTICE.md
 
 Автоматика (локально и в CI — всё зелёное)
 - [ ] `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test` (из `rust/`).
-- [ ] `dart format --set-exit-if-changed lib test integration_test test_driver tool`, `dart analyze --fatal-infos`,
-      `flutter test`.
+- [ ] `dart format --set-exit-if-changed lib test integration_test test_driver tool packages`,
+      `dart analyze --fatal-infos`, `flutter test` (в корне и в `packages/flow_render`).
 - [ ] Кодогенерация актуальна (`build_runner`, `flutter_rust_bridge_codegen generate`) и закоммичена.
       Любое изменение в `rust/bridge/src/api/` (даже комментарий) меняет отпечаток API: перегенерируй мост, а перед
       QA собирай после `flutter clean` — иначе приложение падает при старте с «Content hash … is different».
@@ -252,13 +253,15 @@ PR
 cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test
 # Dart / Flutter (из корня)
 # (не `dart format .` — он заходит в build/; --fatal-infos — иначе замечания линтеров не роняют проверку)
-dart format --set-exit-if-changed lib test integration_test test_driver tool && dart analyze --fatal-infos && flutter test
+dart format --set-exit-if-changed lib test integration_test test_driver tool packages && dart analyze --fatal-infos && flutter test
+(cd packages/flow_render && flutter test)
 # Кодогенерация
 dart run build_runner build -d
 flutter_rust_bridge_codegen generate
 # Покрытие (порог 85%; CI делает то же самое)
 (cd rust && cargo llvm-cov --workspace --ignore-filename-regex 'frb_generated\.rs|[\\/]tests[\\/]' --fail-under-lines 85)
-dart run tool/check_coverage.dart prepare && flutter test --coverage && dart run tool/check_coverage.dart check
+dart run tool/check_coverage.dart prepare && flutter test --coverage \
+  && (cd packages/flow_render && flutter test --coverage) && dart run tool/check_coverage.dart check
 # Сборка APK
 flutter build apk --flavor store --release
 ```

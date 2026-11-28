@@ -59,6 +59,11 @@ pub(super) fn attr(e: &BytesStart<'_>, local: &str) -> Option<String> {
     })
 }
 
+/// Whether the space-separated attribute `value` holds one of `tokens`.
+pub(super) fn has_token(value: Option<String>, tokens: &[&str]) -> bool {
+    value.is_some_and(|v| v.split_whitespace().any(|t| tokens.contains(&t)))
+}
+
 /// Text of a character or entity reference; unknown names stay as `&name;`.
 pub(super) fn ref_text(r: &BytesRef<'_>) -> String {
     match r.resolve_char_ref() {

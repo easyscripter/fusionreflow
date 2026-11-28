@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusionreflow/config/app_startup.dart';
+import 'package:fusionreflow/config/flow_paginator_provider.dart';
 import 'package:fusionreflow/data/repositories/book_repository.dart';
 import 'package:fusionreflow/data/repositories/import_repository.dart';
 import 'package:fusionreflow/data/services/rust_core_service.dart';
@@ -11,13 +12,15 @@ import 'package:fusionreflow/routing/app_router.dart';
 
 import 'fake_book_repository.dart';
 import 'fake_import_repository.dart';
+import 'fake_paginators.dart';
 import 'fake_rust_core_service.dart';
 import 'preload_locale_names.dart';
 
 /// Pumps the whole app with an instantly ready startup, a [size] window and
 /// the `ru` locale. [location] starts the router there; [overrides] are added
-/// last, so they win. [books] and [imports] are the library and importer
-/// fakes (empty ones by default).
+/// last, so they win. [settle] false pumps one frame only (for screens
+/// that animate forever, like a spinner). [books] and [imports] are the
+/// library and importer fakes (empty ones by default).
 Future<void> pumpApp(
   WidgetTester tester, {
   Size size = const Size(390, 844),
@@ -25,6 +28,7 @@ Future<void> pumpApp(
   List<Override> overrides = const [],
   FakeBookRepository? books,
   FakeImportRepository? imports,
+  bool settle = true,
 }) async {
   tester.view
     ..physicalSize = size
@@ -44,6 +48,7 @@ Future<void> pumpApp(
     ProviderScope(
       overrides: [
         appStartupProvider.overrideWith((ref) async {}),
+        flowPaginatorProvider.overrideWithValue(testPaginator),
         rustCoreServiceProvider.overrideWithValue(FakeRustCoreService()),
         bookRepositoryProvider.overrideWithValue(books ?? FakeBookRepository()),
         importRepositoryProvider.overrideWithValue(
@@ -58,5 +63,9 @@ Future<void> pumpApp(
       child: const FusionReflowApp(),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
 }

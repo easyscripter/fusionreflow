@@ -4,7 +4,7 @@ import 'package:fusionreflow/routing/app_routes.dart';
 import 'package:fusionreflow/ui/book_details/widgets/book_details_screen.dart';
 import 'package:fusionreflow/ui/bookmarks/widgets/bookmarks_screen.dart';
 import 'package:fusionreflow/ui/library/widgets/library_screen.dart';
-import 'package:fusionreflow/ui/reader/widgets/reader_placeholder_screen.dart';
+import 'package:fusionreflow/ui/reader/widgets/reader_screen.dart';
 import 'package:fusionreflow/ui/settings/widgets/settings_screen.dart';
 import 'package:fusionreflow/ui/shell/widgets/app_shell.dart';
 import 'package:fusionreflow/ui/spikes/widgets/hyphen_spike_screen.dart';
@@ -72,9 +72,8 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.library}) {
       // Полноэкранная читалка: вне оболочки, без навигационной панели.
       GoRoute(
         path: AppRoutes.reader,
-        builder: (context, state) => ReaderPlaceholderScreen(
-          bookId: state.pathParameters['bookId'] ?? '',
-        ),
+        builder: (context, state) =>
+            ReaderScreen(bookId: state.pathParameters['bookId'] ?? ''),
       ),
     ],
   );

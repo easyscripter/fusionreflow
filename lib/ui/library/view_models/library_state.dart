@@ -8,7 +8,7 @@ part 'library_state.freezed.dart';
 @freezed
 abstract class LibraryState with _$LibraryState {
   const factory({
-    /// Сетка: все книги, кроме [continueReading], в порядке [sort].
+    /// Сетка: все книги (и [continueReading] тоже) в порядке [sort].
     required List<BookEntry> books,
 
     /// Все живые книги (счётчик «8 книг»).

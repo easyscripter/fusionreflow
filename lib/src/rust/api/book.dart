@@ -5,6 +5,7 @@
 
 import '../frb_generated.dart';
 
+import 'package:collection/collection.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'book.freezed.dart';
@@ -13,6 +14,103 @@ part 'book.freezed.dart';
 /// Errors: the `flow_core::decode` error as is (bad CBOR, unsupported `format_version`).
 Future<BookMeta> bookMeta({required List<int> bytes}) =>
     RustLib.instance.api.crateApiBookBookMeta(bytes: bytes);
+
+/// Decodes CBOR `bytes` and returns the whole book for the reader.
+/// Errors: the `flow_core::decode` error as is.
+Future<Book> bookContent({required List<int> bytes}) =>
+    RustLib.instance.api.crateApiBookBookContent(bytes: bytes);
+
+@freezed
+sealed class Block with _$Block {
+  const Block._();
+
+  const factory Block.heading({
+    required int level,
+    required List<Inline> inlines,
+  }) = Block_Heading;
+  const factory Block.paragraph({required List<Inline> inlines}) =
+      Block_Paragraph;
+  const factory Block.listItem({
+    required ListMarker marker,
+    required int depth,
+    required List<Inline> inlines,
+  }) = Block_ListItem;
+  const factory Block.quote({required List<BlockNode> blocks}) = Block_Quote;
+  const factory Block.code({required List<String> lines}) = Block_Code;
+  const factory Block.figure({
+    required ResourceId image,
+    required List<Inline> caption,
+  }) = Block_Figure;
+  const factory Block.formula({required ResourceId image}) = Block_Formula;
+  const factory Block.table(Table field0) = Block_Table;
+  const factory Block.footnote({
+    required String id,
+    required List<BlockNode> blocks,
+  }) = Block_Footnote;
+  const factory Block.separator() = Block_Separator;
+  const factory Block.fixedPage({required ResourceId image}) = Block_FixedPage;
+}
+
+class BlockNode {
+  final Block block;
+  final SourceRef? src;
+
+  const BlockNode({required this.block, this.src});
+
+  @override
+  int get hashCode => block.hashCode ^ src.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BlockNode &&
+          runtimeType == other.runtimeType &&
+          block == other.block &&
+          src == other.src;
+}
+
+class Book {
+  final int formatVersion;
+  final String converterVersion;
+  final String sourceHash;
+  final Meta meta;
+  final List<TocEntry> toc;
+  final List<BlockNode> blocks;
+  final List<Resource> resources;
+
+  const Book({
+    required this.formatVersion,
+    required this.converterVersion,
+    required this.sourceHash,
+    required this.meta,
+    required this.toc,
+    required this.blocks,
+    required this.resources,
+  });
+
+  @override
+  int get hashCode =>
+      formatVersion.hashCode ^
+      converterVersion.hashCode ^
+      sourceHash.hashCode ^
+      meta.hashCode ^
+      toc.hashCode ^
+      blocks.hashCode ^
+      resources.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Book &&
+          runtimeType == other.runtimeType &&
+          formatVersion == other.formatVersion &&
+          converterVersion == other.converterVersion &&
+          sourceHash == other.sourceHash &&
+          meta == other.meta &&
+          toc == other.toc &&
+          blocks == other.blocks &&
+          resources == other.resources;
+}
 
 /// Bibliographic data of an encoded book, for the library catalog.
 class BookMeta {
@@ -56,6 +154,18 @@ class BookMeta {
           converterVersion == other.converterVersion;
 }
 
+class F32Array4 extends NonGrowableListView<double> {
+  static const arraySize = 4;
+
+  @internal
+  Float32List get inner => _inner;
+  final Float32List _inner;
+
+  F32Array4(this._inner) : assert(_inner.length == arraySize), super(_inner);
+
+  F32Array4.init() : this(Float32List(arraySize));
+}
+
 @freezed
 sealed class FormatError with _$FormatError implements FrbException {
   const FormatError._();
@@ -64,4 +174,195 @@ sealed class FormatError with _$FormatError implements FrbException {
       FormatError_UnsupportedFormatVersion;
   const factory FormatError.corrupt(String field0) = FormatError_Corrupt;
   const factory FormatError.encode(String field0) = FormatError_Encode;
+}
+
+@freezed
+sealed class Inline with _$Inline {
+  const Inline._();
+
+  const factory Inline.text({required String text, required Style style}) =
+      Inline_Text;
+  const factory Inline.link({
+    required LinkTarget target,
+    required List<Inline> inlines,
+  }) = Inline_Link;
+  const factory Inline.noteRef({required String id, required String label}) =
+      Inline_NoteRef;
+  const factory Inline.image({
+    required ResourceId res,
+    required double heightEm,
+  }) = Inline_Image;
+}
+
+@freezed
+sealed class LinkTarget with _$LinkTarget {
+  const LinkTarget._();
+
+  const factory LinkTarget.internal(BigInt field0) = LinkTarget_Internal;
+  const factory LinkTarget.external_(String field0) = LinkTarget_External;
+}
+
+@freezed
+sealed class ListMarker with _$ListMarker {
+  const ListMarker._();
+
+  const factory ListMarker.bullet() = ListMarker_Bullet;
+  const factory ListMarker.number(int field0) = ListMarker_Number;
+}
+
+class Meta {
+  final String title;
+  final List<String> authors;
+  final String? language;
+  final ResourceId? cover;
+  final String? description;
+
+  const Meta({
+    required this.title,
+    required this.authors,
+    this.language,
+    this.cover,
+    this.description,
+  });
+
+  @override
+  int get hashCode =>
+      title.hashCode ^
+      authors.hashCode ^
+      language.hashCode ^
+      cover.hashCode ^
+      description.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Meta &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          authors == other.authors &&
+          language == other.language &&
+          cover == other.cover &&
+          description == other.description;
+}
+
+class Resource {
+  final ResourceId id;
+  final String mime;
+  final Uint8List data;
+
+  const Resource({required this.id, required this.mime, required this.data});
+
+  @override
+  int get hashCode => id.hashCode ^ mime.hashCode ^ data.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Resource &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          mime == other.mime &&
+          data == other.data;
+}
+
+class ResourceId {
+  final int field0;
+
+  const ResourceId({required this.field0});
+
+  @override
+  int get hashCode => field0.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ResourceId &&
+          runtimeType == other.runtimeType &&
+          field0 == other.field0;
+}
+
+enum Script { normal, sup, sub }
+
+class SourceRef {
+  final int page;
+  final F32Array4 rect;
+
+  const SourceRef({required this.page, required this.rect});
+
+  @override
+  int get hashCode => page.hashCode ^ rect.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SourceRef &&
+          runtimeType == other.runtimeType &&
+          page == other.page &&
+          rect == other.rect;
+}
+
+class Style {
+  final bool bold;
+  final bool italic;
+  final bool code;
+  final Script script;
+
+  const Style({
+    required this.bold,
+    required this.italic,
+    required this.code,
+    required this.script,
+  });
+
+  @override
+  int get hashCode =>
+      bold.hashCode ^ italic.hashCode ^ code.hashCode ^ script.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Style &&
+          runtimeType == other.runtimeType &&
+          bold == other.bold &&
+          italic == other.italic &&
+          code == other.code &&
+          script == other.script;
+}
+
+class Table {
+  final List<List<List<Inline>>> rows;
+
+  const Table({required this.rows});
+
+  @override
+  int get hashCode => rows.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Table && runtimeType == other.runtimeType && rows == other.rows;
+}
+
+class TocEntry {
+  final int level;
+  final String title;
+  final BigInt block;
+
+  const TocEntry({
+    required this.level,
+    required this.title,
+    required this.block,
+  });
+
+  @override
+  int get hashCode => level.hashCode ^ title.hashCode ^ block.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TocEntry &&
+          runtimeType == other.runtimeType &&
+          level == other.level &&
+          title == other.title &&
+          block == other.block;
 }

@@ -8,6 +8,7 @@ use super::draft::{DBlock, DInline, Images, LinkKind, Top};
 use super::xml::{attr, end_name, event_text, name, reader};
 use crate::model::{ListMarker, ResourceId, Script, Style};
 use quick_xml::events::{BytesStart, Event};
+use std::collections::HashSet;
 
 /// Nesting deeper than this is read as if the extra elements were transparent.
 pub(super) const MAX_DEPTH: usize = 256;
@@ -34,10 +35,15 @@ enum Kind {
     Link(usize),
     Block,
     Heading,
-    List { ordered: bool, next: u32 },
+    List {
+        ordered: bool,
+        next: u32,
+    },
     Li,
     Quote,
     Pre,
+    /// A monospace paragraph demoted to running text.
+    CodeParagraph,
     Footnote,
     Table,
     NestedTable,
@@ -91,6 +97,8 @@ struct Counts {
 
 struct Builder<'a> {
     chapter: &'a str,
+    /// Classes set in a monospace font by the book's stylesheets.
+    mono: &'a [&'a HashSet<String>],
     images: &'a mut dyn Images,
     frames: Vec<Frame>,
     skip: usize,
@@ -101,6 +109,11 @@ struct Builder<'a> {
     acc: Vec<DInline>,
     links: Vec<LinkFrame>,
     pre: Option<String>,
+    /// `pre` was opened by a monospace paragraph: one line, joins a preceding code block.
+    pre_merge: bool,
+    /// Set while the last block is a code block built from monospace paragraphs:
+    /// the number of blank lines waiting for the next code line.
+    code_join: Option<usize>,
     containers: Vec<Container>,
     tops: Vec<Top>,
     ids: Vec<String>,
@@ -109,9 +122,14 @@ struct Builder<'a> {
 }
 
 /// Parses a chapter. Malformed XML ends the chapter but keeps what was read.
-pub(super) fn parse_chapter(xml: &str, chapter: &str, images: &mut dyn Images) -> Vec<Top> {
+pub(super) fn parse_chapter(
+    xml: &str,
+    chapter: &str,
+    mono: &[&HashSet<String>],
+    images: &mut dyn Images,
+) -> Vec<Top> {
     let mut r = reader(xml, false);
-    let mut b = Builder::new(chapter, images);
+    let mut b = Builder::new(chapter, mono, images);
     loop {
         match r.read_event() {
             Ok(Event::Start(e)) => {
@@ -135,9 +153,16 @@ pub(super) fn parse_chapter(xml: &str, chapter: &str, images: &mut dyn Images) -
 }
 
 impl<'a> Builder<'a> {
-    pub(super) fn new(chapter: &'a str, images: &'a mut dyn Images) -> Self {
+    pub(super) fn new(
+        chapter: &'a str,
+        mono: &'a [&'a HashSet<String>],
+        images: &'a mut dyn Images,
+    ) -> Self {
         Self {
             chapter,
+            mono,
+            pre_merge: false,
+            code_join: None,
             images,
             frames: Vec::new(),
             skip: 0,
@@ -223,7 +248,18 @@ impl<'a> Builder<'a> {
             return;
         }
         if let Some(buf) = self.pre.as_mut() {
-            buf.push_str(s);
+            if self.pre_merge {
+                // HTML whitespace: only `<br>` ends a line of a monospace paragraph.
+                for ch in s.chars() {
+                    if !matches!(ch, ' ' | '\t' | '\r' | '\n') {
+                        buf.push(ch);
+                    } else if !buf.is_empty() && !buf.ends_with([' ', '\n']) {
+                        buf.push(' ');
+                    }
+                }
+            } else {
+                buf.push_str(s);
+            }
             return;
         }
         let mut prev_space = self.last_is_space();

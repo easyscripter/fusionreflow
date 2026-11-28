@@ -2,6 +2,7 @@
 
 use super::*;
 use crate::import::epub::path::resolve;
+use crate::import::epub::xml::has_token;
 
 /// `Quote` / `Footnote` containers nest as blocks in the model; the CBOR codec
 /// refuses books nested ~100 levels deep, so containers stop well before that.
@@ -34,10 +35,6 @@ pub(super) fn scheme_of(href: &str) -> Option<&str> {
     ok.then_some(s)
 }
 
-pub(super) fn has_token(value: Option<String>, tokens: &[&str]) -> bool {
-    value.is_some_and(|v| v.split_whitespace().any(|t| tokens.contains(&t)))
-}
-
 impl Builder<'_> {
     pub(super) fn kind_for(&mut self, n: &str, e: &BytesStart<'_>) -> Kind {
         if SKIP.contains(&n) {
@@ -45,6 +42,9 @@ impl Builder<'_> {
         }
         if matches!(n, "aside" | "div" | "section" | "li" | "p") && self.footnote_start(e) {
             return Kind::Footnote;
+        }
+        if let Some(kind) = self.mono_kind(n, e) {
+            return kind;
         }
         match n {
             "svg" => Kind::Svg,
@@ -90,6 +90,59 @@ impl Builder<'_> {
         }
     }
 
+    /// Code by stylesheet: a monospace `p` is a code line, a monospace `span` inline code.
+    fn mono_kind(&mut self, n: &str, e: &BytesStart<'_>) -> Option<Kind> {
+        let class = attr(e, "class")?;
+        let mono = |c| self.mono.iter().any(|set| set.contains(c));
+        if !class.split_whitespace().any(mono) {
+            return None;
+        }
+        match n {
+            "span" => Some(Kind::Code),
+            "p" if self.pre.is_none()
+                && self.table.is_none()
+                && self.fig.is_none()
+                && !self.frames.iter().any(|f| matches!(f.kind, Kind::Li)) =>
+            {
+                self.flush();
+                self.pre = Some(String::new());
+                self.pre_merge = true;
+                Some(Kind::Pre)
+            }
+            _ => None,
+        }
+    }
+
+    /// A monospace paragraph with a link or image cannot be a code line (it
+    /// would be lost): the paragraph goes on as running text in code style.
+    pub(super) fn demote_code_paragraph(&mut self) {
+        if !std::mem::take(&mut self.pre_merge) {
+            return;
+        }
+        let Some(text) = self.pre.take() else { return };
+        if let Some(f) = self
+            .frames
+            .iter_mut()
+            .rev()
+            .find(|f| matches!(f.kind, Kind::Pre))
+        {
+            f.kind = Kind::CodeParagraph;
+        }
+        self.counts.code += 1;
+        let text = text.trim_start_matches([' ', '\n']);
+        if !text.is_empty() {
+            self.open = Open::Para;
+            // the buffered text is plain code: styles around the link are not its own
+            let code_only = Counts {
+                code: self.counts.code,
+                ..Counts::default()
+            };
+            let around = std::mem::replace(&mut self.counts, code_only);
+            self.push_text(text.to_owned());
+            self.counts = around;
+        }
+    }
+
     pub(super) fn footnote_start(&mut self, e: &BytesStart<'_>) -> bool {
         if self.containers.len() >= MAX_CONTAINER_DEPTH {
             return false;
@@ -113,6 +166,7 @@ impl Builder<'_> {
         let Some(kind) = attr(e, "href").and_then(|h| self.link_kind(&h)) else {
             return Kind::Plain;
         };
+        self.demote_code_paragraph();
         let noteref = has_token(attr(e, "type"), &["noteref"])
             || has_token(attr(e, "role"), &["doc-noteref"]);
         self.links.push(LinkFrame {
@@ -243,6 +297,7 @@ impl Builder<'_> {
         let Some(id) = src.and_then(|s| self.images.load(self.chapter, &s)) else {
             return;
         };
+        self.demote_code_paragraph();
         if let Some(f) = self.fig.as_mut() {
             if self.open != Open::Caption && f.image.is_none() {
                 f.image = Some(id);

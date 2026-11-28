@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:drift/drift.dart';
+import 'package:flow_render/flow_render.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 import 'package:fusionreflow/data/repositories/book_exceptions.dart';
 import 'package:fusionreflow/data/services/book_file_service.dart';
@@ -32,6 +33,12 @@ abstract interface class BookRepository {
 
   /// CBOR bytes of book [id]; throws [BookNotFoundException] if it is not live.
   Future<Uint8List> load(String id);
+
+  /// The whole book [id] for the reader, split into chapters.
+  ///
+  /// Throws [BookNotFoundException] if it is not live and
+  /// [BookFormatException] if its bytes are not a readable book.
+  Future<FlowBook> open(String id);
 
   /// Remembers where the reader stopped; [progress] must be in `0..1`.
   Future<void> savePosition(
@@ -192,6 +199,16 @@ class LocalBookRepository implements BookRepository {
     } on PathNotFoundException {
       // The file was removed by hand: for the reader the book is gone.
       throw BookNotFoundException(id);
+    }
+  }
+
+  @override
+  Future<FlowBook> open(String id) async {
+    final bytes = await load(id);
+    try {
+      return await _rust.bookContent(bytes);
+    } on FrbException catch (error) {
+      throw BookFormatException(error.toString());
     }
   }
 

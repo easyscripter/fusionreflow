@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$LibraryState {
 
-/// Сетка: все книги, кроме [continueReading], в порядке [sort].
+/// Сетка: все книги (и [continueReading] тоже) в порядке [sort].
  List<BookEntry> get books;/// Все живые книги (счётчик «8 книг»).
  int get totalCount; LibrarySort get sort;/// Книга с наибольшим lastReadAt, кроме прочитанных.
  BookEntry? get continueReading;
@@ -233,9 +233,9 @@ class _LibraryState implements LibraryState {
   const _LibraryState({required  List<BookEntry> books, required this.totalCount, required this.sort, this.continueReading}): _books = books;
   
 
-/// Сетка: все книги, кроме [continueReading], в порядке [sort].
+/// Сетка: все книги (и [continueReading] тоже) в порядке [sort].
  final  List<BookEntry> _books;
-/// Сетка: все книги, кроме [continueReading], в порядке [sort].
+/// Сетка: все книги (и [continueReading] тоже) в порядке [sort].
 @override List<BookEntry> get books {
   if (_books is EqualUnmodifiableListView) return _books;
   // ignore: implicit_dynamic_type

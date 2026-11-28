@@ -47,7 +47,8 @@ void main() {
     ]);
     final s = await state();
     expect(s.continueReading?.id, 'hero');
-    expect(s.books.map((b) => b.id), ['done']);
+    // The book also stays in the grid (decision of 2026-11-21).
+    expect(s.books.map((b) => b.id), ['done', 'hero']);
     expect(s.totalCount, 2);
   });
 

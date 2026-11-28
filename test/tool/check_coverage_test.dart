@@ -26,6 +26,17 @@ void main() {
       expect(isInScope('test/data/text_repository_test.dart'), isFalse);
     });
 
+    test('accepts package logic but not package widgets', () {
+      expect(isInScope('packages/flow_render/lib/src/layout/a.dart'), isTrue);
+      expect(isInScope('packages/flow_render/lib/src/model/a.dart'), isTrue);
+      expect(
+        isInScope('packages/flow_render/lib/src/widgets/flow_page_view.dart'),
+        isFalse,
+      );
+      expect(isInScope('packages/flow_render/lib/flow_render.dart'), isFalse);
+      expect(isInScope('packages/flow_render/test/a_test.dart'), isFalse);
+    });
+
     test('normalises Windows separators', () {
       expect(isInScope(r'lib\data\services\rust_core_service.dart'), isTrue);
     });
@@ -82,7 +93,25 @@ end_of_record
     });
   });
 
+  group('withPrefix', () {
+    test('moves package paths to the repository root', () {
+      expect(
+        withPrefix({'lib/src/a.dart': (found: 2, hit: 1)}, 'packages/p/'),
+        {'packages/p/lib/src/a.dart': (found: 2, hit: 1)},
+      );
+    });
+  });
+
   group('importsFor', () {
+    test('lists package files by the package prefix', () {
+      final imports = importsFor('flow_render', [
+        'lib/src/layout/a.dart',
+        'lib/src/widgets/w.dart',
+        'lib/flow_render.dart',
+      ], prefix: 'packages/flow_render/');
+      expect(imports, ["import 'package:flow_render/src/layout/a.dart';"]);
+    });
+
     test('lists in-scope files as package imports, sorted', () {
       final imports = importsFor('fusionreflow', [
         'lib/utils/b.dart',

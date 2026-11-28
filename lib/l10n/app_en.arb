@@ -119,15 +119,39 @@
       }
     }
   },
-  "readerPlaceholderTitle": "The reader is coming later",
-  "readerPlaceholderPosition": "Opens at {percent}%",
-  "@readerPlaceholderPosition": {
+  "readerOpenFailed": "Couldn't open the book",
+  "readerBack": "Back",
+  "readerChapterOf": "Chapter {index} of {count}",
+  "@readerChapterOf": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "readerPageOf": "{index} of {count}",
+  "@readerPageOf": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "readerPercent": "{percent}%",
+  "@readerPercent": {
     "placeholders": {
       "percent": {
         "type": "int"
       }
     }
   },
+  "readerSavePositionFailed": "Couldn't save your reading position",
   "readerBookNotFound": "Book not found",
   "importSheetTitle": "Add a book",
   "importSheetFormats": "EPUB, FB2, FB2.ZIP",
